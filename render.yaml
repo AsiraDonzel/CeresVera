@@ -1,0 +1,42 @@
+services:
+  # ── Django Backend ──────────────────────────────────────────────────────────
+  - type: web
+    name: ceresvera-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn crophealth.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true          # Render auto-generates a secure key
+      - key: ALLOWED_HOSTS
+        value: "ceresvera-backend.onrender.com"
+      - key: FRONTEND_URL
+        value: "https://ceresvera-frontend.onrender.com"
+      - key: GROQ_API_KEY
+        sync: false                  # You will paste this in Render dashboard
+      - key: GOOGLE_CLIENT_ID
+        value: "605914999241-ca9qb0iib923ma24ptkpc2j4rjhdk7le.apps.googleusercontent.com"
+      - key: DATABASE_URL
+        sync: false                  # Paste your PlanetScale / Aiven connection string here
+
+  # ── React Frontend (Static Site) ────────────────────────────────────────────
+  - type: web
+    name: ceresvera-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: "https://ceresvera-backend.onrender.com"
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
