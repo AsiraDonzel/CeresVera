@@ -1,0 +1,205 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { UploadCloud, CheckCircle, AlertTriangle, ArrowRight, Loader } from 'lucide-react';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
+
+export default function ScanUpload() {
+    const [file, setFile] = useState(null);
+    const [preview, setPreview] = useState(null);
+    const [isScanning, setIsScanning] = useState(false);
+    const [result, setResult] = useState(null);
+
+    const handleDrag = (e) => { e.preventDefault(); e.stopPropagation(); };
+
+    const handleDrop = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            processFile(e.dataTransfer.files[0]);
+        }
+    };
+
+    const handleFileInput = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            processFile(e.target.files[0]);
+        }
+    };
+
+    const processFile = (file) => {
+        setFile(file);
+        const reader = new FileReader();
+        reader.onload = (e) => setPreview(e.target.result);
+        reader.readAsDataURL(file);
+        setResult(null);
+    };
+
+    const performScan = async () => {
+        if (!file) return;
+        setIsScanning(true);
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const token = localStorage.getItem('access_token');
+            const headers = { 'Content-Type': 'multipart/form-data' };
+
+            // If the user happens to skip login and tests the scanner directly, it's still OK
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            let response;
+            try {
+                response = await axios.post('http://localhost:8000/api/upload-scan/', formData, { headers });
+            } catch (authErr) {
+                // If DRF throws a 401 Unauthorized due to an expired token, we retry anonymously
+                if (authErr.response && authErr.response.status === 401) {
+                    console.log("Token expired, retrying anonymously.");
+                    delete headers['Authorization'];
+                    response = await axios.post('http://localhost:8000/api/upload-scan/', formData, { headers });
+                } else {
+                    throw authErr;
+                }
+            }
+
+            const data = response.data;
+
+            setResult({
+                disease_name: data.disease_name,
+                confidence: data.confidence,
+                description: data.description,
+                recommended_action: data.recommended_action,
+                isHealthy: data.disease_name && data.disease_name.toLowerCase().includes('healthy')
+            });
+        } catch (error) {
+            console.error("AI Scan Error:", error);
+            setResult({
+                disease_name: 'Analysis Failed',
+                confidence: 0,
+                description: 'The secure connection to the AI could not be established or the image was unreadable.',
+                recommended_action: 'Please check your internet connection and try reloading the image.',
+                isHealthy: false
+            });
+        } finally {
+            setIsScanning(false);
+        }
+    };
+
+    return (
+        <div className="max-w-4xl mx-auto px-4 py-16">
+            <div className="text-center mb-12">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">AI Disease Detection</h1>
+                <p className="text-gray-600">Upload a clear picture of the plant leaf for instant analysis.</p>
+            </div>
+
+            <div className="bg-white rounded-3xl p-8 shadow-sm border border-sage-100">
+                {!preview ? (
+                    <div
+                        onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
+                        className="border-2 border-dashed border-sage-300 rounded-2xl p-16 text-center hover:bg-sage-50 transition-colors cursor-pointer flex flex-col items-center justify-center"
+                        onClick={() => document.getElementById('file-upload').click()}
+                    >
+                        <div className="p-4 bg-earth-100 text-earth-700 rounded-full mb-4">
+                            <UploadCloud className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Drag & drop an image</h3>
+                        <p className="text-gray-500 mb-6">or click to browse your files (JPEG, PNG)</p>
+                        <input type="file" id="file-upload" className="hidden" accept="image/png, image/jpeg" onChange={handleFileInput} />
+                        <button className="px-6 py-2 bg-sage-700 text-white rounded-full font-medium shadow-md">Browse Files</button>
+                    </div>
+                ) : (
+                    <div className="space-y-8">
+                        <div className="relative rounded-2xl overflow-hidden bg-gray-100 aspect-video flex items-center justify-center">
+                            <img src={preview} alt="Plant preview" className="max-h-full object-contain" />
+
+                            {/* Shimmer Effect overlay when scanning */}
+                            {isScanning && (
+                                <motion.div
+                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                    className="absolute inset-0 bg-sage-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-white"
+                                >
+                                    <Loader className="w-12 h-12 animate-spin mb-4" />
+                                    <p className="text-lg font-medium animate-pulse">AI is analyzing patterns...</p>
+
+                                    {/* Scanner line animation */}
+                                    <motion.div
+                                        animate={{ top: ['0%', '100%', '0%'] }}
+                                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                                        className="absolute left-0 right-0 h-1 bg-sage-300 shadow-[0_0_15px_rgba(181,199,186,0.8)] z-10"
+                                    />
+                                </motion.div>
+                            )}
+                        </div>
+
+                        {!result && !isScanning && (
+                            <div className="flex justify-between items-center bg-earth-100 p-4 rounded-xl mt-4">
+                                <button onClick={() => setPreview(null)} className="text-gray-600 font-medium px-4 py-2 hover:bg-white rounded-lg transition-colors">
+                                    Choose different image
+                                </button>
+                                <button onClick={performScan} className="bg-sage-700 text-white px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                                    Start Analysis
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Results Panel */}
+                        <AnimatePresence>
+                            {result && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                                    className="bg-white border-2 border-sage-100 p-6 rounded-2xl shadow-sm"
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className={`p-3 rounded-full ${result.isHealthy ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                            {result.isHealthy ? <CheckCircle className="w-8 h-8" /> : <AlertTriangle className="w-8 h-8" />}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <h3 className="text-2xl font-bold text-gray-900">{result.disease_name}</h3>
+                                                    <p className="text-gray-600 mt-1">{result.description}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-sm text-gray-500 font-medium">Confidence</div>
+                                                    <div className="text-xl font-bold text-sage-700">{Math.round(result.confidence)}%</div>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-6 p-4 bg-earth-100 rounded-xl border border-earth-300">
+                                                <h4 className="font-semibold text-gray-900 mb-2">Recommended Action</h4>
+                                                <p className="text-gray-700">{result.recommended_action}</p>
+                                            </div>
+
+                                            <div className="mt-8 flex flex-col sm:flex-row justify-end gap-4">
+                                                <button
+                                                    onClick={performScan}
+                                                    className="inline-flex items-center justify-center bg-white border-2 border-sage-200 text-sage-700 px-6 py-3 rounded-full font-bold shadow-sm hover:bg-sage-50 transition-colors"
+                                                >
+                                                    Retry Analysis
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setResult(null);
+                                                        setPreview(null);
+                                                        setFile(null);
+                                                    }}
+                                                    className="inline-flex items-center justify-center bg-white border-2 border-sage-200 text-sage-700 px-6 py-3 rounded-full font-bold shadow-sm hover:bg-sage-50 transition-colors"
+                                                >
+                                                    Scan New Plant
+                                                </button>
+                                                <Link to="/consultants" className="inline-flex justify-center items-center gap-2 bg-sage-700 text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-sage-700/20 hover:bg-sage-900 transition-colors">
+                                                    Consult an Expert <ArrowRight className="w-4 h-4" />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
