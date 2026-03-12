@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import ScrollToTop from './components/ScrollToTop';
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
@@ -34,6 +35,7 @@ function App() {
   return (
     <GoogleOAuthProvider clientId="605914999241-ca9qb0iib923ma24ptkpc2j4rjhdk7le.apps.googleusercontent.com">
       <Router>
+        <ScrollToTop />
         <Layout>
           <Routes>
             <Route path="/" element={<LandingPage />} />
