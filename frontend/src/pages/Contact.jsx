@@ -4,32 +4,82 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Sphere, MeshDistortMaterial, Environment, Float, Sparkles } from '@react-three/drei';
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
 
-// 3D Abstract Crop/Earth Mesh Component
-function AbstractGlobe() {
-    const meshRef = useRef();
+// 3D Spinning Flower Pot Component
+function FlowerPot() {
+    const groupRef = useRef();
 
     useFrame((state) => {
-        if (meshRef.current) {
-            meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.15;
-            meshRef.current.rotation.z = Math.sin(state.clock.getElapsedTime() * 0.2) * 0.1;
+        if (groupRef.current) {
+            // Gentle continuous rotation
+            groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.4;
+            // Slight sway
+            groupRef.current.rotation.z = Math.sin(state.clock.getElapsedTime() * 0.8) * 0.05;
         }
     });
 
     return (
-        <Float speed={2} rotationIntensity={1} floatIntensity={2}>
-            <Sphere ref={meshRef} args={[1, 64, 64]} scale={2.5}>
-                <MeshDistortMaterial
-                    color="#4b6b55" // Sage 700 Base
-                    attach="material"
-                    distort={0.4}
-                    speed={1.5}
-                    roughness={0.2}
-                    metalness={0.8}
-                    emissive="#d97706" // Amber 600 Highlights
-                    emissiveIntensity={0.2}
-                />
-            </Sphere>
-            <Sparkles count={150} scale={8} size={2} speed={0.4} opacity={0.5} color="#fcd34d" />
+        <Float speed={1.5} rotationIntensity={0.2} floatIntensity={1}>
+            <group ref={groupRef} position={[0, -1, 0]} scale={0.8}>
+                {/* Pot Base */}
+                <mesh position={[0, 0, 0]}>
+                    <cylinderGeometry args={[1.2, 0.9, 1.5, 32]} />
+                    <meshStandardMaterial color="#c0734a" roughness={0.7} />
+                </mesh>
+                
+                {/* Pot Rim */}
+                <mesh position={[0, 0.8, 0]}>
+                    <torusGeometry args={[1.25, 0.15, 16, 64]} />
+                    <meshStandardMaterial color="#a65d38" roughness={0.7} />
+                </mesh>
+
+                {/* Soil */}
+                <mesh position={[0, 0.7, 0]} rotation={[-Math.PI/2, 0, 0]}>
+                    <circleGeometry args={[1.15, 32]} />
+                    <meshStandardMaterial color="#3d2817" roughness={0.9} />
+                </mesh>
+
+                {/* Main Stem */}
+                <mesh position={[0, 1.5, 0]}>
+                    <cylinderGeometry args={[0.08, 0.12, 1.6, 8]} />
+                    <meshStandardMaterial color="#4b6b55" roughness={0.4} />
+                </mesh>
+
+                {/* Leaf 1 */}
+                <mesh position={[0.4, 1.2, 0.2]} rotation={[0, 0, -0.5]}>
+                    <sphereGeometry args={[0.3, 16, 16]} />
+                    <meshStandardMaterial color="#5a8b66" />
+                </mesh>
+
+                {/* Leaf 2 */}
+                <mesh position={[-0.4, 1.6, -0.2]} rotation={[0, 0, 0.5]}>
+                    <sphereGeometry args={[0.25, 16, 16]} />
+                    <meshStandardMaterial color="#3f5a48" />
+                </mesh>
+
+                {/* Flower Center */}
+                <mesh position={[0, 2.3, 0]}>
+                    <sphereGeometry args={[0.3, 16, 16]} />
+                    <meshStandardMaterial color="#fbbf24" emissive="#d97706" emissiveIntensity={0.2} />
+                </mesh>
+
+                {/* Petals */}
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <mesh 
+                        key={i} 
+                        position={[
+                            Math.cos((i * Math.PI) / 3) * 0.4, 
+                            2.3, 
+                            Math.sin((i * Math.PI) / 3) * 0.4
+                        ]}
+                    >
+                        <sphereGeometry args={[0.2, 16, 16]} />
+                        <meshStandardMaterial color="#fcd34d" />
+                    </mesh>
+                ))}
+            </group>
+            
+            {/* Sparkles around the plant */}
+            <Sparkles count={40} scale={4} size={2} speed={0.2} opacity={0.6} color="#fbbf24" position={[0, 1, 0]} />
         </Float>
     );
 }
