@@ -243,7 +243,7 @@ export default function Auth() {
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <User className="h-5 w-5 text-gray-400" />
                                         </div>
-                                        <input id="name" type="text" required value={name} onChange={e => setName(e.target.value)} className="block w-full pl-11 pr-4 py-3.5 border-gray-200 bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 rounded-xl transition-colors sm:text-sm outline-none" placeholder="Oluwakemi Adebayo" />
+                                        <input id="name" type="text" required value={name} onChange={e => setName(e.target.value)} className="block w-full pl-11 pr-4 py-3.5 border-gray-200 bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 rounded-xl transition-colors sm:text-sm outline-none text-gray-900 font-medium placeholder-gray-400/60" placeholder="Oluwakemi Adebayo" />
                                     </div>
                                 </div>
                             )}
@@ -255,7 +255,7 @@ export default function Auth() {
                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                         <Mail className="h-5 w-5 text-gray-400" />
                                     </div>
-                                    <input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} className="block w-full pl-11 pr-4 py-3.5 border-gray-200 bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 rounded-xl transition-colors sm:text-sm outline-none" placeholder="you@example.com" />
+                                    <input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} className="block w-full pl-11 pr-4 py-3.5 border-gray-200 bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 rounded-xl transition-colors sm:text-sm outline-none text-gray-900 font-medium placeholder-gray-400/60" placeholder="you@example.com" />
                                 </div>
                             </div>
 
@@ -267,7 +267,7 @@ export default function Auth() {
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <Lock className="h-5 w-5 text-gray-400" />
                                         </div>
-                                        <input id="password" type={showPassword ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} className="block w-full pl-11 pr-12 py-3.5 border-gray-200 bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 rounded-xl transition-colors sm:text-sm outline-none" placeholder="••••••••" />
+                                        <input id="password" type={showPassword ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} className="block w-full pl-11 pr-12 py-3.5 border-gray-200 bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 rounded-xl transition-colors sm:text-sm outline-none text-gray-900 font-medium placeholder-gray-400/60" placeholder="••••••••" />
                                         <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600">
                                             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                         </button>
@@ -310,7 +310,7 @@ export default function Auth() {
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <Lock className="h-5 w-5 text-gray-400" />
                                         </div>
-                                        <input id="confirm_password" type={showConfirmPassword ? 'text' : 'password'} required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className={`block w-full pl-11 pr-12 py-3.5 border bg-gray-50 focus:bg-white focus:ring-2 rounded-xl transition-colors sm:text-sm outline-none ${confirmPassword.length > 0 && confirmPassword !== password ? 'border-red-300 focus:ring-red-400' : 'border-gray-200 focus:ring-sage-500 focus:border-sage-500'}`} placeholder="••••••••" />
+                                        <input id="confirm_password" type={showConfirmPassword ? 'text' : 'password'} required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className={`block w-full pl-11 pr-12 py-3.5 border bg-gray-50 focus:bg-white focus:ring-2 rounded-xl transition-colors sm:text-sm outline-none text-gray-900 font-medium placeholder-gray-400/60 ${confirmPassword.length > 0 && confirmPassword !== password ? 'border-red-300 focus:ring-red-400' : 'border-gray-200 focus:ring-sage-500 focus:border-sage-500'}`} placeholder="••••••••" />
                                         <button type="button" onClick={() => setShowConfirmPassword(v => !v)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600">
                                             {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                         </button>
