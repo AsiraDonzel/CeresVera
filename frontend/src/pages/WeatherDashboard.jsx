@@ -366,7 +366,7 @@ export default function WeatherDashboard() {
 
                         {/* Attribution */}
                         <p className="text-center text-xs text-gray-400 pb-4">
-                            Weather data provided by <a href="https://open-meteo.com/" target="_blank" rel="noopener" className="text-sky-500 hover:underline">Open-Meteo</a> — free, no API key required · Updates every hour
+                            Weather data provided by <a href="https://open-meteo.com/" target="_blank" rel="noopener" className="text-sky-500 hover:underline">Open-Meteo</a>
                         </p>
                     </div>
                 )}
