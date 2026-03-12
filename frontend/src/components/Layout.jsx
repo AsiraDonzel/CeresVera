@@ -35,6 +35,7 @@ export default function Layout({ children }) {
                             {/* Public Links */}
                             <Link to="/crops" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Crops</Link>
                             <Link to="/diseases" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Diseases</Link>
+                            <Link to="/pests" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Pests</Link>
 
                             {/* Authenticated Links Area */}
                             {localStorage.getItem('access_token') && (
@@ -149,6 +150,7 @@ export default function Layout({ children }) {
                             <ul className="space-y-2 text-sm text-gray-400">
                                 <li><Link to="/scan" className="hover:text-white transition-colors">AI Crop Scanner</Link></li>
                                 <li><Link to="/crops" className="hover:text-white transition-colors">Crop Database</Link></li>
+                                <li><Link to="/pests" className="hover:text-white transition-colors">Pest Index</Link></li>
                                 <li><Link to="/consultants" className="hover:text-white transition-colors">Find an Expert</Link></li>
                                 <li><Link to="/hotspots" className="hover:text-white transition-colors">Weather & Climate</Link></li>
                             </ul>

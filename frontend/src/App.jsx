@@ -17,6 +17,7 @@ import Settings from './pages/Settings';
 import About from './pages/About';
 import Crops from './pages/Crops';
 import Diseases from './pages/Diseases';
+import Pests from './pages/Pests';
 import Donate from './pages/Donate';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
@@ -43,6 +44,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/crops" element={<Crops />} />
             <Route path="/diseases" element={<Diseases />} />
+            <Route path="/pests" element={<Pests />} />
             <Route path="/donate" element={<Donate />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/chat" element={<Chatbot />} />
