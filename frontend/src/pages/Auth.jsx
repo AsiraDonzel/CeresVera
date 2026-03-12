@@ -39,11 +39,20 @@ export default function Auth() {
             const res = await axios.post(`${API_URL}/api/auth/google/`, {
                 credential: tokenResponse.access_token,
                 token_type: 'access_token',
+                role: mode === 'register' ? role : undefined // Only send if registering
             });
             localStorage.setItem('access_token', res.data.access);
             localStorage.setItem('refresh_token', res.data.refresh);
-            localStorage.setItem('user_role', role);
-            navigate(role === 'agronomist' ? '/expert-dashboard' : '/dashboard');
+            
+            const userRole = res.data.role || 'farmer';
+            localStorage.setItem('user_role', userRole);
+            if (res.data.name) localStorage.setItem('user_name', res.data.name);
+            if (res.data.profile_pic) {
+                localStorage.setItem('profile_picture', `${API_URL}${res.data.profile_pic}`);
+                window.dispatchEvent(new Event('profilePictureUpdated'));
+            }
+            
+            navigate(userRole === 'agronomist' ? '/expert-dashboard' : '/dashboard');
         } catch (err) {
             setError('Google sign-in failed. Please try again.');
         } finally {
@@ -106,8 +115,16 @@ export default function Auth() {
                 });
                 localStorage.setItem('access_token', response.data.access);
                 localStorage.setItem('refresh_token', response.data.refresh);
-                localStorage.setItem('user_role', role);
-                navigate(role === 'agronomist' ? '/expert-dashboard' : '/dashboard');
+                
+                const userRole = response.data.role || 'farmer';
+                localStorage.setItem('user_role', userRole);
+                if (response.data.name) localStorage.setItem('user_name', response.data.name);
+                if (response.data.profile_pic) {
+                    localStorage.setItem('profile_picture', `${API_URL}${response.data.profile_pic}`);
+                    window.dispatchEvent(new Event('profilePictureUpdated'));
+                }
+
+                navigate(userRole === 'agronomist' ? '/expert-dashboard' : '/dashboard');
 
             } else if (mode === 'register') {
                 await axios.post(`${API_URL}/api/auth/register/`, {
@@ -115,6 +132,8 @@ export default function Auth() {
                     email,
                     password: hashedPassword,
                     confirm_password: hashedConfirmPassword,
+                    name: name,
+                    role: role
                 });
                 // Auto-login after registration
                 const loginRes = await axios.post(`${API_URL}/api/auth/login/`, {
@@ -123,8 +142,12 @@ export default function Auth() {
                 });
                 localStorage.setItem('access_token', loginRes.data.access);
                 localStorage.setItem('refresh_token', loginRes.data.refresh);
-                localStorage.setItem('user_role', role);
-                navigate(role === 'agronomist' ? '/expert-dashboard' : '/dashboard');
+                
+                const userRole = loginRes.data.role || role;
+                localStorage.setItem('user_role', userRole);
+                if (loginRes.data.name) localStorage.setItem('user_name', loginRes.data.name);
+
+                navigate(userRole === 'agronomist' ? '/expert-dashboard' : '/dashboard');
 
             } else {
                 // Forgot password (mock)
@@ -197,9 +220,9 @@ export default function Auth() {
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white/80 backdrop-blur-xl py-8 px-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2.5rem] sm:px-10 border border-white">
 
-                    {/* Role Toggle */}
+                    {/* Role Toggle - Only shown during registration */}
                     <AnimatePresence>
-                        {mode !== 'forgot' && (
+                        {mode === 'register' && (
                             <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
@@ -207,7 +230,7 @@ export default function Auth() {
                                 className="mb-6"
                             >
                                 <div className="text-sm font-bold text-gray-700 mb-3 text-center">
-                                    {mode === 'register' ? 'I am joining as a...' : 'I am logging in as a...'}
+                                    I am joining as a...
                                 </div>
                                 <div className="flex p-1 bg-gray-100 rounded-2xl">
                                     <button onClick={() => setRole('farmer')} className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${role === 'farmer' ? 'bg-white text-sage-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>

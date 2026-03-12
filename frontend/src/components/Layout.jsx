@@ -5,6 +5,7 @@ import { Leaf, User, Menu, X, ArrowRight, Activity, Map, Video, CheckCircle, Shi
 export default function Layout({ children }) {
     const location = useLocation();
     const userRole = localStorage.getItem('user_role') || 'farmer';
+    const userName = localStorage.getItem('user_name') || 'User';
     const [profilePic, setProfilePic] = useState(localStorage.getItem('profile_picture'));
 
     useEffect(() => {
@@ -88,8 +89,8 @@ export default function Layout({ children }) {
                                         {profilePic ? (
                                             <img src={profilePic} alt="User Avatar" className="w-full h-full object-cover" />
                                         ) : (
-                                            <span className="text-sage-700 font-bold group-hover:text-sage-900 transition-colors">
-                                                {userRole === 'agronomist' ? 'O' : 'K'}
+                                            <span className="text-sage-700 font-bold group-hover:text-sage-900 transition-colors capitalize">
+                                                {userName.charAt(0)}
                                             </span>
                                         )}
                                         {userRole === 'agronomist' && !profilePic && <span className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white z-20"></span>}
