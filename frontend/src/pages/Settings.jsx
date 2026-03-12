@@ -531,6 +531,95 @@ export default function Settings() {
                 )}
             </AnimatePresence>
 
+            {/* Avatar Upload Modal */}
+            <AnimatePresence>
+                {isAvatarModalOpen && userRole === 'agronomist' && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md"
+                    >
+                        <motion.div
+                            variants={overlayVariants} initial="hidden" animate="visible" exit="exit"
+                            className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl relative border border-white text-center"
+                        >
+                            <div className="p-8 border-b border-gray-100 bg-gradient-to-br from-sage-50 to-white relative relative">
+                                <button onClick={() => { setIsAvatarModalOpen(false); setAvatarPreview(null); setAvatarFile(null); }} className="absolute top-6 right-6 w-8 h-8 bg-white hover:bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center transition-colors text-gray-500 shadow-sm z-10">
+                                    <X className="w-4 h-4" />
+                                </button>
+                                <h2 className="text-2xl font-black text-gray-900 mb-1">Profile Picture</h2>
+                                <p className="text-gray-500 text-sm font-medium">Upload a clear photo so farmers can recognize you.</p>
+                            </div>
+
+                            <div className="p-8 bg-gray-50/50">
+                                <div className="relative w-36 h-36 mx-auto mb-8 cursor-pointer group rounded-[2rem] overflow-hidden shadow-inner border-4 border-white bg-sage-100">
+                                    {avatarPreview ? (
+                                        <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover group-hover:brightness-75 transition-all" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-sage-600 font-bold text-5xl group-hover:bg-sage-200 transition-colors">
+                                            {userRole === 'agronomist' ? 'O' : 'K'}
+                                        </div>
+                                    )}
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Camera className="w-8 h-8 text-white mb-1" />
+                                        <span className="text-white text-xs font-bold uppercase tracking-wider">Change</span>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                setAvatarFile(file);
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => setAvatarPreview(reader.result);
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }}
+                                    />
+                                </div>
+
+                                <div className="flex justify-center gap-3">
+                                    <button onClick={() => { setIsAvatarModalOpen(false); setAvatarPreview(null); setAvatarFile(null); }} className="px-6 py-3 rounded-xl font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm">
+                                        Cancel
+                                    </button>
+                                    <button
+                                        disabled={!avatarFile || isUploading}
+                                        onClick={async () => {
+                                            if (!avatarFile) return;
+                                            setIsUploading(true);
+                                            
+                                            // Simulated Image Upload for the UI demo (we skip real API constraint unless needed, but let's wire it up just like before)
+                                            try {
+                                                // Convert image to base64 so it can be saved in local storage instantly for demo
+                                                if (avatarPreview) {
+                                                    localStorage.setItem('profile_picture', avatarPreview);
+                                                    window.dispatchEvent(new Event('profilePictureUpdated'));
+                                                    showToast('Profile picture updated successfully!');
+                                                }
+                                                setIsAvatarModalOpen(false);
+                                            } catch (error) {
+                                                console.error("Upload failed:", error);
+                                                showToast('Failed to upload profile picture.');
+                                            } finally {
+                                                setIsUploading(false);
+                                            }
+                                        }}
+                                        className={`px-8 py-3 rounded-xl font-bold text-white shadow-md transition-all focus:outline-none flex items-center gap-2 ${avatarFile && !isUploading ? 'bg-sage-700 hover:bg-sage-900 shadow-sage-700/20 hover:-translate-y-0.5' : 'bg-sage-300 cursor-not-allowed'}`}
+                                    >
+                                        {isUploading ? (
+                                            <><Loader2 className="w-5 h-5 animate-spin" /> Uploading</>
+                                        ) : (
+                                            <><UploadCloud className="w-5 h-5" /> Save Photo</>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Other Modals (Security, Payment, Consults, Scan History) use similar improved overlay designs */}
             
             <AnimatePresence>
