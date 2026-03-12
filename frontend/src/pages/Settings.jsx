@@ -21,7 +21,7 @@ export default function Settings() {
     const [userName, setUserName] = useState(userRole === 'agronomist' ? 'Dr. Okafor' : 'Kemi Adebayo');
     const [userEmail, setUserEmail] = useState(userRole === 'agronomist' ? 'okafor.agro@ceresvera.com' : 'kemi@example.com');
     const [userPhone, setUserPhone] = useState('+234 801 234 5678');
-    const [agronomistBio, setAgronomistBio] = useState('Expert in tropical plant pathology with 10+ years of experience in West Africa.');
+    const [agronomistBio, setAgronomistBio] = useState(localStorage.getItem('agronomistBio') || 'Expert in tropical plant pathology with 10+ years of experience in West Africa.');
 
     // Farm Profile State
     const [farmLocation, setFarmLocation] = useState(localStorage.getItem('farm_location') || 'Ogun State, Nigeria');
@@ -42,8 +42,8 @@ export default function Settings() {
     const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
 
     // Consultation Fees State
-    const [videoFee, setVideoFee] = useState('5000');
-    const [textFee, setTextFee] = useState('2500');
+    const [videoFee, setVideoFee] = useState(localStorage.getItem('videoFee') || '5000');
+    const [textFee, setTextFee] = useState(localStorage.getItem('textFee') || '2500');
 
     // Avatar State
     const [avatarFile, setAvatarFile] = useState(null);
@@ -264,6 +264,9 @@ export default function Settings() {
                                     <button onClick={() => setIsProfileModalOpen(false)} className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</button>
                                     <button
                                         onClick={() => {
+                                            if (userRole === 'agronomist') {
+                                                localStorage.setItem('agronomistBio', agronomistBio);
+                                            }
                                             setIsProfileModalOpen(false);
                                             showToast('Profile updated successfully.');
                                         }}
@@ -456,8 +459,79 @@ export default function Settings() {
                 )}
             </AnimatePresence>
 
+            {/* Consultation Fees Modal */}
+            <AnimatePresence>
+                {isConsultationModalOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md"
+                        onClick={() => setIsConsultationModalOpen(false)}
+                    >
+                        <motion.div
+                            variants={overlayVariants} initial="hidden" animate="visible" exit="exit"
+                            className="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl relative border border-white"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-8 border-b border-gray-100 bg-gradient-to-br from-emerald-50 to-white">
+                                <button onClick={() => setIsConsultationModalOpen(false)} className="absolute top-8 right-8 w-10 h-10 bg-white hover:bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center transition-colors text-gray-500">
+                                    <X className="w-5 h-5" />
+                                </button>
+                                <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 mb-4 shadow-inner">
+                                    <Wallet className="w-7 h-7" />
+                                </div>
+                                <h2 className="text-2xl font-black text-gray-900 mb-1">Consultation Fees</h2>
+                                <p className="text-gray-500 text-sm font-medium">Set your standard escrow rates for your expert services.</p>
+                            </div>
+                            
+                            <div className="p-8 bg-gray-50/50 space-y-6">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Live Video Audit (Per 30 mins)</label>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold tracking-widest">₦</span>
+                                        <input
+                                            type="number"
+                                            value={videoFee}
+                                            onChange={(e) => setVideoFee(e.target.value)}
+                                            className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3.5 bg-white font-black text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xl shadow-sm"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400 font-medium mt-2">Recommended: ₦4,000 - ₦10,000</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Detailed Text Report</label>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold tracking-widest">₦</span>
+                                        <input
+                                            type="number"
+                                            value={textFee}
+                                            onChange={(e) => setTextFee(e.target.value)}
+                                            className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3.5 bg-white font-black text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xl shadow-sm"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400 font-medium mt-2">Recommended: ₦1,500 - ₦3,500</p>
+                                </div>
+
+                                <div className="pt-6 flex justify-end">
+                                    <button 
+                                        onClick={() => {
+                                            localStorage.setItem('videoFee', videoFee);
+                                            localStorage.setItem('textFee', textFee);
+                                            setIsConsultationModalOpen(false);
+                                            showToast('Fee structure updated and live.');
+                                        }} 
+                                        className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all hover:-translate-y-0.5"
+                                    >
+                                        Save Current Rates
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Other Modals (Security, Payment, Consults, Scan History) use similar improved overlay designs */}
-            {/* Keeping simpler versions of remaining modals for brevity while applying the new overlay variants format */}
             
             <AnimatePresence>
                 {isSecurityModalOpen && (

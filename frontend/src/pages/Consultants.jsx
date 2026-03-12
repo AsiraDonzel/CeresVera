@@ -3,8 +3,21 @@ import { Lock, Star, GraduationCap, ArrowRight, Search, Filter } from 'lucide-re
 import { Link } from 'react-router-dom';
 
 export default function Consultants() {
+    // Read dynamic settings from LocalStorage
+    const savedBio = localStorage.getItem('agronomistBio');
+    const savedFee = localStorage.getItem('videoFee');
+    const savedAvatar = localStorage.getItem('profile_picture');
+
     const [experts, setExperts] = useState([
-        { id: 1, name: 'Dr. Amina Okafor', specialty: 'Tropical Plant Diseases', bio: '10+ years experience diagnosing cassava and maize blights.', rate: 5000, img: 'https://i.pravatar.cc/150?u=amina', rating: 4.8 },
+        { 
+            id: 1, 
+            name: 'Dr. Amina Okafor', 
+            specialty: 'Tropical Plant Diseases', 
+            bio: savedBio || '10+ years experience diagnosing cassava and maize blights.', 
+            rate: savedFee ? parseInt(savedFee) : 5000, 
+            img: savedAvatar || 'https://i.pravatar.cc/150?u=amina', 
+            rating: 4.8 
+        },
         { id: 2, name: 'Mr. Tunde Lawal', specialty: 'Soil Health & Agronomy', bio: 'Specializes in improving crop yield through localized soil treatments.', rate: 4500, img: 'https://i.pravatar.cc/150?u=tunde', rating: 4.9 },
         { id: 3, name: 'Prof. S. Mensah', specialty: 'Pest Control', bio: 'Expert insect and pest management strategies using organic methods.', rate: 7000, img: 'https://i.pravatar.cc/150?u=mensah', rating: 5.0 },
         { id: 4, name: 'Dr. John Doe', specialty: 'Grains & Cereals', bio: 'Specialist in wheat, rice, and maize health management.', rate: 6000, img: 'https://i.pravatar.cc/150?u=johndoe', rating: 4.7 },
