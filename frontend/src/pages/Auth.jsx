@@ -4,6 +4,7 @@ import { Leaf, Mail, Lock, User, ArrowRight, UserCheck, Star, AlertCircle, Eye, 
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
+import CryptoJS from 'crypto-js';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -93,11 +94,15 @@ export default function Auth() {
 
         setLoading(true);
 
+        // Hash passwords before sending
+        const hashedPassword = CryptoJS.SHA256(password).toString();
+        const hashedConfirmPassword = mode === 'register' ? CryptoJS.SHA256(confirmPassword).toString() : '';
+
         try {
             if (mode === 'login') {
                 const response = await axios.post(`${API_URL}/api/auth/login/`, {
                     username: email,
-                    password
+                    password: hashedPassword
                 });
                 localStorage.setItem('access_token', response.data.access);
                 localStorage.setItem('refresh_token', response.data.refresh);
@@ -108,13 +113,13 @@ export default function Auth() {
                 await axios.post(`${API_URL}/api/auth/register/`, {
                     username: email,
                     email,
-                    password,
-                    confirm_password: confirmPassword,
+                    password: hashedPassword,
+                    confirm_password: hashedConfirmPassword,
                 });
                 // Auto-login after registration
                 const loginRes = await axios.post(`${API_URL}/api/auth/login/`, {
                     username: email,
-                    password
+                    password: hashedPassword
                 });
                 localStorage.setItem('access_token', loginRes.data.access);
                 localStorage.setItem('refresh_token', loginRes.data.refresh);
