@@ -103,7 +103,7 @@ export default function Contact() {
                     <ambientLight intensity={0.5} />
                     <directionalLight position={[10, 10, 5]} intensity={1.5} />
                     <directionalLight position={[-10, -10, -5]} color="#d97706" intensity={1} />
-                    <AbstractGlobe />
+                    <FlowerPot />
                     <Environment preset="city" />
                     <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
                 </Canvas>
