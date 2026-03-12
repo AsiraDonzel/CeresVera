@@ -2,7 +2,7 @@ from rest_framework import viewsets, status, generics, permissions, parsers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Consultant, Scan, Transaction, UserProfile
-from .serializers import ConsultantSerializer, ScanSerializer, TransactionSerializer, RegisterSerializer, UserProfileSerializer
+from .serializers import ConsultantSerializer, ScanSerializer, TransactionSerializer, RegisterSerializer, UserProfileSerializer, CustomTokenObtainPairSerializer
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.db.models import Count
@@ -11,8 +11,12 @@ import os
 from groq import Groq
 from openai import OpenAI
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class ConsultantViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Consultant.objects.filter(is_active=True)

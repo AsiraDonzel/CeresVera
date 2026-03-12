@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Consultant, Scan, Transaction, UserProfile
 from django.contrib.auth.models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,15 +13,37 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'profile')
+        fields = ('id', 'username', 'email', 'profile', 'first_name')
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        
+        # Add custom claims to the payload
+        user = self.user
+        data['id'] = user.id
+        data['name'] = user.first_name or user.username
+        
+        # Safely get profile info
+        try:
+            profile = user.profile
+            data['role'] = profile.role
+            data['profile_pic'] = profile.profile_picture.url if profile.profile_picture else None
+        except UserProfile.DoesNotExist:
+            data['role'] = 'farmer' # Default fallback
+            data['profile_pic'] = None
+            
+        return data
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
     confirm_password = serializers.CharField(write_only=True, required=True)
+    name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    role = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'confirm_password')
+        fields = ('id', 'username', 'email', 'password', 'confirm_password', 'name', 'role')
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate_email(self, value):
@@ -30,17 +53,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value.lower()
 
     def validate_password(self, value):
-        import re
+        # We trust the frontend SHA-256 hash here.
+        # No regex required for simple hex string.
         if len(value) < 8:
             raise serializers.ValidationError("Password must be at least 8 characters long.")
-        if not re.search(r'[A-Z]', value):
-            raise serializers.ValidationError("Password must contain at least one uppercase letter.")
-        if not re.search(r'[a-z]', value):
-            raise serializers.ValidationError("Password must contain at least one lowercase letter.")
-        if not re.search(r'\d', value):
-            raise serializers.ValidationError("Password must contain at least one number.")
-        if not re.search(r'[!@#$%^&*(),.?\":{}|<>_\-]', value):
-            raise serializers.ValidationError("Password must contain at least one special character (e.g. !@#$%).")
         return value
 
     def validate(self, data):
@@ -49,12 +65,22 @@ class RegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        validated_data.pop('confirm_password')
+        validated_data.pop('confirm_password', None)
+        name = validated_data.pop('name', '')
+        role = validated_data.pop('role', 'farmer')
+        
         user = User.objects.create_user(
             username=validated_data['email'],  # use email as username for consistency
             email=validated_data['email'],
-            password=validated_data['password']
+            password=validated_data['password'],
+            first_name=name
         )
+        
+        # Try to update the auto-created profile with the selected role
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        profile.role = role
+        profile.save()
+        
         return user
 
 class ConsultantSerializer(serializers.ModelSerializer):
