@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Leaf, User, Menu, X, ArrowRight, Activity, Map, Video, CheckCircle, Shield, AlertTriangle, Sparkles } from 'lucide-react';
+import { Leaf, User, Menu, X, ArrowRight, Activity, Map, Video, CheckCircle, Shield, AlertTriangle, Sparkles, Cloud } from 'lucide-react';
 
 export default function Layout({ children }) {
     const location = useLocation();
@@ -44,7 +44,9 @@ export default function Layout({ children }) {
                                         <>
                                             <Link to="/dashboard" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Dashboard</Link>
                                             <Link to="/scan" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Scan</Link>
-                                            <Link to="/hotspots" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Hotspots Map</Link>
+                                            <Link to="/hotspots" className="flex items-center gap-1.5 text-gray-600 hover:text-sky-600 font-medium transition-colors">
+                                                <Cloud className="w-4 h-4" /> Weather
+                                            </Link>
                                             <Link to="/chat" className="flex items-center gap-1.5 text-sage-600 hover:text-sage-800 font-bold transition-colors">
                                                 <Sparkles className="w-4 h-4" /> CeraAI
                                             </Link>
@@ -145,7 +147,7 @@ export default function Layout({ children }) {
                                 <li><Link to="/scan" className="hover:text-white transition-colors">AI Crop Scanner</Link></li>
                                 <li><Link to="/crops" className="hover:text-white transition-colors">Crop Database</Link></li>
                                 <li><Link to="/consultants" className="hover:text-white transition-colors">Find an Expert</Link></li>
-                                <li><Link to="/hotspots" className="hover:text-white transition-colors">Disease Hotspots</Link></li>
+                                <li><Link to="/hotspots" className="hover:text-white transition-colors">Weather & Climate</Link></li>
                             </ul>
                         </div>
                     </div>

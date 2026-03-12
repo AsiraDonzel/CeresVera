@@ -7,7 +7,7 @@ import Dashboard from './pages/Dashboard';
 import ScanUpload from './pages/ScanUpload';
 import Consultants from './pages/Consultants';
 import Checkout from './pages/Checkout';
-import MapDashboard from './pages/MapDashboard';
+import WeatherDashboard from './pages/WeatherDashboard';
 import Auth from './pages/Auth';
 import ExpertDashboard from './pages/ExpertDashboard';
 import Schedule from './pages/Schedule';
@@ -49,7 +49,7 @@ function App() {
             <Route path="/scan" element={<ScanUpload />} />
             <Route path="/consultants" element={<Consultants />} />
             <Route path="/checkout/:consultantId" element={<Checkout />} />
-            <Route path="/hotspots" element={<MapDashboard />} />
+            <Route path="/hotspots" element={<WeatherDashboard />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/payouts" element={<Payouts />} />
             <Route path="/settings" element={<Settings />} />
