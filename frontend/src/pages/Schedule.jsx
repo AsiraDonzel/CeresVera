@@ -1,33 +1,115 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar as CalendarIcon, Clock, Video, User, ChevronLeft, ChevronRight, CheckCircle2, Leaf, Phone, X, Mic, Video as VideoIcon, Plus, Save } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Video, User, ChevronLeft, ChevronRight, CheckCircle2, Leaf, Phone, X, Mic, Video as VideoIcon, Plus, Save, Trash2 } from 'lucide-react';
+
+// Mock Default Data
+const defaultAppointments = [
+    { id: 1, time: '10:00 AM', farmer: 'Ibrahim Musa', crop: 'Cassava', type: 'Video Call', status: 'Upcoming' },
+    { id: 2, time: '11:30 AM', farmer: 'Oluwaseun Farms', crop: 'Maize', type: 'Video Call', status: 'Upcoming' },
+    { id: 3, time: '02:00 PM', farmer: 'Chidi Okonkwo', crop: 'Tomato', type: 'In Person', status: 'Upcoming' },
+];
 
 export default function Schedule() {
     const [activeVideoCall, setActiveVideoCall] = useState(null);
     const [isAvailabilityOverlayOpen, setIsAvailabilityOverlayOpen] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(15); // Mock selected date
-    const [savedSlots, setSavedSlots] = useState([]);
+    const [selectedDate, setSelectedDate] = useState(15); 
+    
+    // States for the Modal Form
+    const [selectedTimes, setSelectedTimes] = useState(['10:00 AM', '02:00 PM']);
+    const [selectedType, setSelectedType] = useState('Video Call');
 
-    // Mock Schedule Data
-    const todayAppointments = [
-        { id: 1, time: '10:00 AM', farmer: 'Ibrahim Musa', crop: 'Cassava', type: 'Video Call', status: 'Upcoming' },
-        { id: 2, time: '11:30 AM', farmer: 'Oluwaseun Farms', crop: 'Maize', type: 'Video Call', status: 'Upcoming' },
-        { id: 3, time: '02:00 PM', farmer: 'Chidi Okonkwo', crop: 'Tomato', type: 'In Person', status: 'Pending Confirmation' },
-    ];
+    // Filter state
+    const [filterStatus, setFilterStatus] = useState('All'); // 'All', 'Upcoming', 'Completed'
+
+    // Load from Local Storage or Defaults
+    const [appointments, setAppointments] = useState(() => {
+        const saved = localStorage.getItem('expert_appointments');
+        if (saved) return JSON.parse(saved);
+        return defaultAppointments;
+    });
+
+    const [savedSlots, setSavedSlots] = useState(() => {
+        const saved = localStorage.getItem('expert_saved_slots');
+        if (saved) return JSON.parse(saved);
+        return [];
+    });
+
+    // Save to Local Storage on change
+    useEffect(() => {
+        localStorage.setItem('expert_appointments', JSON.stringify(appointments));
+    }, [appointments]);
+
+    useEffect(() => {
+        localStorage.setItem('expert_saved_slots', JSON.stringify(savedSlots));
+    }, [savedSlots]);
 
     const generateDays = () => {
         const days = [];
-        // Mock days for current month
         for (let i = 1; i <= 31; i++) {
             days.push(i);
         }
         return days;
     };
 
+    const toggleTimeSlot = (time) => {
+        if (selectedTimes.includes(time)) {
+            setSelectedTimes(selectedTimes.filter(t => t !== time));
+        } else {
+            setSelectedTimes([...selectedTimes, time]);
+        }
+    };
+
     const handleSaveAvailability = () => {
-        setSavedSlots([...savedSlots, selectedDate]);
+        // Mark the date on the calendar
+        if (!savedSlots.includes(selectedDate)) {
+            setSavedSlots([...savedSlots, selectedDate]);
+        }
+        
+        // Create new 'Available Slot' blocks in the agenda so it appears
+        const newSlots = selectedTimes.map((time, idx) => ({
+            id: Date.now() + idx,
+            date: selectedDate,
+            time: time,
+            farmer: 'Open Booking Slot',
+            crop: 'Pending Client',
+            type: selectedType,
+            status: 'Upcoming'
+        }));
+
+        setAppointments([...appointments, ...newSlots]);
         setIsAvailabilityOverlayOpen(false);
     };
+
+    const toggleAppointmentStatus = (id) => {
+        setAppointments(appointments.map(apt => {
+            if (apt.id === id) {
+                return { ...apt, status: apt.status === 'Completed' ? 'Upcoming' : 'Completed' };
+            }
+            return apt;
+        }));
+    };
+
+    const handleClearSchedule = () => {
+        const confirmClear = window.confirm("Are you sure you want to clear your entire schedule? This cannot be undone.");
+        if (confirmClear) {
+            setAppointments([]);
+            setSavedSlots([]);
+        }
+    };
+
+    const markAllCompleted = () => {
+        setAppointments(appointments.map(apt => ({ ...apt, status: 'Completed' })));
+    };
+
+    const timeSlotsOptions = ['09:00 AM', '10:00 AM', '11:00 AM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM'];
+
+    // Filter appointments
+    const filteredAppointments = appointments.filter(apt => {
+        if (filterStatus === 'All') return true;
+        return apt.status === filterStatus;
+    });
+
+    const hasCompletedAll = appointments.length > 0 && appointments.every(apt => apt.status === 'Completed');
 
     return (
         <div className="min-h-screen bg-earth-50 pt-24 pb-12 relative overflow-hidden">
@@ -51,12 +133,20 @@ export default function Schedule() {
                         <h1 className="text-4xl font-black text-gray-900 tracking-tight">My Schedule</h1>
                         <p className="text-gray-600 mt-2 text-lg">Manage your upcoming escrow-funded consultations and availability.</p>
                     </div>
-                    <button
-                        onClick={() => setIsAvailabilityOverlayOpen(true)}
-                        className="px-6 py-3 bg-sage-700 hover:bg-sage-900 text-white font-bold rounded-xl shadow-md shadow-sage-700/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
-                    >
-                        <Plus className="w-5 h-5" /> Set Availability
-                    </button>
+                    <div className="flex gap-3 flex-wrap">
+                        <button
+                            onClick={handleClearSchedule}
+                            className="px-6 py-3 bg-white text-red-600 border border-red-200 font-bold rounded-xl shadow-sm transition-all hover:-translate-y-0.5 hover:bg-red-50 flex items-center justify-center gap-2"
+                        >
+                            <Trash2 className="w-5 h-5" /> Clear Schedule
+                        </button>
+                        <button
+                            onClick={() => setIsAvailabilityOverlayOpen(true)}
+                            className="px-6 py-3 bg-sage-700 hover:bg-sage-900 text-white font-bold rounded-xl shadow-md shadow-sage-700/20 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                        >
+                            <Plus className="w-5 h-5" /> Set Availability
+                        </button>
+                    </div>
                 </motion.div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -68,7 +158,7 @@ export default function Schedule() {
                         transition={{ duration: 0.5, delay: 0.1 }}
                         className="lg:col-span-5"
                     >
-                        <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative">
+                        <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative lg:sticky lg:top-28">
                             {/* Decorative element */}
                             <div className="absolute -top-6 -right-6 w-24 h-24 bg-sage-100 rounded-full blur-2xl opacity-50 z-0"></div>
                             
@@ -102,7 +192,7 @@ export default function Schedule() {
 
                                 {generateDays().map(day => {
                                     const isSelected = selectedDate === day;
-                                    const hasAppointment = day === 4 || day === 15 || day === 22;
+                                    const hasAppointment = appointments.some(apt => apt.date === day || (day === 15 && !apt.date)); // Fallback mock mapping
                                     const isSavedSlot = savedSlots.includes(day);
 
                                     return (
@@ -112,7 +202,7 @@ export default function Schedule() {
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => {
                                                 setSelectedDate(day);
-                                                setIsAvailabilityOverlayOpen(true);
+                                                setFilterStatus('All'); // Reset filters
                                             }}
                                             className={`aspect-square rounded-2xl flex flex-col items-center justify-center relative transition-colors ${
                                                 isSelected 
@@ -135,69 +225,146 @@ export default function Schedule() {
                                     );
                                 })}
                             </div>
+
+                            {/* Legend */}
+                            <div className="mt-8 pt-6 border-t border-gray-100 flex flex-wrap gap-4 relative z-10 text-xs font-bold text-gray-500">
+                                <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-400"></span> Booked Consultation</div>
+                                <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-sage-500"></span> Available Open Slot</div>
+                            </div>
                         </div>
                     </motion.div>
 
-                    {/* Today's Agenda */}
+                    {/* Agenda */}
                     <motion.div 
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                         className="lg:col-span-7 space-y-6"
                     >
-                        <div className="flex items-center gap-3 mb-6 bg-white/50 p-4 rounded-2xl backdrop-blur-sm border border-white">
-                            <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center shrink-0">
-                                <Clock className="w-6 h-6 text-sage-700" />
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-white/50 p-4 rounded-3xl backdrop-blur-sm border border-white shadow-sm">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center shrink-0">
+                                    <Clock className="w-6 h-6 text-sage-700" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-gray-900 tracking-tight">Agenda for Oct {selectedDate}</h2>
+                                    <div className="text-sm font-medium text-gray-500 mt-0.5">
+                                        {appointments.length} Items Total
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className="text-xl font-black text-gray-900 tracking-tight">Today's Appointments</h2>
-                                <p className="text-sage-700 text-sm font-bold">Oct 15th, 2026</p>
-                            </div>
-                            <div className="ml-auto bg-white px-4 py-2 rounded-xl shadow-sm text-sm font-bold text-gray-700 border border-gray-100">
-                                3 Scheduled
+
+                            <div className="flex gap-2">
+                                {['All', 'Upcoming', 'Completed'].map(status => (
+                                    <button 
+                                        key={status} 
+                                        onClick={() => setFilterStatus(status)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                            filterStatus === status 
+                                                ? 'bg-gray-900 text-white shadow-sm' 
+                                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                        }`}
+                                    >
+                                        {status}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 
-                        <div className="space-y-4">
-                            {todayAppointments.map((apt, idx) => (
-                                <motion.div
-                                    key={apt.id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, delay: 0.3 + (idx * 0.1) }}
-                                    className="bg-white rounded-3xl p-6 border border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 group hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-sage-200 transition-all"
-                                >
-                                    <div className="flex items-center gap-6 w-full sm:w-auto">
-                                        <div className="w-20 shrink-0 text-center bg-gray-50 py-3 rounded-2xl group-hover:bg-sage-50 transition-colors border border-gray-100">
-                                            <div className="text-xl font-black text-gray-900">{apt.time.split(' ')[0]}</div>
-                                            <div className="text-[10px] font-bold text-sage-600 uppercase tracking-widest">{apt.time.split(' ')[1]}</div>
-                                        </div>
-                                        
-                                        <div>
-                                            <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2 group-hover:text-sage-700 transition-colors">
-                                                {apt.farmer}
-                                            </h3>
-                                            <div className="flex items-center gap-4 text-sm text-gray-500 mt-2 font-medium">
-                                                <span className="flex items-center gap-1.5"><Leaf className="w-4 h-4 text-sage-500" /> {apt.crop}</span>
-                                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                                <span className="flex items-center gap-1.5"><Video className="w-4 h-4 text-blue-500" /> {apt.type}</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                        {/* Mark all completed shortcut */}
+                        {appointments.length > 0 && !hasCompletedAll && (
+                            <div className="flex justify-end">
+                                <button onClick={markAllCompleted} className="text-sm font-bold text-sage-600 hover:text-sage-800 transition-colors flex items-center gap-1.5 bg-sage-50 px-3 py-1.5 rounded-full">
+                                    <CheckCircle2 className="w-4 h-4" /> Mark Everything Completed
+                                </button>
+                            </div>
+                        )}
 
-                                    <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-4 mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-gray-100">
-                                        <div className={`text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap ${apt.status === 'Upcoming' ? 'bg-sage-100 text-sage-800' : 'bg-gray-100 text-gray-600'}`}>
-                                            {apt.status}
-                                        </div>
-                                        <button
-                                            onClick={() => setActiveVideoCall(apt)}
-                                            className="bg-gray-900 text-white hover:bg-sage-700 transition-colors p-3 rounded-2xl shadow-md hover:-translate-y-0.5 active:translate-y-0"
-                                        >
-                                            <Video className="w-5 h-5 flex-shrink-0" />
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            ))}
+                        <div className="space-y-4">
+                            <AnimatePresence>
+                                {filteredAppointments.length === 0 ? (
+                                    <motion.div 
+                                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                        className="bg-white rounded-3xl p-12 text-center border border-gray-100 border-dashed"
+                                    >
+                                        <CalendarIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                        <h3 className="text-gray-900 font-bold text-lg">No {filterStatus !== 'All' ? filterStatus.toLowerCase() : ''} schedules found.</h3>
+                                        <p className="text-gray-500 mt-1">Select a different date or set up availability.</p>
+                                    </motion.div>
+                                ) : (
+                                    filteredAppointments.map((apt, idx) => {
+                                        const isCompleted = apt.status === 'Completed';
+
+                                        return (
+                                            <motion.div
+                                                key={apt.id}
+                                                layout
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.95 }}
+                                                transition={{ duration: 0.3, delay: idx * 0.05 }}
+                                                className={`rounded-3xl p-6 border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 group hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] relative overflow-hidden ${
+                                                    isCompleted 
+                                                        ? 'bg-gray-50 border-gray-200 opacity-75' 
+                                                        : 'bg-white border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:border-sage-200'
+                                                }`}
+                                            >
+                                                {/* Left Green Bar for upcoming */}
+                                                {!isCompleted && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-sage-400"></div>}
+                                                {/* Left Gray bar for completed */}
+                                                {isCompleted && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gray-300"></div>}
+
+                                                <div className="flex items-center gap-6 w-full sm:w-auto pl-2">
+                                                    <div className={`w-20 shrink-0 text-center py-3 rounded-2xl transition-colors border ${isCompleted ? 'bg-gray-100 border-gray-200 text-gray-500' : 'bg-gray-50 border-gray-100 text-gray-900 group-hover:bg-sage-50'}`}>
+                                                        <div className={`text-xl font-black ${isCompleted ? 'line-through' : ''}`}>{apt.time.split(' ')[0]}</div>
+                                                        <div className={`text-[10px] font-bold uppercase tracking-widest ${isCompleted ? 'text-gray-400' : 'text-sage-600'}`}>{apt.time.split(' ')[1]}</div>
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <h3 className={`font-bold text-lg flex items-center gap-2 transition-colors ${isCompleted ? 'text-gray-500' : 'text-gray-900 group-hover:text-sage-700'}`}>
+                                                            {apt.farmer}
+                                                            {apt.farmer === 'Open Booking Slot' && <span className="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest ml-2">Available</span>}
+                                                        </h3>
+                                                        <div className="flex items-center gap-4 text-sm text-gray-500 mt-2 font-medium">
+                                                            <span className="flex items-center gap-1.5">
+                                                                <Leaf className={`w-4 h-4 ${isCompleted ? 'text-gray-400' : 'text-sage-500'}`} /> {apt.crop}
+                                                            </span>
+                                                            <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                                            <span className="flex items-center gap-1.5">
+                                                                {apt.type === 'Video Call' ? <Video className="w-4 h-4 text-blue-500" /> : <User className="w-4 h-4 text-amber-500" />} {apt.type}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex w-full sm:w-auto flex-col sm:items-end gap-3 mt-2 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-gray-100">
+                                                    
+                                                    <button 
+                                                        onClick={() => toggleAppointmentStatus(apt.id)}
+                                                        className={`text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap border transition-colors flex items-center gap-1.5 ${
+                                                            isCompleted 
+                                                                ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200' 
+                                                                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                                        }`}
+                                                    >
+                                                        {isCompleted && <CheckCircle2 className="w-3.5 h-3.5" />}
+                                                        {isCompleted ? 'Completed' : 'Mark Complete'}
+                                                    </button>
+
+                                                    {!isCompleted && apt.type === 'Video Call' && apt.farmer !== 'Open Booking Slot' && (
+                                                        <button
+                                                            onClick={() => setActiveVideoCall(apt)}
+                                                            className="bg-gray-900 text-white hover:bg-sage-700 transition-colors px-4 py-2 text-sm font-bold rounded-xl shadow-md flex items-center justify-center gap-2"
+                                                        >
+                                                            <Video className="w-4 h-4" /> Start Call
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })
+                                )}
+                            </AnimatePresence>
                         </div>
                     </motion.div>
 
@@ -219,11 +386,10 @@ export default function Schedule() {
                             animate={{ y: 0, opacity: 1, scale: 1 }}
                             exit={{ y: 40, opacity: 0, scale: 0.95 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden w-full max-w-lg relative border border-white/20"
+                            className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden w-full max-w-lg relative border border-white/20 flex flex-col max-h-[90vh]"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <div className="bg-gradient-to-br from-sage-800 to-sage-700 p-8 relative overflow-hidden">
-                                {/* Decorative circles */}
+                            <div className="bg-gradient-to-br from-sage-800 to-sage-700 p-8 relative overflow-hidden shrink-0">
                                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-xl"></div>
                                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full blur-xl"></div>
                                 
@@ -242,45 +408,54 @@ export default function Schedule() {
                                         Set Availability
                                     </h2>
                                     <p className="text-sage-200 text-sm font-medium">
-                                        Configure your active slots for October {selectedDate}, 2026.
+                                        Configure slots for October {selectedDate}, 2026.
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="p-8 bg-gray-50/50">
+                            <div className="p-8 bg-gray-50/50 overflow-y-auto">
                                 <div className="mb-6">
                                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Available Time Slots</label>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                        {['09:00 AM', '10:00 AM', '11:00 AM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM'].map((time) => (
-                                            <label key={time} className="cursor-pointer group relative">
-                                                <input type="checkbox" className="peer sr-only" defaultChecked={time === '10:00 AM' || time === '02:00 PM'} />
-                                                <div className="p-3 text-center border border-gray-200 rounded-xl bg-white text-gray-600 font-bold text-sm transition-all peer-checked:bg-sage-100 peer-checked:border-sage-500 peer-checked:text-sage-800 hover:border-sage-300 shadow-sm peer-focus:ring-2 peer-focus:ring-sage-500 peer-focus:ring-offset-1">
+                                        {timeSlotsOptions.map((time) => {
+                                            const isSelected = selectedTimes.includes(time);
+                                            return (
+                                                <button 
+                                                    key={time} 
+                                                    onClick={() => toggleTimeSlot(time)}
+                                                    className={`p-3 text-center border rounded-xl font-bold text-sm transition-all shadow-sm ${
+                                                        isSelected 
+                                                            ? 'bg-sage-100 border-sage-500 text-sage-800 ring-2 ring-sage-500 ring-offset-1' 
+                                                            : 'bg-white border-gray-200 text-gray-600 hover:border-sage-300'
+                                                    }`}
+                                                >
                                                     {time}
-                                                </div>
-                                            </label>
-                                        ))}
+                                                </button>
+                                            )
+                                        })}
                                     </div>
+                                    <p className="text-xs text-gray-500 mt-2">* These slots will appear instantly in your schedule.</p>
                                 </div>
                                 
                                 <div className="mb-8">
                                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Consultation Type</label>
                                     <div className="flex gap-4">
                                         <label className="flex-1 cursor-pointer">
-                                            <input type="radio" name="type" className="peer sr-only" defaultChecked />
-                                            <div className="flex items-center justify-center gap-2 p-4 border border-gray-200 rounded-xl bg-white text-gray-600 font-bold text-sm transition-all peer-checked:bg-earth-100 peer-checked:border-earth-500 peer-checked:text-earth-800 hover:border-earth-300 shadow-sm">
+                                            <input type="radio" name="type" className="peer sr-only" checked={selectedType === 'Video Call'} onChange={() => setSelectedType('Video Call')} />
+                                            <div className="flex items-center justify-center gap-2 p-4 border rounded-xl bg-white text-gray-600 font-bold text-sm transition-all peer-checked:bg-blue-50 peer-checked:border-blue-500 peer-checked:text-blue-800 hover:border-blue-300 shadow-sm">
                                                 <VideoIcon className="w-4 h-4" /> Video Call
                                             </div>
                                         </label>
                                         <label className="flex-1 cursor-pointer">
-                                            <input type="radio" name="type" className="peer sr-only" />
-                                            <div className="flex items-center justify-center gap-2 p-4 border border-gray-200 rounded-xl bg-white text-gray-600 font-bold text-sm transition-all peer-checked:bg-earth-100 peer-checked:border-earth-500 peer-checked:text-earth-800 hover:border-earth-300 shadow-sm">
+                                            <input type="radio" name="type" className="peer sr-only" checked={selectedType === 'In Person'} onChange={() => setSelectedType('In Person')} />
+                                            <div className="flex items-center justify-center gap-2 p-4 border rounded-xl bg-white text-gray-600 font-bold text-sm transition-all peer-checked:bg-amber-50 peer-checked:border-amber-500 peer-checked:text-amber-800 hover:border-amber-300 shadow-sm">
                                                 <User className="w-4 h-4" /> In Person
                                             </div>
                                         </label>
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4">
+                                <div className="flex gap-4 pt-2 border-t border-gray-200">
                                     <button 
                                         onClick={() => setIsAvailabilityOverlayOpen(false)}
                                         className="flex-1 py-4 px-4 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 font-bold rounded-xl transition-colors"
@@ -289,9 +464,10 @@ export default function Schedule() {
                                     </button>
                                     <button 
                                         onClick={handleSaveAvailability}
-                                        className="flex-1 py-4 px-4 bg-sage-700 hover:bg-sage-900 text-white font-bold rounded-xl shadow-md shadow-sage-700/20 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
+                                        disabled={selectedTimes.length === 0}
+                                        className="flex-1 py-4 px-4 bg-sage-700 hover:bg-sage-900 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
                                     >
-                                        <Save className="w-5 h-5" /> Save Slots
+                                        <Save className="w-5 h-5" /> Post Slots
                                     </button>
                                 </div>
                             </div>
