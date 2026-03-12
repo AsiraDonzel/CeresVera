@@ -1,13 +1,21 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Globe, Beaker, Bug } from 'lucide-react';
+import { X, Globe, Beaker, Bug, MapPin, Calendar, Leaf } from 'lucide-react';
 import { cropsData } from '../data/crops';
 
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
+// Flatten the cropsData into a single A-Z list
+const allCrops = alphabet.reduce((acc, letter) => {
+    if (cropsData[letter]) {
+        acc.push({ letter, crops: cropsData[letter] });
+    }
+    return acc;
+}, []);
+
 export default function Crops() {
-    const [activeLetter, setActiveLetter] = useState('A');
     const [selectedCrop, setSelectedCrop] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -19,66 +27,103 @@ export default function Crops() {
         return () => document.body.style.overflow = 'unset';
     }, [selectedCrop]);
 
-    return (
-        <div className="bg-[#FAF9F6] min-h-screen pt-12 pb-24 px-4 sm:px-6 lg:px-8 font-sans">
-            <div className="max-w-7xl mx-auto">
-                <h1 className="text-4xl font-bold text-[#0F172A] mb-4">Crops</h1>
+    // Filter crops based on search query
+    const filteredGroups = allCrops.map(group => ({
+        letter: group.letter,
+        crops: group.crops.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                     c.botanicalName.toLowerCase().includes(searchQuery.toLowerCase()))
+    })).filter(group => group.crops.length > 0);
 
-                {/* Alphabet Filter */}
-                <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-sm mb-12 border-b border-gray-200 pb-4">
-                    <span className="text-gray-500 mr-2">Plants Start with:</span>
-                    {alphabet.map((letter) => {
-                        const hasCrops = cropsData[letter] && cropsData[letter].length > 0;
-                        return (
-                            <button
-                                key={letter}
-                                onClick={() => hasCrops && setActiveLetter(letter)}
-                                disabled={!hasCrops}
-                                className={`font-semibold transition-colors ${activeLetter === letter
-                                    ? 'text-amber-500 scale-110'
-                                    : hasCrops
-                                        ? 'text-[#0F172A] hover:text-amber-500'
-                                        : 'text-gray-300 cursor-not-allowed'
-                                    }`}
-                            >
-                                {letter}
-                            </button>
-                        );
-                    })}
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-earth-50 to-white">
+            {/* Hero Banner */}
+            <div className="bg-gradient-to-r from-sage-800 to-sage-700 text-white py-16 px-4">
+                <div className="max-w-5xl mx-auto">
+                    <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }}>
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                                <Leaf className="w-5 h-5 text-sage-200" />
+                            </div>
+                            <span className="text-sage-300 font-semibold text-sm uppercase tracking-wider">Crop Index</span>
+                        </div>
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3">
+                            Agricultural <span className="text-sage-300">Crops A-Z</span>
+                        </h1>
+                        <p className="text-sage-200 text-lg max-w-2xl">
+                            A comprehensive botanical database featuring planting seasons, optimal Nigerian cultivation states, and common pathogens.
+                        </p>
+                    </motion.div>
+                </div>
+            </div>
+
+            <div className="max-w-5xl mx-auto px-4 py-10">
+                {/* Search Bar */}
+                <div className="mb-10 w-full max-w-md">
+                    <input
+                        type="text"
+                        placeholder="Search for a crop by name..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-sage-400 shadow-sm text-sm transition-shadow"
+                    />
                 </div>
 
-                {/* Main Content Area */}
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeLetter}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        <h2 className="text-6xl font-black text-amber-500 mb-10">{activeLetter}</h2>
-
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-                            {cropsData[activeLetter]?.map((crop, idx) => (
-                                <div key={idx} className="group cursor-pointer" onClick={() => setSelectedCrop(crop)}>
-                                    <div className="aspect-[4/3] bg-gray-200 overflow-hidden mb-4 relative rounded-md shadow-sm">
-                                        <img
-                                            src={crop.img}
-                                            alt={crop.name}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* Main A-Z List Area */}
+                {filteredGroups.length === 0 ? (
+                    <div className="text-center py-20">
+                        <Leaf className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">No crops found</h3>
+                        <p className="text-gray-500">Could not find any crops matching your search.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-12">
+                        {filteredGroups.map((group) => (
+                            <div key={group.letter} className="flex gap-6 md:gap-12 relative animate-fade-in">
+                                {/* Letter Column */}
+                                <div className="w-12 shrink-0 md:w-24">
+                                    <div className="sticky top-24">
+                                        <span className="text-5xl md:text-7xl font-bold text-sage-100/60 leading-none block -mt-2 md:-mt-4">
+                                            {group.letter}
+                                        </span>
                                     </div>
-                                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-amber-600 transition-colors">{crop.name}</h3>
-                                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
-                                        See more info on <span className="underline group-hover:text-amber-600">{crop.name}</span>
-                                    </p>
                                 </div>
-                            ))}
-                        </div>
-                    </motion.div>
-                </AnimatePresence>
 
+                                {/* Crops Grid for this Letter */}
+                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {group.crops.map((crop, idx) => (
+                                        <motion.div
+                                            key={idx}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => setSelectedCrop(crop)}
+                                            className="bg-white border border-gray-100 rounded-2xl p-5 cursor-pointer shadow-sm hover:shadow-md hover:border-sage-200 transition-all group"
+                                        >
+                                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-sage-700 transition-colors tracking-tight leading-tight mb-1">
+                                                {crop.name}
+                                            </h3>
+                                            <p className="text-sm text-gray-400 font-mono italic mb-4">
+                                                {crop.botanicalName}
+                                            </p>
+                                            
+                                            <div className="flex flex-wrap gap-2">
+                                                {crop.nigeriaStates && crop.nigeriaStates[0] && (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-earth-50 text-earth-700 text-[10px] font-bold uppercase rounded-md">
+                                                        <MapPin className="w-3 h-3" /> {crop.nigeriaStates[0]}
+                                                    </span>
+                                                )}
+                                                {crop.seasons && crop.seasons[0] && (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-sage-50 text-sage-700 text-[10px] font-bold uppercase rounded-md truncate max-w-[120px]">
+                                                        <Calendar className="w-3 h-3 shrink-0" /> {crop.seasons[0]}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Glassmorphic Animated Details Overlay */}
@@ -88,59 +133,97 @@ export default function Crops() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm overflow-y-auto"
                         onClick={() => setSelectedCrop(null)}
                     >
                         <motion.div
-                            initial={{ y: 50, opacity: 0, scale: 0.95 }}
+                            initial={{ y: 20, opacity: 0, scale: 0.95 }}
                             animate={{ y: 0, opacity: 1, scale: 1 }}
                             exit={{ y: 20, opacity: 0, scale: 0.95 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="bg-white rounded-[2rem] shadow-2xl overflow-hidden w-full max-w-2xl flex flex-col max-h-[90vh]"
-                            onClick={(e) => e.stopPropagation()} // Prevent close on modal click
+                            className="bg-white rounded-[2rem] shadow-2xl overflow-hidden w-full max-w-2xl my-auto relative"
+                            onClick={(e) => e.stopPropagation()}
                         >
-                            {/* Modal Header/Image Area */}
-                            <div className="relative h-64 sm:h-80 w-full shrink-0">
-                                <img src={selectedCrop.img} alt={selectedCrop.name} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
+                            {/* Modal Header */}
+                            <div className="bg-gradient-to-br from-sage-700 to-earth-800 p-8 pt-10 relative">
                                 <button
                                     onClick={() => setSelectedCrop(null)}
-                                    className="absolute top-4 right-4 bg-black/30 hover:bg-black/50 backdrop-blur-md text-white p-2 rounded-full transition-colors"
+                                    className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors backdrop-blur-md"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
+                                
+                                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-4">
+                                    <Leaf className="w-6 h-6 text-sage-200" />
+                                </div>
 
-                                <div className="absolute bottom-0 left-0 p-8">
-                                    <h2 className="text-4xl font-black text-white tracking-tight mb-2 drop-shadow-md">
-                                        {selectedCrop.name}
-                                    </h2>
-                                    <div className="flex items-center text-amber-300 font-mono text-sm tracking-widest drop-shadow-sm">
-                                        <Beaker className="w-4 h-4 mr-2 opacity-80" />
-                                        {selectedCrop.botanicalName || "Spp."}
-                                    </div>
+                                <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight mb-2">
+                                    {selectedCrop.name}
+                                </h2>
+                                <div className="flex items-center text-sage-200 font-mono text-sm tracking-widest">
+                                    <Beaker className="w-4 h-4 mr-2" />
+                                    {selectedCrop.botanicalName || "Spp."}
                                 </div>
                             </div>
 
                             {/* Modal Content Details */}
-                            <div className="p-8 overflow-y-auto custom-scrollbar bg-gray-50/50 flex-grow">
+                            <div className="p-8 bg-gray-50 flex-grow">
                                 <div className="grid sm:grid-cols-2 gap-8">
 
-                                    {/* Primary Growing Regions */}
+                                    {/* Best Seasons to Plant */}
                                     <div className="space-y-4">
-                                        <div className="flex items-center text-gray-900 font-bold text-lg mb-2">
-                                            <Globe className="w-5 h-5 mr-2 text-sage-600" />
-                                            Primary Regions
+                                        <div className="flex items-center text-sage-800 font-bold text-lg mb-2">
+                                            <Calendar className="w-5 h-5 mr-2 text-sage-600" />
+                                            Optimal Seasons
                                         </div>
-                                        {selectedCrop.regions && selectedCrop.regions.length > 0 ? (
-                                            <ul className="space-y-3">
-                                                {selectedCrop.regions.map((region, i) => (
-                                                    <li key={i} className="flex items-center text-gray-600 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
+                                        {selectedCrop.seasons && selectedCrop.seasons.length > 0 ? (
+                                            <ul className="space-y-2">
+                                                {selectedCrop.seasons.map((season, i) => (
+                                                    <li key={i} className="flex items-center text-gray-700 bg-white px-4 py-3 rounded-xl shadow-sm border border-sage-100/50 text-sm font-medium">
                                                         <div className="w-1.5 h-1.5 rounded-full bg-sage-400 mr-3 shrink-0" />
-                                                        {region}
+                                                        {season}
                                                     </li>
                                                 ))}
                                             </ul>
+                                        ) : (
+                                            <p className="text-gray-500 italic text-sm">Season data unavailable.</p>
+                                        )}
+                                    </div>
+
+                                    {/* Best Places in Nigeria */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center text-earth-800 font-bold text-lg mb-2">
+                                            <MapPin className="w-5 h-5 mr-2 text-earth-600" />
+                                            Best Nigerian States
+                                        </div>
+                                        {selectedCrop.nigeriaStates && selectedCrop.nigeriaStates.length > 0 ? (
+                                            <ul className="space-y-2">
+                                                {selectedCrop.nigeriaStates.map((state, i) => (
+                                                    <li key={i} className="flex items-center text-gray-700 bg-white px-4 py-3 rounded-xl shadow-sm border border-earth-100/50 text-sm font-medium">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-earth-400 mr-3 shrink-0" />
+                                                        {state}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="text-gray-500 italic text-sm">State data unavailable.</p>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Global Regions */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center text-sky-800 font-bold text-lg mb-2">
+                                            <Globe className="w-5 h-5 mr-2 text-sky-600" />
+                                            Global Regions
+                                        </div>
+                                        {selectedCrop.regions && selectedCrop.regions.length > 0 ? (
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedCrop.regions.map((region, i) => (
+                                                    <span key={i} className="px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg shadow-sm border border-sky-100 text-xs font-bold uppercase">
+                                                        {region}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         ) : (
                                             <p className="text-gray-500 italic text-sm">Region data unavailable.</p>
                                         )}
@@ -148,40 +231,29 @@ export default function Crops() {
 
                                     {/* Common Pathogens & Diseases */}
                                     <div className="space-y-4">
-                                        <div className="flex items-center text-gray-900 font-bold text-lg mb-2">
-                                            <Bug className="w-5 h-5 mr-2 text-amber-600" />
+                                        <div className="flex items-center text-red-800 font-bold text-lg mb-2">
+                                            <Bug className="w-5 h-5 mr-2 text-red-500" />
                                             Target Pathogens
                                         </div>
                                         {selectedCrop.commonDiseases && selectedCrop.commonDiseases.length > 0 ? (
-                                            <ul className="space-y-3">
+                                            <div className="flex flex-wrap gap-2">
                                                 {selectedCrop.commonDiseases.map((disease, i) => (
-                                                    <li key={i} className="flex items-center text-gray-600 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-3 shrink-0" />
+                                                    <span key={i} className="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg shadow-sm border border-red-100 text-xs font-bold uppercase">
                                                         {disease}
-                                                    </li>
+                                                    </span>
                                                 ))}
-                                            </ul>
+                                            </div>
                                         ) : (
-                                            <p className="text-gray-500 italic text-sm">Disease tracking pending.</p>
+                                            <p className="text-gray-500 italic text-sm border border-dashed border-gray-300 rounded-xl p-3 text-center">Disease tracking pending.</p>
                                         )}
                                     </div>
 
-                                </div>
-
-                                <div className="mt-10 pt-6 border-t border-gray-200">
-                                    <button
-                                        onClick={() => window.location.href = '/scan'}
-                                        className="w-full bg-[#0F172A] hover:bg-amber-600 text-white font-bold py-4 px-6 rounded-xl transition-colors shadow-md flex items-center justify-center"
-                                    >
-                                        Diagnose {selectedCrop.name}
-                                    </button>
                                 </div>
                             </div>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
-
         </div>
     );
 }
