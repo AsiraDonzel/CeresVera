@@ -56,8 +56,11 @@ export default function Layout({ children }) {
                                         </>
                                     ) : (
                                         <>
-                                            <Link to="/expert-dashboard" className="text-amber-700 hover:text-amber-900 font-bold transition-colors">Expert Portal</Link>
+                                            <Link to="/expert-dashboard" className="text-sage-700 hover:text-sage-900 font-bold transition-colors">Expert Portal</Link>
                                             <div className="w-px h-6 bg-gray-200" />
+                                            <Link to="/hotspots" className="flex items-center gap-1.5 text-gray-600 hover:text-sky-600 font-medium transition-colors">
+                                                <Cloud className="w-4 h-4" /> Weather
+                                            </Link>
                                             <Link to="/schedule" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">My Schedule</Link>
                                             <Link to="/payouts" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Payouts</Link>
                                             <Link to="/settings" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Settings</Link>
@@ -75,7 +78,7 @@ export default function Layout({ children }) {
                                             Scan Crop
                                         </Link>
                                     ) : (
-                                        <Link to="/expert-dashboard" className="hidden sm:inline-flex bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 rounded-full font-medium transition-all shadow-md shadow-amber-600/20 active:scale-95">
+                                        <Link to="/expert-dashboard" className="hidden sm:inline-flex bg-sage-700 hover:bg-sage-900 text-white px-5 py-2 rounded-full font-medium transition-all shadow-md shadow-sage-700/20 active:scale-95">
                                             Dashboard
                                         </Link>
                                     )}
