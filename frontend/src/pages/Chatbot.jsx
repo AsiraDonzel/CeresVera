@@ -100,7 +100,7 @@ export default function Chatbot() {
             }
         } catch (error) {
             console.error("Deepseek Error:", error);
-            setDeepseekMessages([...newMessages, { role: 'assistant', content: "Sorry, I encountered an error connecting to the Deepseek core. Please try again later." }]);
+            setDeepseekMessages([...newMessages, { role: 'assistant', content: "Sorry, I encountered an error connecting to Cera AI. Please try again later." }]);
         } finally {
             setIsDeepseekLoading(false);
         }
@@ -132,8 +132,8 @@ export default function Chatbot() {
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
-                {/* Deepseek Card */}
+            <div className="grid grid-cols-1 gap-8 w-full max-w-2xl">
+                {/* Cera AI Card */}
                 <motion.button
                     whileHover={{ scale: 1.02, y: -5 }}
                     whileTap={{ scale: 0.98 }}
@@ -144,32 +144,13 @@ export default function Chatbot() {
                     <div className="bg-sage-600 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-sage-600/20 group-hover:bg-sage-700 transition-colors">
                         <Brain className="w-7 h-7 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Deepseek Assistant</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-1">Cera AI</h3>
+                    <p className="text-xs font-medium text-sage-600 mb-3">Powered by DeepSeek</p>
                     <p className="text-gray-600 leading-relaxed mb-6">
-                        Chat with our state-of-the-art Deepseek AI for general farming advice, operational analysis, and intelligent multi-turn conversation.
+                        Chat with Cera AI for general farming advice, crop disease guidance, operational analysis, and intelligent multi-turn conversation.
                     </p>
                     <span className="inline-flex items-center text-sm font-bold text-sage-600 group-hover:text-sage-800 transition-colors">
-                        Launch Assistant <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
-                    </span>
-                </motion.button>
-
-                {/* Text Adviser Card */}
-                <motion.button
-                    whileHover={{ scale: 1.02, y: -5 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setActiveMode('adviser')}
-                    className="group relative bg-white rounded-3xl p-8 text-left border border-gray-100 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-earth-200"
-                >
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-earth-100/50 to-transparent rounded-bl-full -z-10 transition-transform duration-500 group-hover:scale-110" />
-                    <div className="bg-earth-600 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-earth-600/20 group-hover:bg-earth-700 transition-colors">
-                        <Sprout className="w-7 h-7 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Agriculture Adviser</h3>
-                    <p className="text-gray-600 leading-relaxed mb-6">
-                        Chat directly with an expert agronomy LLM. Ask questions about sustainable farming, crop rotation, and soil health.
-                    </p>
-                    <span className="inline-flex items-center text-sm font-bold text-earth-600 group-hover:text-earth-800 transition-colors">
-                        Launch Adviser <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                        Launch Cera AI <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
                     </span>
                 </motion.button>
             </div>
@@ -191,8 +172,8 @@ export default function Chatbot() {
                         <Brain className="w-6 h-6 text-sage-600" />
                     </div>
                     <div>
-                        <h2 className="font-bold text-gray-900">Deepseek Assistant</h2>
-                        <p className="text-xs text-gray-500">Deepseek-chat Core</p>
+                        <h2 className="font-bold text-gray-900">Cera AI</h2>
+                        <p className="text-xs text-gray-500">Powered by DeepSeek</p>
                     </div>
                 </div>
                 <button
@@ -207,8 +188,8 @@ export default function Chatbot() {
                 {deepseekMessages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center space-y-6 max-w-2xl mx-auto">
                         <Brain className="w-12 h-12 text-sage-300 mb-2" />
-                        <h3 className="text-xl font-bold text-gray-700">Deepseek Intelligence</h3>
-                        <p className="text-gray-500 text-sm pb-4">Ask anything! I am configured as a highly intelligent assistant ready to help optimize your farm processes.</p>
+                        <h3 className="text-xl font-bold text-gray-700">Cera AI</h3>
+                        <p className="text-gray-500 text-sm pb-4">Ask anything! I am Cera, your intelligent AI farming assistant powered by DeepSeek, ready to help optimize your farm processes.</p>
                     </div>
                 ) : (
                     deepseekMessages.map((msg, idx) => (
@@ -257,7 +238,7 @@ export default function Chatbot() {
                         type="text"
                         value={deepseekInputValue}
                         onChange={(e) => setDeepseekInputValue(e.target.value)}
-                        placeholder="Message Deepseek..."
+                        placeholder="Message Cera AI..."
                         disabled={isDeepseekLoading}
                         className="flex-1 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-transparent transition-all disabled:opacity-50"
                     />
