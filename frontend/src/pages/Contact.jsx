@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Sphere, MeshDistortMaterial, Environment, Float, Sparkles } from '@react-three/drei';
+import { OrbitControls, Environment, Float, Sparkles, Loader } from '@react-three/drei';
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
 
 // 3D Spinning Flower Pot Component
@@ -98,15 +98,17 @@ export default function Contact() {
         <div className="relative min-h-[90vh] bg-[#FAF9F6] overflow-hidden flex items-center font-sans">
 
             {/* Absolute 3D Canvas Background (Right Aligned on Desktop) */}
-            <div className="absolute inset-0 lg:left-1/3 z-0">
-                <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
-                    <ambientLight intensity={0.5} />
-                    <directionalLight position={[10, 10, 5]} intensity={1.5} />
-                    <directionalLight position={[-10, -10, -5]} color="#d97706" intensity={1} />
-                    <FlowerPot />
-                    <Environment preset="city" />
-                    <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
-                </Canvas>
+            <div className="absolute inset-0 lg:left-1/3 z-0 min-h-[500px]">
+                <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-gray-400 font-bold uppercase tracking-widest text-xs">Loading Truth Engine...</div>}>
+                    <Canvas camera={{ position: [0, 0, 8], fov: 45 }} dpr={[1, 2]}>
+                        <ambientLight intensity={0.5} />
+                        <directionalLight position={[10, 10, 5]} intensity={1.5} />
+                        <directionalLight position={[-10, -10, -5]} color="#d97706" intensity={1} />
+                        <FlowerPot />
+                        <Environment preset="city" />
+                        <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
+                    </Canvas>
+                </Suspense>
 
                 {/* Gradient overlay to blend canvas into background color */}
                 <div className="absolute inset-0 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6]/80 lg:via-transparent to-transparent pointer-events-none" />

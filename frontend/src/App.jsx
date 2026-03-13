@@ -13,6 +13,8 @@ import Auth from './pages/Auth';
 import ExpertDashboard from './pages/ExpertDashboard';
 import Schedule from './pages/Schedule';
 import Payouts from './pages/Payouts';
+import ExpertCircles from './pages/ExpertCircles';
+import PredictiveAnalytics from './pages/PredictiveAnalytics';
 import Settings from './pages/Settings';
 import About from './pages/About';
 import Crops from './pages/Crops';
@@ -56,6 +58,8 @@ function App() {
             <Route path="/hotspots" element={<WeatherDashboard />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/payouts" element={<Payouts />} />
+            <Route path="/expert-circles" element={<ExpertCircles />} />
+            <Route path="/predictive-analytics" element={<PredictiveAnalytics />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

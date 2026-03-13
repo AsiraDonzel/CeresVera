@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Bell, Shield, Wallet, Book, LogOut, ChevronRight, CheckCircle2, X, MapPin, Camera, CreditCard, Plus, Smartphone, Key, UploadCloud, Loader2, Edit3, Briefcase, Mail, Phone } from 'lucide-react';
+import { User, Bell, Shield, Wallet, Book, LogOut, ChevronRight, CheckCircle2, X, MapPin, Camera, CreditCard, Plus, Smartphone, Key, UploadCloud, Loader2, Edit3, Briefcase, Mail, Phone, Cloud, History, Lock, Search, Linkedin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { cropsData } from '../data/crops';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function Settings() {
     const userRole = localStorage.getItem('user_role') || 'farmer';
@@ -16,17 +20,31 @@ export default function Settings() {
     const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
     const [isNotificationsModalOpen, setIsNotificationsModalOpen] = useState(false);
     const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+    const [isFarmProfileModalOpen, setIsFarmProfileModalOpen] = useState(false);
 
-    // Profile State (Simulated)
-    const [userName, setUserName] = useState(userRole === 'agronomist' ? 'Dr. Okafor' : 'Kemi Adebayo');
-    const [userEmail, setUserEmail] = useState(userRole === 'agronomist' ? 'okafor.agro@ceresvera.com' : 'kemi@example.com');
-    const [userPhone, setUserPhone] = useState('+234 801 234 5678');
+    // Profile State (Synced from Auth)
+    const [userName, setUserName] = useState(localStorage.getItem('user_name') || (userRole === 'agronomist' ? 'Dr. Okafor' : 'Kemi Adebayo'));
+    const [userEmail, setUserEmail] = useState(localStorage.getItem('user_email') || (userRole === 'agronomist' ? 'okafor.agro@ceresvera.com' : 'kemi@example.com'));
+    const [userPhone, setUserPhone] = useState(localStorage.getItem('user_phone') || '+234 801 234 5678');
     const [agronomistBio, setAgronomistBio] = useState(localStorage.getItem('agronomistBio') || 'Expert in tropical plant pathology with 10+ years of experience in West Africa.');
 
     // Farm Profile State
-    const [farmLocation, setFarmLocation] = useState(localStorage.getItem('farm_location') || 'Ogun State, Nigeria');
+    const [farmName, setFarmName] = useState(localStorage.getItem('farm_name') || '');
+    const [farmAddress, setFarmAddress] = useState(localStorage.getItem('address_line') || '');
+    const [farmState, setFarmState] = useState(localStorage.getItem('state') || localStorage.getItem('farm_location') || 'Ogun State');
+    const [farmCountry, setFarmCountry] = useState(localStorage.getItem('country') || 'Nigeria');
     const [primaryCrop, setPrimaryCrop] = useState(localStorage.getItem('primary_crop') || 'Cassava');
+    const [customCrop, setCustomCrop] = useState(localStorage.getItem('custom_crop') || '');
     const [farmSize, setFarmSize] = useState(localStorage.getItem('farm_size') || '1 - 5 Acres');
+
+    // Expert Specific
+    const [linkedinUrl, setLinkedinUrl] = useState(localStorage.getItem('linkedin_url') || '');
+    const [certificates, setCertificates] = useState(localStorage.getItem('certificates') || '');
+    const [experienceYears, setExperienceYears] = useState(localStorage.getItem('experience_years') || '5');
+
+    // Flatten cropsData for easier searching
+    const allCrops = Object.values(cropsData).flat().sort((a, b) => a.name.localeCompare(b.name));
+    const [cropSearch, setCropSearch] = useState('');
 
     // Payment Methods State
     const [savedCards, setSavedCards] = useState([
@@ -55,6 +73,19 @@ export default function Settings() {
         setTimeout(() => setToastMessage(''), 2500);
     };
 
+    const updateProfileOnBackend = async (data) => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await axios.post(`${API_URL}/api/auth/profile/`, data, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Profile update failed:", error);
+            throw error;
+        }
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
@@ -71,7 +102,7 @@ export default function Settings() {
 
     const farmerMenus = [
         { icon: <User className="w-5 h-5 text-blue-600" />, bg: 'bg-blue-50', title: 'Account Profile', desc: 'Avatar, Name, Email, and Phone Number', action: () => setIsProfileModalOpen(true) },
-        { icon: <MapPin className="w-5 h-5 text-emerald-600" />, bg: 'bg-emerald-50', title: 'Farm Profile', desc: 'Location, primary crops, and farm size', action: () => setIsAvatarModalOpen(true) },
+        { icon: <MapPin className="w-5 h-5 text-emerald-600" />, bg: 'bg-emerald-50', title: 'Farm Profile', desc: 'Location, primary crops, and farm size', action: () => setIsFarmProfileModalOpen(true) },
         { icon: <Wallet className="w-5 h-5 text-amber-600" />, bg: 'bg-amber-50', title: 'Payment Methods', desc: 'Manage connected cards for Escrow payouts', action: () => setIsPaymentModalOpen(true) },
         { icon: <Book className="w-5 h-5 text-rose-600" />, bg: 'bg-rose-50', title: 'Scan History & Sync', desc: 'Manage offline AI scans and cloud backup', action: () => setIsScanHistoryModalOpen(true) },
         { icon: <Shield className="w-5 h-5 text-purple-600" />, bg: 'bg-purple-50', title: 'Security', desc: 'Password and account recovery', action: () => setIsSecurityModalOpen(true) },
@@ -113,9 +144,12 @@ export default function Settings() {
                                     userRole === 'agronomist' ? 'O' : 'K'
                                 )}
                             </div>
-                            <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-lg border-2 border-white group-hover:bg-sage-600 transition-colors">
-                                <Edit3 className="w-3.5 h-3.5" />
-                            </div>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setIsProfileModalOpen(true); }}
+                                className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-lg border-2 border-white hover:bg-sage-600 transition-colors z-10"
+                            >
+                                <Edit3 className="w-4 h-4" />
+                            </button>
                         </div>
                         
                         <div className="text-center sm:text-left pt-2">
@@ -233,13 +267,22 @@ export default function Settings() {
                                                 <input type="email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} className="w-full border border-gray-200 rounded-xl pl-11 pr-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-sage-500 shadow-sm" />
                                             </div>
                                         </div>
-                                        <div className="md:col-span-2">
+                                        <div className="md:col-span-1">
                                             <label className="block text-xs font-bold text-gray-600 mb-1.5">Phone Number</label>
                                             <div className="relative">
                                                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                                                 <input type="text" value={userPhone} onChange={(e) => setUserPhone(e.target.value)} className="w-full border border-gray-200 rounded-xl pl-11 pr-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-sage-500 shadow-sm" />
                                             </div>
                                         </div>
+                                        {userRole === 'agronomist' && (
+                                            <div className="md:col-span-1">
+                                                <label className="block text-xs font-bold text-gray-600 mb-1.5">LinkedIn URL</label>
+                                                <div className="relative">
+                                                    <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                                    <input type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} className="w-full border border-gray-200 rounded-xl pl-11 pr-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-sage-500 shadow-sm" />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -250,12 +293,21 @@ export default function Settings() {
                                         <div>
                                             <label className="block text-xs font-bold text-gray-600 mb-1.5">Biography & Specialties</label>
                                             <textarea 
-                                                rows="4"
+                                                rows="3"
                                                 value={agronomistBio} 
                                                 onChange={(e) => setAgronomistBio(e.target.value)} 
                                                 className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-sage-500 shadow-sm resize-none leading-relaxed" 
                                             />
-                                            <p className="text-[10px] text-gray-500 mt-1 font-medium text-right">Visible to farmers booking consultations</p>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-600 mb-1.5">Experience (Years)</label>
+                                                <input type="number" value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-sage-500 shadow-sm" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-600 mb-1.5">Certificates (CSV)</label>
+                                                <input type="text" value={certificates} onChange={(e) => setCertificates(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-sage-500 shadow-sm" placeholder="MSc, PhD..." />
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -263,12 +315,41 @@ export default function Settings() {
                                 <div className="pt-4 flex justify-end gap-3 border-t border-gray-200">
                                     <button onClick={() => setIsProfileModalOpen(false)} className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</button>
                                     <button
-                                        onClick={() => {
-                                            if (userRole === 'agronomist') {
-                                                localStorage.setItem('agronomistBio', agronomistBio);
+                                        onClick={async () => {
+                                            const profileData = {
+                                                phone_number: userPhone,
+                                                bio: agronomistBio || '',
+                                                linkedin_url: linkedinUrl || '',
+                                                certificates: typeof certificates === 'string' ? certificates.split(',').map(s => s.trim()).filter(Boolean) : (certificates || []),
+                                                experience_years: parseInt(experienceYears) || 0
+                                            };
+                                            
+                                            // Format LinkedIn URL
+                                            if (profileData.linkedin_url && !profileData.linkedin_url.startsWith('http')) {
+                                                profileData.linkedin_url = `https://${profileData.linkedin_url}`;
                                             }
-                                            setIsProfileModalOpen(false);
-                                            showToast('Profile updated successfully.');
+
+                                            try {
+                                                await updateProfileOnBackend(profileData);
+                                                localStorage.setItem('user_name', userName);
+                                                localStorage.setItem('user_email', userEmail);
+                                                localStorage.setItem('user_phone', userPhone);
+                                                if (userRole === 'agronomist') {
+                                                    localStorage.setItem('agronomistBio', agronomistBio);
+                                                    localStorage.setItem('linkedin_url', linkedinUrl);
+                                                    localStorage.setItem('certificates', certificates);
+                                                    localStorage.setItem('experience_years', experienceYears);
+                                                }
+                                                setIsProfileModalOpen(false);
+                                                showToast('Profile updated and synced!');
+                                                window.dispatchEvent(new Event('profilePictureUpdated'));
+                                            } catch (err) {
+                                                showToast('Failed to sync with server, but saved locally.');
+                                                // Still save locally even if API fails for offline support
+                                                localStorage.setItem('user_name', userName);
+                                                localStorage.setItem('user_phone', userPhone);
+                                                setIsProfileModalOpen(false);
+                                            }
                                         }}
                                         className="px-8 py-3 rounded-xl font-bold text-white bg-sage-700 hover:bg-sage-900 shadow-md shadow-sage-700/20 transition-all hover:-translate-y-0.5 flex items-center gap-2"
                                     >
@@ -283,11 +364,11 @@ export default function Settings() {
 
             {/* Farm Profile Modal (Stacked Info) */}
             <AnimatePresence>
-                {isAvatarModalOpen && userRole === 'farmer' && (
+                {isFarmProfileModalOpen && userRole === 'farmer' && (
                     <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-gray-900/60 backdrop-blur-md overflow-y-auto"
-                        onClick={() => setIsAvatarModalOpen(false)}
+                        onClick={() => setIsFarmProfileModalOpen(false)}
                     >
                         <motion.div
                             variants={overlayVariants} initial="hidden" animate="visible" exit="exit"
@@ -295,78 +376,134 @@ export default function Settings() {
                             onClick={(e) => e.stopPropagation()}
                         >
                              <div className="p-8 border-b border-gray-100 flex-shrink-0 relative bg-gradient-to-br from-emerald-50 to-white">
-                                <button onClick={() => setIsAvatarModalOpen(false)} className="absolute top-8 right-8 w-10 h-10 bg-white hover:bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center transition-colors text-gray-500 shadow-sm">
+                                <button onClick={() => setIsFarmProfileModalOpen(false)} className="absolute top-8 right-8 w-10 h-10 bg-white hover:bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center transition-colors text-gray-500 shadow-sm">
                                     <X className="w-5 h-5" />
                                 </button>
                                 <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 mb-4 shadow-inner">
                                     <MapPin className="w-7 h-7" />
                                 </div>
                                 <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-2">Farm Location & Data</h2>
-                                <p className="text-gray-500 font-medium">Manage your primary agricultural data for better AI diagnostics and expert matching.</p>
+                                <p className="text-gray-500 font-medium">Manage your primary agricultural data for better AI diagnostics.</p>
                             </div>
 
                             <div className="p-8 bg-gray-50/50 space-y-6 overflow-y-auto">
                                 <div className="space-y-6">
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Farm Name or Cooperative Label</label>
-                                        <input type="text" defaultValue="Kemi Adebayo Farms" className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Location / State</label>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">Farm Name</label>
+                                        <input
+                                            type="text"
+                                            value={farmName}
+                                            onChange={(e) => setFarmName(e.target.value)}
+                                            placeholder="Emerald Fields"
+                                            className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm mb-4"
+                                        />
+                                        
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">Farm Address</label>
                                         <div className="relative">
                                             <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                             <input
                                                 type="text"
-                                                value={farmLocation}
-                                                onChange={(e) => setFarmLocation(e.target.value)}
+                                                value={farmAddress}
+                                                onChange={(e) => setFarmAddress(e.target.value)}
+                                                placeholder="12 Agriculture Way"
                                                 className="w-full border border-gray-200 rounded-xl pl-12 pr-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
                                             />
                                         </div>
                                     </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">State</label>
+                                            <input type="text" value={farmState} onChange={(e) => setFarmState(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Country</label>
+                                            <input type="text" value={farmCountry} onChange={(e) => setFarmCountry(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
+                                        </div>
+                                    </div>
+                                    
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                         <div>
                                             <label className="block text-sm font-bold text-gray-700 mb-2">Primary Crop Cultivated</label>
-                                            <select
-                                                value={primaryCrop}
-                                                onChange={(e) => setPrimaryCrop(e.target.value)}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 appearance-none shadow-sm cursor-pointer"
-                                            >
-                                                <option value="Cassava">Cassava</option>
-                                                <option value="Maize">Maize</option>
-                                                <option value="Tomato">Tomato</option>
-                                                <option value="Sorghum">Sorghum</option>
-                                                <option value="Cocoa">Cocoa</option>
-                                            </select>
+                                            <div className="relative">
+                                                <select
+                                                    value={primaryCrop}
+                                                    onChange={(e) => setPrimaryCrop(e.target.value)}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 appearance-none shadow-sm cursor-pointer"
+                                                >
+                                                    <option value="Other">Custom / Other</option>
+                                                    {allCrops.map(crop => (
+                                                        <option key={crop.name} value={crop.name}>{crop.name}</option>
+                                                    ))}
+                                                </select>
+                                                <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90 pointer-events-none" />
+                                            </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-bold text-gray-700 mb-2">Estimated Farm Size</label>
-                                            <select
-                                                value={farmSize}
-                                                onChange={(e) => setFarmSize(e.target.value)}
-                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 appearance-none shadow-sm cursor-pointer"
-                                            >
-                                                <option value="< 1 Acre">Under 1 Acre</option>
-                                                <option value="1 - 5 Acres">1 - 5 Acres</option>
-                                                <option value="5 - 20 Acres">5 - 20 Acres</option>
-                                                <option value="20+ Acres">20+ Acres (Commercial)</option>
-                                            </select>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Farm Size</label>
+                                            <div className="relative">
+                                                <select
+                                                    value={farmSize}
+                                                    onChange={(e) => setFarmSize(e.target.value)}
+                                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 appearance-none shadow-sm cursor-pointer"
+                                                >
+                                                    <option value="Under 1 Acre">Under 1 Acre</option>
+                                                    <option value="1 - 5 Acres">1 - 5 Acres</option>
+                                                    <option value="5 - 20 Acres">5 - 20 Acres</option>
+                                                    <option value="20+ Acres">20+ Acres</option>
+                                                </select>
+                                                <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 rotate-90 pointer-events-none" />
+                                            </div>
                                         </div>
                                     </div>
+
+                                    {primaryCrop === 'Other' && (
+                                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Specify Custom Crop</label>
+                                            <input 
+                                                type="text" 
+                                                value={customCrop}
+                                                onChange={(e) => setCustomCrop(e.target.value)}
+                                                placeholder="Enter crop name..."
+                                                className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-white font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" 
+                                            />
+                                        </motion.div>
+                                    )}
                                 </div>
                                 
                                 <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-200">
-                                    <button onClick={() => setIsAvatarModalOpen(false)} className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</button>
+                                    <button onClick={() => setIsFarmProfileModalOpen(false)} className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</button>
                                     <button
-                                        onClick={() => {
-                                            localStorage.setItem('farm_location', farmLocation);
-                                            localStorage.setItem('primary_crop', primaryCrop);
-                                            localStorage.setItem('farm_size', farmSize);
-                                            setIsAvatarModalOpen(false);
-                                            showToast('Farm Data saved successfully.');
+                                        onClick={async () => {
+                                            const farmData = {
+                                                farm_name: farmName,
+                                                address_line: farmAddress,
+                                                state: farmState,
+                                                country: farmCountry,
+                                                primary_crop: primaryCrop === 'Other' ? customCrop : primaryCrop,
+                                                farm_size: farmSize
+                                            };
+
+                                            try {
+                                                await updateProfileOnBackend(farmData);
+                                                localStorage.setItem('farm_name', farmName);
+                                                localStorage.setItem('address_line', farmAddress);
+                                                localStorage.setItem('state', farmState);
+                                                localStorage.setItem('country', farmCountry);
+                                                localStorage.setItem('primary_crop', primaryCrop);
+                                                localStorage.setItem('custom_crop', customCrop);
+                                                localStorage.setItem('farm_size', farmSize);
+                                                setIsFarmProfileModalOpen(false);
+                                                showToast('Farm profile updated and synced!');
+                                            } catch (err) {
+                                                showToast('Saved locally, but server sync failed.');
+                                                localStorage.setItem('farm_name', farmName);
+                                                setIsFarmProfileModalOpen(false);
+                                            }
                                         }}
                                         className="px-8 py-3 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all hover:-translate-y-0.5 flex items-center gap-2"
                                     >
-                                        <CheckCircle2 className="w-5 h-5" /> Save Details
+                                        <CheckCircle2 className="w-5 h-5" /> Save Data
                                     </button>
                                 </div>
                             </div>
@@ -533,7 +670,7 @@ export default function Settings() {
 
             {/* Avatar Upload Modal */}
             <AnimatePresence>
-                {isAvatarModalOpen && userRole === 'agronomist' && (
+                {isAvatarModalOpen && (
                     <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md"
@@ -622,6 +759,124 @@ export default function Settings() {
 
             {/* Other Modals (Security, Payment, Consults, Scan History) use similar improved overlay designs */}
             
+            {/* Payment Methods Modal */}
+            <AnimatePresence>
+                {isPaymentModalOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md"
+                        onClick={() => setIsPaymentModalOpen(false)}
+                    >
+                        <motion.div
+                            variants={overlayVariants} initial="hidden" animate="visible" exit="exit"
+                            className="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl relative border border-white"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-8 border-b border-gray-100 bg-gradient-to-br from-amber-50 to-white">
+                                <button onClick={() => setIsPaymentModalOpen(false)} className="absolute top-8 right-8 w-10 h-10 bg-white hover:bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center transition-colors text-gray-500">
+                                    <X className="w-5 h-5" />
+                                </button>
+                                <div className="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 mb-4 shadow-inner">
+                                    <CreditCard className="w-7 h-7" />
+                                </div>
+                                <h2 className="text-2xl font-black text-gray-900 mb-1">Payment Methods</h2>
+                                <p className="text-gray-500 text-sm font-medium">Securely manage your Interswitch connected accounts.</p>
+                            </div>
+                            
+                            <div className="p-8 bg-gray-50/50 space-y-4">
+                                {savedCards.map(card => (
+                                    <div key={card.id} className="bg-white border border-gray-200 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-8 bg-gray-100 rounded flex items-center justify-center text-[10px] font-black text-gray-400">
+                                                {card.type}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-gray-900">•••• {card.last4}</h3>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Expires {card.exp}</p>
+                                            </div>
+                                        </div>
+                                        {card.isDefault && (
+                                            <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded uppercase tracking-wider">Default</span>
+                                        )}
+                                    </div>
+                                ))}
+                                
+                                <button className="w-full py-4 border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center gap-2 text-gray-400 font-bold hover:bg-white hover:border-amber-300 hover:text-amber-600 transition-all">
+                                    <Plus className="w-4 h-4" /> Add New Payment Method
+                                </button>
+
+                                <div className="mt-4 p-4 bg-blue-50 rounded-xl flex items-start gap-3 border border-blue-100">
+                                    <Shield className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+                                    <p className="text-xs text-blue-700 font-medium leading-relaxed">
+                                        All payments are processed securely via Interswitch. Your card details are never stored on our servers.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Scan History & Sync Modal */}
+            <AnimatePresence>
+                {isScanHistoryModalOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md"
+                        onClick={() => setIsScanHistoryModalOpen(false)}
+                    >
+                        <motion.div
+                            variants={overlayVariants} initial="hidden" animate="visible" exit="exit"
+                            className="bg-white w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl relative border border-white"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-8 border-b border-gray-100 bg-gradient-to-br from-rose-50 to-white">
+                                <button onClick={() => setIsScanHistoryModalOpen(false)} className="absolute top-8 right-8 w-10 h-10 bg-white hover:bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center transition-colors text-gray-500">
+                                    <X className="w-5 h-5" />
+                                </button>
+                                <div className="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center text-rose-600 mb-4 shadow-inner">
+                                    <History className="w-7 h-7" />
+                                </div>
+                                <h2 className="text-2xl font-black text-gray-900 mb-1">Scan History & Sync</h2>
+                                <p className="text-gray-500 text-sm font-medium">Sync your local AI diagnostics to your cloud profile.</p>
+                            </div>
+                            
+                            <div className="p-8 bg-gray-50/50 space-y-4">
+                                <div className="bg-white border border-gray-200 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+                                    <div>
+                                        <h3 className="font-bold text-gray-900">Local Scans</h3>
+                                        <p className="text-xs text-gray-500 mt-1">Found {JSON.parse(localStorage.getItem('recent_scans') || '[]').length} unsynced scans</p>
+                                    </div>
+                                    <button onClick={() => showToast('Scans synced to cloud!')} className="px-4 py-2 bg-rose-600 text-white text-xs font-bold rounded-lg hover:bg-rose-700 transition-colors shadow-md">
+                                        Sync Now
+                                    </button>
+                                </div>
+
+                                <div className="bg-white border border-gray-200 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+                                    <div className="flex items-center gap-3">
+                                        <Cloud className="w-5 h-5 text-gray-400" />
+                                        <div>
+                                            <h3 className="font-bold text-gray-900">Auto-Cloud Backup</h3>
+                                            <p className="text-xs text-gray-500 mt-0.5">Always keep history in sync</p>
+                                        </div>
+                                    </div>
+                                    <div className="w-12 h-6 bg-emerald-500 rounded-full relative cursor-pointer">
+                                        <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1 shadow-sm"></div>
+                                    </div>
+                                </div>
+
+                                <button onClick={() => {
+                                    localStorage.removeItem('recent_scans');
+                                    showToast('Local history cleared.');
+                                }} className="w-full py-4 text-xs font-bold text-red-500 hover:text-red-700 transition-colors">
+                                    Clear Local Scan Archive
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <AnimatePresence>
                 {isSecurityModalOpen && (
                     <motion.div
@@ -648,7 +903,7 @@ export default function Settings() {
                                 <button onClick={() => showToast('Password reset link sent!')} className="w-full bg-white border border-gray-200 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:border-purple-300 hover:shadow-md transition-all group">
                                     <div className="flex items-center gap-4 text-left">
                                         <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center group-hover:bg-purple-100">
-                                            <Key className="w-5 h-5" />
+                                            <Lock className="w-5 h-5" />
                                         </div>
                                         <div>
                                             <h3 className="font-bold text-gray-900">Change Password</h3>

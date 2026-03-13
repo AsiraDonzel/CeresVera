@@ -5,6 +5,8 @@ import { DollarSign, ArrowUpRight, ArrowDownRight, ShieldCheck, DownloadCloud, L
 export default function Payouts() {
     const [isWithdrawing, setIsWithdrawing] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const isPremium = localStorage.getItem('is_premium') === 'true';
+    const commission = isPremium ? 5 : 15;
     
     // Initial Mock Ledger Data
     const defaultLedger = [
@@ -113,13 +115,36 @@ export default function Payouts() {
                     </div>
                 </div>
 
+                {/* Premium Notice Alert */}
+                <div className={`mb-8 p-4 rounded-2xl border flex items-center gap-4 ${isPremium ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
+                    <div className={`p-2 rounded-xl ${isPremium ? 'bg-amber-100' : 'bg-blue-100'}`}>
+                        {isPremium ? <ShieldCheck className="w-5 h-5 text-amber-600" /> : <Loader2 className="w-5 h-5 text-blue-600" />}
+                    </div>
+                    <div className="flex-1">
+                        <h4 className="font-bold text-sm">{isPremium ? 'Premium Instant Settlement Active' : 'Standard Payout Speed (3-5 Days)'}</h4>
+                        <p className="text-xs opacity-80 font-medium">
+                            {isPremium 
+                                ? 'Your funds are settled immediately via Interswitch Instant Settlement. Commission reduced to 5%.' 
+                                : 'Standard accounts are subject to 3-5 business days clearing time and 15% commission. Upgrade to Premium for 5% fees and instant payout.'}
+                        </p>
+                    </div>
+                    {!isPremium && (
+                        <button className="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            Upgrade
+                        </button>
+                    )}
+                </div>
+
                 {/* Financial Overview Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                     <div className="bg-sage-900 text-white p-6 rounded-3xl shadow-xl relative overflow-hidden group">
                         {/* Note: Removed the blur opacity layer over the withdraw button box to fix UI inconsistency */}
                         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
                         <h3 className="text-sage-100 font-medium text-sm mb-2 flex items-center gap-2"><DollarSign className="w-4 h-4" /> Available Balance</h3>
-                        <div className="text-4xl font-black mb-4 tracking-tight">₦{availableBalance.toLocaleString()}</div>
+                        <div className="text-4xl font-black mb-1 tracking-tight">₦{availableBalance.toLocaleString()}</div>
+                        <p className="text-[10px] text-sage-200 font-bold mb-4 flex items-center gap-1 opacity-80 uppercase tracking-widest">
+                            After {commission}% platform commission
+                        </p>
                         <button
                             onClick={handleWithdraw}
                             disabled={isWithdrawing || availableBalance === 0}

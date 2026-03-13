@@ -81,7 +81,8 @@ export default function Checkout() {
                                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-900 text-sm mb-6 shadow-sm">
                                         <Lock className="w-8 h-8 text-amber-600 shrink-0" />
                                         <div>
-                                            <strong>Escrow Protection:</strong> Your funds are held securely. The expert only gets paid after you confirm the service on your dashboard.
+                                            <p className="font-bold mb-1">Escrow Protection Active</p>
+                                            <p className="opacity-90 leading-tight">Your funds are held securely. The expert only gets paid after you confirm service. Settlement takes 3-5 days for standard experts.</p>
                                         </div>
                                     </div>
 

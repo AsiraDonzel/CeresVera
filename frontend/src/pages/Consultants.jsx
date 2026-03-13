@@ -1,48 +1,61 @@
 import { useState, useEffect } from 'react';
-import { Lock, Star, GraduationCap, ArrowRight, Search, Filter } from 'lucide-react';
+import { Lock, Star, GraduationCap, ArrowRight, Search, Filter, CheckCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function Consultants() {
-    // Read dynamic settings from LocalStorage
-    const savedBio = localStorage.getItem('agronomistBio');
-    const savedFee = localStorage.getItem('videoFee');
-    const savedAvatar = localStorage.getItem('profile_picture');
-
-    const [experts, setExperts] = useState([
-        { 
-            id: 1, 
-            name: 'Dr. Amina Okafor', 
-            specialty: 'Tropical Plant Diseases', 
-            bio: savedBio || '10+ years experience diagnosing cassava and maize blights.', 
-            rate: savedFee ? parseInt(savedFee) : 5000, 
-            img: savedAvatar || 'https://i.pravatar.cc/150?u=amina', 
-            rating: 4.8 
-        },
-        { id: 2, name: 'Mr. Tunde Lawal', specialty: 'Soil Health & Agronomy', bio: 'Specializes in improving crop yield through localized soil treatments.', rate: 4500, img: 'https://i.pravatar.cc/150?u=tunde', rating: 4.9 },
-        { id: 3, name: 'Prof. S. Mensah', specialty: 'Pest Control', bio: 'Expert insect and pest management strategies using organic methods.', rate: 7000, img: 'https://i.pravatar.cc/150?u=mensah', rating: 5.0 },
-        { id: 4, name: 'Dr. John Doe', specialty: 'Grains & Cereals', bio: 'Specialist in wheat, rice, and maize health management.', rate: 6000, img: 'https://i.pravatar.cc/150?u=johndoe', rating: 4.7 },
-        { id: 5, name: 'Jane Smith', specialty: 'Horticulture', bio: 'Expertise in fruit and vegetable crop optimization.', rate: 4000, img: 'https://i.pravatar.cc/150?u=janesmith', rating: 4.6 },
-    ]);
-
+    const [experts, setExperts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
 
+    useEffect(() => {
+        fetchExperts();
+    }, []);
+
+    const fetchExperts = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/api/consultants/`);
+            setExperts(res.data);
+        } catch (err) {
+            console.error('Failed to fetch experts:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const categories = ['All', 'Tropical Plant Diseases', 'Soil Health & Agronomy', 'Pest Control', 'Grains & Cereals', 'Horticulture'];
 
-    const filteredExperts = experts.filter(expert => {
-        const matchesSearch = expert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            expert.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            expert.bio.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = selectedCategory === 'All' || expert.specialty === selectedCategory;
+    const filteredExperts = experts
+        .filter(expert => {
+            const matchesSearch = expert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                expert.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                expert.bio.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesCategory = selectedCategory === 'All' || expert.specialty === selectedCategory;
 
-        return matchesSearch && matchesCategory;
-    });
+            return matchesSearch && matchesCategory;
+        })
+        .sort((a, b) => {
+            if (a.is_premium === b.is_premium) return 0;
+            return a.is_premium ? -1 : 1;
+        });
+
+    if (loading) {
+        return (
+            <div className="max-w-6xl mx-auto px-4 py-32 text-center">
+                <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-gray-500 font-medium">Loading Expert Marketplace...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-16">
             <div className="text-center mb-12 max-w-2xl mx-auto">
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">Expert Marketplace</h1>
-                <p className="text-lg text-gray-600">Connect with certified agronomists and plant pathologists. Premium advice is locked behind a seamless paywall via Interswitch.</p>
+                <p className="text-lg text-gray-600">Connect with certified agronomists and plant pathologists. Premium advice is verified via Gold Veritas.</p>
             </div>
 
             {/* Search and Filter Section */}
@@ -88,16 +101,25 @@ export default function Consultants() {
             ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredExperts.map(expert => (
-                        <div key={expert.id} className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl transition-shadow border border-earth-300 flex flex-col items-center text-center relative overflow-hidden group">
+                        <div key={expert.id} className={`bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all border flex flex-col items-center text-center relative overflow-hidden group ${expert.is_premium ? 'border-amber-300 ring-1 ring-amber-100' : 'border-earth-300'}`}>
 
-                            {/* Premium 'Locked' Overlay Hint */}
-                            <div className="absolute top-4 right-4 bg-earth-100 text-earth-900 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                                <Lock className="w-3 h-3" /> Premium
+                            {expert.is_premium ? (
+                                <div className="absolute top-4 right-4 bg-amber-50 text-amber-700 text-[10px] font-black px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm border border-amber-200 uppercase tracking-wider animate-pulse">
+                                    <ShieldCheck className="w-3 h-3" /> Gold Veritas
+                                </div>
+                            ) : (
+                                <div className="absolute top-4 right-4 bg-gray-50 text-gray-400 text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 border border-gray-100 uppercase tracking-tight">
+                                    Verified
+                                </div>
+                            )}
+
+                            <img src={expert.profile_pic_url || `https://i.pravatar.cc/150?u=${expert.id}`} alt={expert.name} className={`w-24 h-24 rounded-full mb-4 border-4 shadow-sm object-cover ${expert.is_premium ? 'border-amber-100' : 'border-sage-50'}`} />
+
+                            <div className="flex items-center gap-1 justify-center mb-1">
+                                <h2 className="text-xl font-bold text-gray-900">{expert.name}</h2>
+                                {expert.is_premium && <CheckCircle className="w-5 h-5 text-amber-500 fill-amber-50" />}
                             </div>
-
-                            <img src={expert.img} alt={expert.name} className="w-24 h-24 rounded-full mb-4 border-4 border-sage-100 shadow-sm" />
-
-                            <h2 className="text-xl font-bold text-gray-900 mb-1">{expert.name}</h2>
+                            
                             <div className="flex items-center gap-1 text-sm text-sage-700 font-medium mb-4">
                                 <GraduationCap className="w-4 h-4" /> {expert.specialty}
                             </div>
@@ -106,18 +128,18 @@ export default function Consultants() {
 
                             <div className="flex items-center gap-1 text-amber-500 mb-6">
                                 <Star className="w-5 h-5 fill-current" />
-                                <span className="text-gray-900 font-bold">{expert.rating}</span>
+                                <span className="text-gray-900 font-bold">{expert.rating || 4.8}</span>
                                 <span className="text-gray-500 text-xs ml-1">(120+ consults)</span>
                             </div>
 
-                            <div className="w-full mt-auto pt-4 border-t border-earth-300 flex items-center justify-between">
+                            <div className="w-full mt-auto pt-4 border-t border-earth-100 flex items-center justify-between">
                                 <div className="text-left">
-                                    <div className="text-xs text-gray-500">Consultation Fee</div>
-                                    <div className="text-lg font-bold text-gray-900">₦{expert.rate.toLocaleString()}</div>
+                                    <div className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Fee</div>
+                                    <div className="text-lg font-black text-gray-900 tracking-tight">₦{parseFloat(expert.rate).toLocaleString()}</div>
                                 </div>
 
-                                <Link to={`/checkout/${expert.id}`} className="bg-sage-700 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-sage-900 transition-colors flex items-center gap-1 shadow-md">
-                                    Unlock <ArrowRight className="w-4 h-4" />
+                                <Link to={`/checkout/${expert.id}`} className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-1.5 shadow-md active:scale-95 ${expert.is_premium ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-sage-600 hover:bg-sage-700 text-white'}`}>
+                                    Consult <ArrowRight className="w-4 h-4" />
                                 </Link>
                             </div>
                         </div>

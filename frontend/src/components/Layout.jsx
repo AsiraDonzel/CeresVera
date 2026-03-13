@@ -1,12 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Leaf, User, Menu, X, ArrowRight, Activity, Map, Video, CheckCircle, Shield, AlertTriangle, Sparkles, Cloud } from 'lucide-react';
+import OnboardingOverlay from './OnboardingOverlay';
 
 export default function Layout({ children }) {
     const location = useLocation();
     const userRole = localStorage.getItem('user_role') || 'farmer';
     const userName = localStorage.getItem('user_name') || 'User';
     const [profilePic, setProfilePic] = useState(localStorage.getItem('profile_picture'));
+    const [showOnboarding, setShowOnboarding] = useState(false);
+
+    useEffect(() => {
+        if (localStorage.getItem('show_onboarding') === 'true') {
+            setShowOnboarding(true);
+        }
+    }, [location]);
 
     useEffect(() => {
         const handleProfileUpdate = () => {
@@ -17,10 +25,35 @@ export default function Layout({ children }) {
         return () => window.removeEventListener('profilePictureUpdated', handleProfileUpdate);
     }, []);
 
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
     // Hide header/footer on Auth page for a true native app feel
     if (location.pathname === '/auth') {
         return <main className="min-h-screen bg-earth-100">{children}</main>;
     }
+
+    const navLinks = [
+        { name: 'Crops', path: '/crops' },
+        { name: 'Diseases', path: '/diseases' },
+        { name: 'Pests', path: '/pests' },
+    ];
+
+    const farmerLinks = [
+        { name: 'Dashboard', path: '/dashboard' },
+        { name: 'Scan Crop', path: '/scan' },
+        { name: 'Weather', path: '/hotspots', icon: <Cloud className="w-4 h-4" /> },
+        { name: 'CeraAI', path: '/chat', icon: <Sparkles className="w-4 h-4" />, premium: true },
+        { name: 'Expert Marketplace', path: '/consultants' },
+        { name: 'Settings', path: '/settings' },
+    ];
+
+    const expertLinks = [
+        { name: 'Expert Portal', path: '/expert-dashboard' },
+        { name: 'Weather', path: '/hotspots', icon: <Cloud className="w-4 h-4" /> },
+        { name: 'My Schedule', path: '/schedule' },
+        { name: 'Earnings & Payouts', path: '/payouts' },
+        { name: 'Settings', path: '/settings' },
+    ];
 
     return (
         <div className="min-h-screen flex flex-col font-sans bg-earth-100 text-gray-800">
@@ -33,41 +66,20 @@ export default function Layout({ children }) {
                         </Link>
 
                         <nav className="hidden md:flex space-x-6 lg:space-x-8 items-center">
-                            {/* Public Links */}
-                            <Link to="/crops" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Crops</Link>
-                            <Link to="/diseases" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Diseases</Link>
-                            <Link to="/pests" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Pests</Link>
+                            {navLinks.map(link => (
+                                <Link key={link.path} to={link.path} className="text-gray-600 hover:text-sage-700 font-medium transition-colors">{link.name}</Link>
+                            ))}
 
-                            {/* Authenticated Links Area */}
                             {localStorage.getItem('access_token') && (
                                 <>
                                     <div className="w-px h-6 bg-gray-200" />
-                                    {userRole === 'farmer' ? (
-                                        <>
-                                            <Link to="/dashboard" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Dashboard</Link>
-                                            <Link to="/scan" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Scan</Link>
-                                            <Link to="/hotspots" className="flex items-center gap-1.5 text-gray-600 hover:text-sky-600 font-medium transition-colors">
-                                                <Cloud className="w-4 h-4" /> Weather
-                                            </Link>
-                                            <Link to="/chat" className="flex items-center gap-1.5 text-sage-600 hover:text-sage-800 font-bold transition-colors">
-                                                <Sparkles className="w-4 h-4" /> CeraAI
-                                            </Link>
-                                            <Link to="/consultants" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Experts</Link>
-                                            <div className="w-px h-6 bg-gray-200" />
-                                            <Link to="/settings" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Settings</Link>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Link to="/expert-dashboard" className="text-sage-700 hover:text-sage-900 font-bold transition-colors">Expert Portal</Link>
-                                            <div className="w-px h-6 bg-gray-200" />
-                                            <Link to="/hotspots" className="flex items-center gap-1.5 text-gray-600 hover:text-sky-600 font-medium transition-colors">
-                                                <Cloud className="w-4 h-4" /> Weather
-                                            </Link>
-                                            <Link to="/schedule" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">My Schedule</Link>
-                                            <Link to="/payouts" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Payouts</Link>
-                                            <Link to="/settings" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Settings</Link>
-                                        </>
-                                    )}
+                                    {(userRole === 'farmer' ? farmerLinks : expertLinks).filter(l => !['Settings', 'Expert Portal', 'Dashboard'].includes(l.name)).map(link => (
+                                        <Link key={link.path} to={link.path} className={`flex items-center gap-1.5 transition-colors ${link.premium ? 'text-sage-600 hover:text-sage-800 font-bold' : 'text-gray-600 hover:text-sage-700 font-medium'}`}>
+                                            {link.icon} {link.name}
+                                        </Link>
+                                    ))}
+                                    <div className="w-px h-6 bg-gray-200" />
+                                    <Link to="/settings" className="text-gray-600 hover:text-sage-700 font-medium transition-colors">Settings</Link>
                                 </>
                             )}
                         </nav>
@@ -75,15 +87,9 @@ export default function Layout({ children }) {
                         <div className="flex items-center space-x-4">
                             {localStorage.getItem('access_token') ? (
                                 <div className="flex items-center gap-3">
-                                    {userRole === 'farmer' ? (
-                                        <Link to="/scan" className="bg-sage-700 hover:bg-sage-900 text-white px-5 py-2 rounded-full font-medium transition-all shadow-md shadow-sage-700/20 active:scale-95">
-                                            Scan Crop
-                                        </Link>
-                                    ) : (
-                                        <Link to="/expert-dashboard" className="hidden sm:inline-flex bg-sage-700 hover:bg-sage-900 text-white px-5 py-2 rounded-full font-medium transition-all shadow-md shadow-sage-700/20 active:scale-95">
-                                            Dashboard
-                                        </Link>
-                                    )}
+                                    <Link to={userRole === 'farmer' ? "/scan" : "/expert-dashboard"} className="hidden sm:inline-flex bg-sage-700 hover:bg-sage-900 text-white px-5 py-2 rounded-full font-medium transition-all shadow-md shadow-sage-700/20 active:scale-95">
+                                        {userRole === 'farmer' ? "Scan Crop" : "Dashboard"}
+                                    </Link>
 
                                     <Link to="/settings" className="w-10 h-10 rounded-full bg-gray-100 border-2 border-white shadow-sm overflow-hidden flex-shrink-0 block transition-transform hover:scale-105 group relative flex items-center justify-center">
                                         {profilePic ? (
@@ -95,17 +101,79 @@ export default function Layout({ children }) {
                                         )}
                                         {userRole === 'agronomist' && !profilePic && <span className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white z-20"></span>}
                                     </Link>
+                                    
+                                    <button 
+                                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                        className="md:hidden p-2 text-gray-600 hover:text-sage-700 transition-colors"
+                                    >
+                                        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                                    </button>
                                 </div>
                             ) : (
-                                <Link to="/auth" className="flex items-center gap-2 text-sage-900 font-bold hover:text-sage-700 transition-colors bg-sage-50 hover:bg-sage-100 px-5 py-2 rounded-full border border-sage-200">
-                                    <User className="w-4 h-4" /> Sign In
-                                </Link>
+                                <div className="flex items-center gap-3">
+                                    <Link to="/auth" className="flex items-center gap-2 text-sage-900 font-bold hover:text-sage-700 transition-colors bg-sage-50 hover:bg-sage-100 px-5 py-2 rounded-full border border-sage-200">
+                                        <User className="w-4 h-4" /> Sign In
+                                    </Link>
+                                    <button 
+                                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                        className="md:hidden p-2 text-gray-600 hover:text-sage-700 transition-colors"
+                                    >
+                                        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                                    </button>
+                                </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Mobile Menu Overlay */}
+                <div className={`fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-40 transition-opacity duration-300 md:hidden ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMenuOpen(false)} />
+                <div className={`fixed top-0 right-0 w-72 h-full bg-white z-50 shadow-2xl transition-transform duration-300 transform md:hidden ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                    <div className="p-6 h-full flex flex-col">
+                        <div className="flex justify-between items-center mb-8">
+                            <Link to="/" className="flex items-center space-x-2 text-sage-900" onClick={() => setIsMenuOpen(false)}>
+                                <Leaf className="w-6 h-6 text-sage-700" />
+                                <span className="font-bold text-xl tracking-tight">Ceres<span className="text-sage-500">Vera</span></span>
+                            </Link>
+                            <button onClick={() => setIsMenuOpen(false)} className="p-2 text-gray-400">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+                        
+                        <nav className="flex-1 space-y-4">
+                            {navLinks.map(link => (
+                                <Link key={link.path} to={link.path} className="block text-lg font-bold text-gray-900 hover:text-sage-600 py-2 border-b border-gray-50" onClick={() => setIsMenuOpen(false)}>
+                                    {link.name}
+                                </Link>
+                            ))}
+                            {localStorage.getItem('access_token') && (
+                                <div className="pt-4 space-y-4">
+                                    <div className="text-[10px] uppercase font-black tracking-widest text-gray-400">Personal Menu</div>
+                                    {(userRole === 'farmer' ? farmerLinks : expertLinks).map(link => (
+                                        <Link key={link.path} to={link.path} className="flex items-center gap-3 text-lg font-bold text-gray-900 hover:text-sage-600 py-2" onClick={() => setIsMenuOpen(false)}>
+                                            <span className="p-2 bg-gray-50 rounded-xl">{link.icon || <Activity className="w-4 h-4" />}</span>
+                                            {link.name}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </nav>
+                        
+                        {!localStorage.getItem('access_token') && (
+                            <Link to="/auth" className="w-full bg-sage-700 text-white py-4 rounded-2xl font-black text-center shadow-lg shadow-sage-700/20 flex items-center justify-center gap-2" onClick={() => setIsMenuOpen(false)}>
+                                <User className="w-5 h-5" /> Sign In
+                            </Link>
+                        )}
+                        
+                        <div className="pt-8 border-t border-gray-100 flex items-center gap-3">
+                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Truth of the Harvest</div>
                         </div>
                     </div>
                 </div>
             </header>
 
+            {showOnboarding && <OnboardingOverlay onClose={() => setShowOnboarding(false)} />}
+            
             <main className="flex-grow w-full">
                 {children}
             </main>

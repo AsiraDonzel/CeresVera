@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloud, CheckCircle, AlertTriangle, ArrowRight, Loader } from 'lucide-react';
+import { UploadCloud, CheckCircle, AlertTriangle, ArrowRight, Loader, Camera, MessageSquare } from 'lucide-react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
@@ -31,6 +31,27 @@ export default function ScanUpload() {
         reader.onload = (e) => setPreview(e.target.result);
         reader.readAsDataURL(file);
         setResult(null);
+    };
+
+    const saveScanToLocalStorage = (scanData) => {
+        const existingScans = JSON.parse(localStorage.getItem('recent_scans') || '[]');
+        const weatherInfo = JSON.parse(localStorage.getItem('current_weather') || '{"temp": 28, "condition": "Sunny"}');
+        
+        const newScan = {
+            id: Date.now(),
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            crop: 'Tomato', // Default or detected
+            status: scanData.disease_name,
+            confidence: scanData.confidence,
+            description: scanData.description,
+            recommended_action: scanData.recommended_action,
+            weather: weatherInfo,
+            isHealthy: scanData.isHealthy
+        };
+
+        const updatedScans = [newScan, ...existingScans].slice(0, 10); // Keep last 10
+        localStorage.setItem('recent_scans', JSON.stringify(updatedScans));
     };
 
     const performScan = async () => {
@@ -64,14 +85,18 @@ export default function ScanUpload() {
             }
 
             const data = response.data;
+            const isHealthy = data.disease_name && data.disease_name.toLowerCase().includes('healthy');
 
-            setResult({
+            const scanResult = {
                 disease_name: data.disease_name,
                 confidence: data.confidence,
                 description: data.description,
                 recommended_action: data.recommended_action,
-                isHealthy: data.disease_name && data.disease_name.toLowerCase().includes('healthy')
-            });
+                isHealthy: isHealthy
+            };
+
+            setResult(scanResult);
+            saveScanToLocalStorage(scanResult);
         } catch (error) {
             console.error("AI Scan Error:", error);
             setResult({
@@ -100,13 +125,37 @@ export default function ScanUpload() {
                         className="border-2 border-dashed border-sage-300 rounded-2xl p-16 text-center hover:bg-sage-50 transition-colors cursor-pointer flex flex-col items-center justify-center"
                         onClick={() => document.getElementById('file-upload').click()}
                     >
-                        <div className="p-4 bg-earth-100 text-earth-700 rounded-full mb-4">
+                        <div className="p-4 bg-earth-100 text-earth-700 rounded-full mb-4 group-hover:scale-110 transition-transform">
                             <UploadCloud className="w-8 h-8" />
                         </div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Drag & drop an image</h3>
-                        <p className="text-gray-500 mb-6">or click to browse your files (JPEG, PNG)</p>
-                        <input type="file" id="file-upload" className="hidden" accept="image/png, image/jpeg" onChange={handleFileInput} />
-                        <button className="px-6 py-2 bg-sage-700 text-white rounded-full font-medium shadow-md">Browse Files</button>
+                        <p className="text-gray-500 mb-6">or use your camera for instant detection</p>
+                        
+                        <div className="flex gap-4">
+                            <input type="file" id="file-upload" className="hidden" accept="image/png, image/jpeg" onChange={handleFileInput} />
+                            <input type="file" id="camera-upload" className="hidden" accept="image/*" capture="environment" onChange={handleFileInput} />
+                            
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); document.getElementById('camera-upload').click(); }}
+                                className="px-8 py-3 bg-sage-700 text-white rounded-xl font-bold shadow-lg shadow-sage-700/20 flex items-center gap-2 hover:bg-sage-800 transition-all"
+                            >
+                                <Camera className="w-5 h-5" /> Open Camera
+                            </button>
+                            
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); document.getElementById('file-upload').click(); }}
+                                className="px-8 py-3 bg-white border border-sage-200 text-sage-800 rounded-xl font-bold shadow-sm hover:bg-sage-50 transition-all"
+                            >
+                                Browse Files
+                            </button>
+                        </div>
+                        
+                        <div className="mt-8 pt-8 border-t border-sage-100 w-full flex flex-col items-center">
+                            <p className="text-sm text-gray-500 mb-4">Need expert advice instead?</p>
+                            <Link to="/chatbot" className="flex items-center gap-2 text-sage-700 font-bold hover:text-sage-900 transition-colors">
+                                <MessageSquare className="w-4 h-4" /> Ask Cera AI Assistant <ArrowRight className="w-4 h-4" />
+                            </Link>
+                        </div>
                     </div>
                 ) : (
                     <div className="space-y-8">
@@ -171,25 +220,26 @@ export default function ScanUpload() {
                                                 <p className="text-gray-700">{result.recommended_action}</p>
                                             </div>
 
-                                            <div className="mt-8 flex flex-col sm:flex-row justify-end gap-4">
-                                                <button
-                                                    onClick={performScan}
-                                                    className="inline-flex items-center justify-center bg-white border-2 border-sage-200 text-sage-700 px-6 py-3 rounded-full font-bold shadow-sm hover:bg-sage-50 transition-colors"
-                                                >
-                                                    Retry Analysis
-                                                </button>
+                                            <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3">
                                                 <button
                                                     onClick={() => {
                                                         setResult(null);
                                                         setPreview(null);
                                                         setFile(null);
+                                                        setTimeout(() => document.getElementById('camera-upload')?.click(), 100);
                                                     }}
-                                                    className="inline-flex items-center justify-center bg-white border-2 border-sage-200 text-sage-700 px-6 py-3 rounded-full font-bold shadow-sm hover:bg-sage-50 transition-colors"
+                                                    className="inline-flex items-center justify-center bg-white border-2 border-sage-200 text-sage-700 px-6 py-3 rounded-xl font-bold hover:bg-sage-50 transition-all flex items-center gap-2"
                                                 >
-                                                    Scan New Plant
+                                                    <Camera className="w-4 h-4" /> Open Camera
                                                 </button>
-                                                <Link to="/consultants" className="inline-flex justify-center items-center gap-2 bg-sage-700 text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-sage-700/20 hover:bg-sage-900 transition-colors">
-                                                    Consult an Expert <ArrowRight className="w-4 h-4" />
+                                                <Link 
+                                                    to="/chatbot" 
+                                                    className="inline-flex items-center justify-center bg-white border-2 border-sage-200 text-sage-700 px-6 py-3 rounded-xl font-bold hover:bg-sage-50 transition-all flex items-center gap-2"
+                                                >
+                                                    <MessageSquare className="w-4 h-4" /> Ask Cera AI
+                                                </Link>
+                                                <Link to="/consultants" className="inline-flex justify-center items-center gap-2 bg-sage-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-sage-700/20 hover:bg-sage-900 transition-all">
+                                                    Consult Expert <ArrowRight className="w-4 h-4" />
                                                 </Link>
                                             </div>
                                         </div>

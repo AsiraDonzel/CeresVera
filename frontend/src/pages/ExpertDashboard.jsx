@@ -16,7 +16,9 @@ import {
     X,
     Mic,
     Video as VideoIcon,
-    Star
+    Star,
+    Sparkles,
+    ArrowRight
 } from 'lucide-react';
 
 export default function ExpertDashboard() {
@@ -72,19 +74,32 @@ export default function ExpertDashboard() {
                     className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4"
                 >
                     <div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sage-100 text-sage-800 text-xs font-bold uppercase tracking-wider mb-3">
-                            <span className="w-2 h-2 rounded-full bg-sage-500 animate-pulse"></span>
-                            Agronomist Portal
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sage-100 text-sage-800 text-xs font-bold uppercase tracking-wider">
+                                <span className="w-2 h-2 rounded-full bg-sage-500 animate-pulse"></span>
+                                Agronomist Portal
+                            </div>
+                            {localStorage.getItem('is_premium') === 'true' && (
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-widest border border-amber-200 shadow-sm">
+                                    <ShieldCheck className="w-3 h-3" /> Gold Veritas
+                                </div>
+                            )}
                         </div>
                         <h1 className="text-4xl font-black text-gray-900 tracking-tight">Expert Dashboard</h1>
                         <p className="mt-2 text-lg text-gray-600">Welcome back, Dr. Okafor. You have 3 pending consultations.</p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 flex-wrap">
+                        <Link to="/predictive-analytics" className="px-5 py-2.5 bg-amber-500 text-white font-bold rounded-xl shadow-md hover:bg-amber-600 transition-all hover:-translate-y-0.5 flex items-center gap-2">
+                             <Sparkles className="w-4 h-4" /> Yield AI
+                        </Link>
+                        <Link to="/expert-circles" className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2">
+                            <Users className="w-4 h-4" /> Circles
+                        </Link>
                         <Link to="/schedule" className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center gap-2">
-                            <Clock className="w-4 h-4" /> Manage Schedule
+                            <Clock className="w-4 h-4" /> Schedule
                         </Link>
                         <Link to="/payouts" className="px-5 py-2.5 bg-gray-900 text-white font-bold rounded-xl shadow-md hover:bg-black transition-all hover:-translate-y-0.5 shadow-gray-900/20 flex items-center justify-center">
-                            Withdraw Funds
+                            Withdraw
                         </Link>
                     </div>
                 </motion.div>

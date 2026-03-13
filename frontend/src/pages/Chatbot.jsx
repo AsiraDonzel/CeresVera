@@ -14,6 +14,9 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function Chatbot() {
     const [activeMode, setActiveMode] = useState(null); // 'deepseek' | 'adviser' | null
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const isPremium = localStorage.getItem('is_premium') === 'true';
+    const token = localStorage.getItem('access_token');
 
     // Adviser State
     const [messages, setMessages] = useState([]);
@@ -54,11 +57,21 @@ export default function Chatbot() {
         try {
             const response = await fetch(`${API_URL}/api/adviser/`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ query: topicOverride ? '' : query, topic: topicOverride || '' })
             });
 
             const data = await response.json();
+
+            if (response.status === 403 && data.requires_upgrade) {
+                setShowUpgradeModal(true);
+                setMessages(messages); // Revert query if needed or just stop
+                setIsLoading(false);
+                return;
+            }
 
             if (response.ok) {
                 setMessages([...newMessages, { role: 'assistant', content: data.response }]);
@@ -87,11 +100,20 @@ export default function Chatbot() {
         try {
             const response = await fetch(`${API_URL}/api/deepseek/`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ query: query })
             });
 
             const data = await response.json();
+
+            if (response.status === 403 && data.requires_upgrade) {
+                setShowUpgradeModal(true);
+                setIsDeepseekLoading(false);
+                return;
+            }
 
             if (response.ok) {
                 setDeepseekMessages([...newMessages, { role: 'assistant', content: data.response }]);
@@ -432,6 +454,67 @@ export default function Chatbot() {
                     )}
                 </AnimatePresence>
             </div>
+
+            {/* Premium Upgrade Modal */}
+            <AnimatePresence>
+                {showUpgradeModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md">
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white max-w-lg w-full rounded-[3rem] overflow-hidden shadow-2xl relative border border-amber-200"
+                        >
+                            <button 
+                                onClick={() => setShowUpgradeModal(false)}
+                                className="absolute top-6 right-8 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                            >
+                                <ArrowLeft className="w-6 h-6 rotate-90" />
+                            </button>
+
+                            <div className="bg-amber-500 p-8 text-white relative overflow-hidden">
+                                <Sparkles className="absolute -right-4 -bottom-4 w-32 h-32 opacity-20" />
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-[10px] font-black uppercase tracking-widest mb-4">
+                                    Premium Upgrade Required
+                                </div>
+                                <h3 className="text-3xl font-black tracking-tight mb-2">Unlock Unlimited AI</h3>
+                                <p className="text-amber-50 text-sm font-medium opacity-90">You've reached the daily limit for free AI queries.</p>
+                            </div>
+
+                            <div className="p-8 space-y-6">
+                                <div className="space-y-4">
+                                    {[
+                                        { title: 'Unlimited AI Queries', desc: 'No daily limits on Cera AI or Agronomy Core.' },
+                                        { title: 'Gold Veritas Badge', desc: 'Verified status across the platform.' },
+                                        { title: 'Priority Support', desc: 'Faster responses from the expert marketplace.' }
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex gap-4">
+                                            <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                                                <div className="w-2 h-2 bg-amber-500 rounded-full" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-gray-900 text-sm">{item.title}</h4>
+                                                <p className="text-gray-500 text-xs font-medium">{item.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button className="w-full bg-gray-900 hover:bg-black text-white py-4 rounded-2xl font-black shadow-xl shadow-gray-200 transition-all active:scale-95">
+                                    Upgrade to Premium - ₦2,500/mo
+                                </button>
+                                
+                                <button 
+                                    onClick={() => setShowUpgradeModal(false)}
+                                    className="w-full text-center text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-widest"
+                                >
+                                    Maybe later
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

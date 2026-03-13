@@ -24,10 +24,12 @@ export default function Auth() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [phone, setPhone] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showOnboarding, setShowOnboarding] = useState(false);
     const navigate = useNavigate();
 
     const handleGoogleSuccess = async (tokenResponse) => {
@@ -46,7 +48,10 @@ export default function Auth() {
             
             const userRole = res.data.role || 'farmer';
             localStorage.setItem('user_role', userRole);
+            localStorage.setItem('is_premium', res.data.is_premium ? 'true' : 'false');
             if (res.data.name) localStorage.setItem('user_name', res.data.name);
+            if (res.data.email) localStorage.setItem('user_email', res.data.email);
+            if (res.data.phone_number) localStorage.setItem('user_phone', res.data.phone_number);
             if (res.data.profile_pic) {
                 localStorage.setItem('profile_picture', `${API_URL}${res.data.profile_pic}`);
                 window.dispatchEvent(new Event('profilePictureUpdated'));
@@ -118,7 +123,13 @@ export default function Auth() {
                 
                 const userRole = response.data.role || 'farmer';
                 localStorage.setItem('user_role', userRole);
+                localStorage.setItem('is_premium', response.data.is_premium ? 'true' : 'false');
                 if (response.data.name) localStorage.setItem('user_name', response.data.name);
+                if (response.data.email) {
+                    const hashedEmail = CryptoJS.SHA256(response.data.email).toString();
+                    localStorage.setItem('user_email', hashedEmail);
+                }
+                if (response.data.phone_number) localStorage.setItem('user_phone', response.data.phone_number);
                 if (response.data.profile_pic) {
                     localStorage.setItem('profile_picture', `${API_URL}${response.data.profile_pic}`);
                     window.dispatchEvent(new Event('profilePictureUpdated'));
@@ -133,7 +144,8 @@ export default function Auth() {
                     password: hashedPassword,
                     confirm_password: hashedConfirmPassword,
                     name: name,
-                    role: role
+                    role: role,
+                    phone: phone
                 });
                 // Auto-login after registration
                 const loginRes = await axios.post(`${API_URL}/api/auth/login/`, {
@@ -145,7 +157,15 @@ export default function Auth() {
                 
                 const userRole = loginRes.data.role || role;
                 localStorage.setItem('user_role', userRole);
+                localStorage.setItem('is_premium', loginRes.data.is_premium ? 'true' : 'false');
                 if (loginRes.data.name) localStorage.setItem('user_name', loginRes.data.name);
+                if (loginRes.data.email) {
+                    const hashedEmail = CryptoJS.SHA256(loginRes.data.email).toString();
+                    localStorage.setItem('user_email', hashedEmail);
+                }
+                
+                // Set flag to trigger onboarding
+                localStorage.setItem('show_onboarding', 'true');
 
                 navigate(userRole === 'agronomist' ? '/expert-dashboard' : '/dashboard');
 
@@ -265,13 +285,24 @@ export default function Auth() {
                         >
                             {/* Full Name (register only) */}
                             {mode === 'register' && (
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">Full Name</label>
-                                    <div className="mt-1 relative rounded-xl shadow-sm">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <User className="h-5 w-5 text-gray-400" />
+                                <div className="space-y-5">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">Full Name</label>
+                                        <div className="mt-1 relative rounded-xl shadow-sm">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <User className="h-5 w-5 text-gray-400" />
+                                            </div>
+                                            <input id="name" type="text" required value={name} onChange={e => setName(e.target.value)} className="block w-full pl-11 pr-4 py-3.5 border-gray-200 bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 rounded-xl transition-colors sm:text-sm outline-none text-gray-900 font-medium placeholder-gray-400/60" placeholder="Oluwakemi Adebayo" />
                                         </div>
-                                        <input id="name" type="text" required value={name} onChange={e => setName(e.target.value)} className="block w-full pl-11 pr-4 py-3.5 border-gray-200 bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 rounded-xl transition-colors sm:text-sm outline-none text-gray-900 font-medium placeholder-gray-400/60" placeholder="Oluwakemi Adebayo" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide">Phone Number</label>
+                                        <div className="mt-1 relative rounded-xl shadow-sm">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <div className="text-gray-400 font-bold text-xs uppercase">TEL</div>
+                                            </div>
+                                            <input id="phone" type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="block w-full pl-11 pr-4 py-3.5 border-gray-200 bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 rounded-xl transition-colors sm:text-sm outline-none text-gray-900 font-medium placeholder-gray-400/60" placeholder="0801 234 5678" />
+                                        </div>
                                     </div>
                                 </div>
                             )}
