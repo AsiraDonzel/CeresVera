@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Camera, ShieldCheck, Stethoscope, ArrowRight } from 'lucide-react';
+import { Camera, ShieldCheck, Stethoscope, ArrowRight, LayoutDashboard } from 'lucide-react';
 
 export default function LandingPage() {
     const containerVariants = {
@@ -15,6 +15,8 @@ export default function LandingPage() {
         hidden: { y: 20, opacity: 0 },
         visible: { y: 0, opacity: 1 }
     };
+
+    const userRole = localStorage.getItem('user_role') || 'farmer';
 
     return (
         <div className="w-full relative overflow-hidden">
@@ -36,20 +38,32 @@ export default function LandingPage() {
                         CeresVera provides absolute clarity on crop health. Detect diseases instantly using AI and connect with certified agronomy experts for real truth you can trust.
                     </p>
                     <div className="flex justify-center flex-col sm:flex-row gap-4 mt-8">
-                        <Link
-                            to="/scan"
-                            className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
-                        >
-                            <Camera className="w-5 h-5" />
-                            Scan Now
-                        </Link>
-                        <Link
-                            to="/consultants"
-                            className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-gray-800 bg-white border-2 border-sage-300 rounded-full hover:bg-sage-100 transition-colors"
-                        >
-                            Find Experts
-                            <ArrowRight className="w-5 h-5" />
-                        </Link>
+                        {userRole === 'expert' ? (
+                            <Link
+                                to="/expert-dashboard"
+                                className="inline-flex items-center justify-center gap-2 px-12 py-4 text-base font-black text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
+                            >
+                                <LayoutDashboard className="w-5 h-5" />
+                                View Dashboard
+                            </Link>
+                        ) : (
+                            <>
+                                <Link
+                                    to="/scan"
+                                    className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
+                                >
+                                    <Camera className="w-5 h-5" />
+                                    Scan Now
+                                </Link>
+                                <Link
+                                    to="/consultants"
+                                    className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-gray-800 bg-white border-2 border-sage-300 rounded-full hover:bg-sage-100 transition-colors"
+                                >
+                                    Find Experts
+                                    <ArrowRight className="w-5 h-5" />
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </motion.div>
 
