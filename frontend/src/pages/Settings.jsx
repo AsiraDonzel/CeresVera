@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Bell, Shield, Wallet, Book, LogOut, ChevronRight, CheckCircle2, X, MapPin, Camera, CreditCard, Plus, Smartphone, Key, UploadCloud, Loader2, Edit3, Briefcase, Mail, Phone, Cloud, History, Lock, Search, Linkedin, Sparkles, Activity } from 'lucide-react';
+import { User, Bell, Shield, Wallet, Book, LogOut, ChevronRight, CheckCircle2, X, MapPin, Camera, CreditCard, Plus, Smartphone, Key, UploadCloud, Loader2, Edit3, Briefcase, Mail, Phone, Cloud, History, Lock, Search, Linkedin, Sparkles, Activity, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ExpertPremiumPaymentOverlay from '../components/ExpertPremiumPaymentOverlay';
 import { cropsData } from '../data/crops';
 import axios from 'axios';
 
@@ -21,9 +22,19 @@ export default function Settings() {
     const [isNotificationsModalOpen, setIsNotificationsModalOpen] = useState(false);
     const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
     const [isFarmProfileModalOpen, setIsFarmProfileModalOpen] = useState(false);
+    const [isPremium, setIsPremium] = useState(localStorage.getItem('is_premium') === 'true');
+    const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
 
     useEffect(() => {
-        const anyModalOpen = isProfileModalOpen || isScanHistoryModalOpen || isPaymentModalOpen || isSecurityModalOpen || isConsultationModalOpen || isNotificationsModalOpen || isAvatarModalOpen || isFarmProfileModalOpen;
+        const handlePremiumUpdate = () => {
+            setIsPremium(localStorage.getItem('is_premium') === 'true');
+        };
+        window.addEventListener('premiumStatusChanged', handlePremiumUpdate);
+        return () => window.removeEventListener('premiumStatusChanged', handlePremiumUpdate);
+    }, []);
+
+    useEffect(() => {
+        const anyModalOpen = isProfileModalOpen || isScanHistoryModalOpen || isPaymentModalOpen || isSecurityModalOpen || isConsultationModalOpen || isNotificationsModalOpen || isAvatarModalOpen || isFarmProfileModalOpen || isUpgradeOpen;
         if (anyModalOpen) {
             document.body.style.overflow = 'hidden';
         } else {
@@ -106,6 +117,7 @@ export default function Settings() {
 
     const agronomistMenus = [
         { icon: <User className="w-5 h-5 text-blue-600" />, bg: 'bg-blue-50', title: 'Professional Profile', desc: 'Avatar, Name, Biography, and Contact Info', action: () => setIsProfileModalOpen(true) },
+        ...(!isPremium ? [{ icon: <Award className="w-5 h-5 text-harvest-600" />, bg: 'bg-harvest-50', title: 'Upgrade to Veritas Premium', desc: 'Unlock Gold status, lower fees, and priority listing', action: () => setIsUpgradeOpen(true) }] : []),
         { icon: <Wallet className="w-5 h-5 text-emerald-600" />, bg: 'bg-emerald-50', title: 'Consultation Fees & Payouts', desc: 'Set your rates and manage bank details', action: () => setIsConsultationModalOpen(true) },
         { icon: <Bell className="w-5 h-5 text-amber-600" />, bg: 'bg-amber-50', title: 'Notifications', desc: 'Push, Email alerts, and Marketing preferences', action: () => setIsNotificationsModalOpen(true) },
         { icon: <Shield className="w-5 h-5 text-purple-600" />, bg: 'bg-purple-50', title: 'Security', desc: 'Password, 2FA, and connected devices', action: () => setIsSecurityModalOpen(true) },
@@ -147,6 +159,10 @@ export default function Settings() {
     return (
         <>
         <div className="p-8 space-y-8 bg-earth-50 min-h-full">
+            <ExpertPremiumPaymentOverlay 
+                isOpen={isUpgradeOpen} 
+                onClose={() => setIsUpgradeOpen(false)} 
+            />
             <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-sage-200/20 rounded-full blur-[100px] -z-10 mix-blend-multiply"></div>
 
                 <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden mb-8">

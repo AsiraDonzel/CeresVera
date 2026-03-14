@@ -1,11 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Users, Lock, Send, Search, Filter, ShieldCheck, TrendingUp, MessageCircle } from 'lucide-react';
+import { MessageSquare, Users, Lock, Send, Search, Filter, ShieldCheck, TrendingUp, MessageCircle, Award } from 'lucide-react';
+import ExpertPremiumPaymentOverlay from '../components/ExpertPremiumPaymentOverlay';
 
 export default function ExpertCircles() {
-    const isPremium = localStorage.getItem('is_premium') === 'true';
+    const [isPremium, setIsPremium] = useState(localStorage.getItem('is_premium') === 'true');
+    const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('Trending');
     const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        const handlePremiumUpdate = () => {
+            setIsPremium(localStorage.getItem('is_premium') === 'true');
+        };
+        window.addEventListener('premiumStatusChanged', handlePremiumUpdate);
+        return () => window.removeEventListener('premiumStatusChanged', handlePremiumUpdate);
+    }, []);
 
     const circles = [
         { id: 1, title: 'West African Cocoa Blight', participants: 42, threads: 156, category: 'Research', growth: '+12%' },
@@ -23,6 +33,10 @@ export default function ExpertCircles() {
     if (!isPremium) {
         return (
             <div className="min-h-screen bg-earth-50 pt-32 pb-12 flex items-center justify-center px-4">
+                <ExpertPremiumPaymentOverlay 
+                    isOpen={isUpgradeOpen} 
+                    onClose={() => setIsUpgradeOpen(false)} 
+                />
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -36,7 +50,11 @@ export default function ExpertCircles() {
                     <p className="text-gray-600 mb-8 leading-relaxed font-medium">
                         This is a premium-only networking hub where top-tier agronomists collaborate on complex cases. Upgrade your account to join the circle.
                     </p>
-                    <button className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-amber-200 transition-all active:scale-95 mb-4">
+                    <button 
+                        onClick={() => setIsUpgradeOpen(true)}
+                        className="w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-amber-200 transition-all active:scale-95 mb-4 flex items-center justify-center gap-2"
+                    >
+                        <Award className="w-5 h-5" />
                         Unlock Premium Access
                     </button>
                     <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Access Private Case Studies & Research</p>

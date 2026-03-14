@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { DollarSign, ArrowUpRight, ArrowDownRight, ShieldCheck, DownloadCloud, Loader2, CheckCircle2, Trash2 } from 'lucide-react';
-import PremiumPaymentOverlay from '../components/PremiumPaymentOverlay';
+import ExpertPremiumPaymentOverlay from '../components/ExpertPremiumPaymentOverlay';
 
 export default function Payouts() {
     const navigate = useNavigate();
@@ -27,6 +27,14 @@ export default function Payouts() {
         if (saved) return JSON.parse(saved);
         return defaultLedger;
     });
+
+    useEffect(() => {
+        const handlePremiumUpdate = () => {
+            setIsPremium(localStorage.getItem('is_premium') === 'true');
+        };
+        window.addEventListener('premiumStatusChanged', handlePremiumUpdate);
+        return () => window.removeEventListener('premiumStatusChanged', handlePremiumUpdate);
+    }, []);
 
     useEffect(() => {
         localStorage.setItem('expert_payout_ledger', JSON.stringify(ledger));
@@ -287,10 +295,9 @@ export default function Payouts() {
                 )}
             </AnimatePresence>
 
-            <PremiumPaymentOverlay 
+            <ExpertPremiumPaymentOverlay 
                 isOpen={showPaymentOverlay} 
                 onClose={() => setShowPaymentOverlay(false)}
-                onPaymentSuccess={() => setIsPremium(true)}
             />
         </div>
     );
