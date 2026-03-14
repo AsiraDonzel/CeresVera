@@ -1,0 +1,16 @@
+{
+  "short_name": "CeresVera",
+  "name": "CeresVera: AI Agricultural Assistant",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1B4332",
+  "background_color": "#ffffff"
+}
