@@ -95,9 +95,10 @@ class Transaction(models.Model):
         ('PENDING', 'Pending'),
         ('SUCCESS', 'Success'),
         ('FAILED', 'Failed'),
+        ('HELD_IN_ESCROW', 'Held in Escrow'),
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    consultant = models.ForeignKey(Consultant, on_delete=models.CASCADE)
+    consultant = models.ForeignKey(Consultant, on_delete=models.CASCADE, null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     reference = models.CharField(max_length=100, unique=True, default=uuid.uuid4)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')

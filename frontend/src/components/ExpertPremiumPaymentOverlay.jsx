@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, CreditCard, CheckCircle, X, Lock, Loader2, Award, Zap, TrendingUp, Star } from 'lucide-react';
+import { triggerPayment } from '../services/PaymentService';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function ExpertPremiumPaymentOverlay({ isOpen, onClose, onPaymentSuccess }) {
     const [loading, setLoading] = useState(false);
@@ -19,25 +23,49 @@ export default function ExpertPremiumPaymentOverlay({ isOpen, onClose, onPayment
         { icon: Star, title: "Instant Payouts", desc: "Skip the 24h standard escrow delay" }
     ];
 
-    const handlePaymentMock = (e) => {
+    const handlePayment = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        // Simulate Interswitch external payment processing
-        setTimeout(() => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await axios.post(`${API_URL}/api/payment/initiate/`, {
+                amount: plans[selectedPlan].price
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const paymentData = response.data;
+
+            await triggerPayment(paymentData, async (iswResponse) => {
+                if (iswResponse.resp === "00" || iswResponse.desc === "Approved") {
+                    // Call backend callback to verify and update status
+                    await axios.post(`${API_URL}/api/payment/callback/`, {
+                        txn_ref: paymentData.txn_ref,
+                        response_code: iswResponse.resp,
+                        status: 'SUCCESS'
+                    });
+
+                    localStorage.setItem('is_premium', 'true');
+                    window.dispatchEvent(new Event('premiumStatusChanged'));
+                    setSuccess(true);
+                    setLoading(false);
+
+                    setTimeout(() => {
+                        if (onPaymentSuccess) onPaymentSuccess();
+                        onClose();
+                        setSuccess(false);
+                    }, 2500);
+                } else {
+                    setLoading(false);
+                    alert("Payment was not successful. Please try again.");
+                }
+            });
+        } catch (error) {
+            console.error("Payment initiation failed:", error);
             setLoading(false);
-            setSuccess(true);
-            localStorage.setItem('is_premium', 'true');
-            // Trigger a custom event so other components know the status changed
-            window.dispatchEvent(new Event('premiumStatusChanged'));
-            
-            setTimeout(() => {
-                if (onPaymentSuccess) onPaymentSuccess();
-                onClose();
-                // Reset state for next time
-                setSuccess(false);
-            }, 2500);
-        }, 3000);
+            alert("Failed to initiate payment. Please try again.");
+        }
     };
 
     return (
@@ -141,7 +169,7 @@ export default function ExpertPremiumPaymentOverlay({ isOpen, onClose, onPayment
                                         ))}
                                     </div>
 
-                                    <form onSubmit={handlePaymentMock} className="space-y-6">
+                                    <form onSubmit={handlePayment} className="space-y-6">
                                         <div className="grid grid-cols-1 gap-6">
                                             <div>
                                                 <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Card Information</label>

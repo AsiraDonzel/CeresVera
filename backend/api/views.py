@@ -76,43 +76,71 @@ class ScanUploadView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PaymentInitiateView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
     def post(self, request, *args, **kwargs):
         consultant_id = request.data.get('consultant_id')
-        user_id = request.data.get('user_id') # Optional, usually from request.user
+        amount = request.data.get('amount')
         
-        try:
-            consultant = Consultant.objects.get(id=consultant_id)
-        except Consultant.DoesNotExist:
-            return Response({'error': 'Consultant not found'}, status=status.HTTP_404_NOT_FOUND)
+        if consultant_id:
+            try:
+                consultant = Consultant.objects.get(id=consultant_id)
+                final_amount = consultant.rate
+            except Consultant.DoesNotExist:
+                return Response({'error': 'Consultant not found'}, status=status.HTTP_404_NOT_FOUND)
+        elif amount:
+            final_amount = amount
+            consultant = None # Platform payment
+        else:
+            return Response({'error': 'Missing consultant_id or amount'}, status=status.HTTP_400_BAD_REQUEST)
             
         transaction = Transaction.objects.create(
+            user=request.user,
             consultant=consultant,
-            amount=consultant.rate,
-            # user handling can be implemented based on auth
+            amount=final_amount,
+            status='PENDING'
         )
         
-        # In a real scenario, this is where we call Interswitch API to generate params
-        # But we pass the credentials to frontend or initialize webhook expectations
         payload = {
             'merchant_code': settings.INTERSWITCH_MERCHANT_CODE,
             'pay_item_id': settings.INTERSWITCH_PAY_ITEM_ID,
-            'amount': str(transaction.amount * 100), # Interswitch amount is in kobo
-            'txn_ref': transaction.reference,
-            'status': 'PENDING'
+            'amount': int(float(final_amount) * 100), # Ensure it's minor denomination (kobo)
+            'txn_ref': str(transaction.reference),
+            'site_name': 'CeresVera',
+            'currency': 'NGN'
         }
         
         return Response(payload, status=status.HTTP_200_OK)
 
 class PaymentCallbackView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
     def post(self, request, *args, **kwargs):
         txn_ref = request.data.get('txn_ref')
-        # In real-world, we'd verify this hash with INTERSWITCH_API_KEY.
-        # Here we mock a successful verification.
+        response_code = request.data.get('response_code') # Interswitch '00' is success
+        
         try:
             transaction = Transaction.objects.get(reference=txn_ref)
-            transaction.status = 'SUCCESS'
-            transaction.save()
-            return Response({'status': 'Payment verified successfully'}, status=status.HTTP_200_OK)
+            
+            # Mock success check - in production we'd verify hash or query Interswitch status
+            if response_code == '00' or request.data.get('status') == 'SUCCESS':
+                transaction.status = 'HELD_IN_ESCROW'
+                transaction.save()
+                
+                # If this was a premium payment overlay (amount matches 4500 or 2500 etc)
+                # Or based on some custom metadata/type
+                # For now, let's auto-upgrade if it's a certain amount or handle it generically
+                user_profile = transaction.user.profile
+                if float(transaction.amount) in [2500, 25000, 4500, 45000]:
+                    user_profile.is_premium = True
+                    user_profile.save()
+
+                return Response({'status': 'Payment successful, funds held in escrow'}, status=status.HTTP_200_OK)
+            else:
+                transaction.status = 'FAILED'
+                transaction.save()
+                return Response({'status': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
+                
         except Transaction.DoesNotExist:
             return Response({'error': 'Transaction not found'}, status=status.HTTP_404_NOT_FOUND)
 
