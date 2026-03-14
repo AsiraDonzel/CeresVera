@@ -36,7 +36,7 @@ function App() {
   }, []);
 
   return (
-    <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "605914999241-ca9qb0iib923ma24ptkpc2j4rjhdk7le.apps.googleusercontent.com"}>
       <Router>
         <ScrollToTop />
         <Layout>

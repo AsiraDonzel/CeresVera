@@ -32,6 +32,8 @@ services:
     envVars:
       - key: VITE_API_URL
         value: "https://ceresvera-backend.onrender.com"
+      - key: VITE_GOOGLE_CLIENT_ID
+        value: "605914999241-ca9qb0iib923ma24ptkpc2j4rjhdk7le.apps.googleusercontent.com"
     headers:
       - path: /*
         name: Cache-Control
