@@ -14,6 +14,11 @@ export default function LandingPage() {
     const isLoggedIn = !!localStorage.getItem('access_token');
     const userRole = localStorage.getItem('user_role') || 'farmer';
 
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: { y: 0, opacity: 1 }
+    };
+
     return (
         <div className="w-full relative overflow-hidden">
             {/* Hero Section */}
