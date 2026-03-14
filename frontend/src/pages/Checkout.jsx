@@ -1,35 +1,101 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ShieldCheck, CreditCard, CheckCircle, ArrowLeft, Lock, BadgeCheck, Video, MessageCircle } from 'lucide-react';
+import { ShieldCheck, CreditCard, CheckCircle, ArrowLeft, Lock, BadgeCheck, Video, MessageCircle, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { triggerPayment } from '../services/PaymentService';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function Checkout() {
     const { consultantId } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [expert, setExpert] = useState(null);
 
-    // Mock expert data based on ID routing
-    const expertsDb = {
-        '1': { name: 'Dr. Amina Okafor', rate: 5000, img: 'https://i.pravatar.cc/150?u=amina' },
-        '2': { name: 'Mr. Tunde Lawal', rate: 4500, img: 'https://i.pravatar.cc/150?u=tunde' },
-        '3': { name: 'Prof. S. Mensah', rate: 7000, img: 'https://i.pravatar.cc/150?u=mensah' },
-        '4': { name: 'Dr. John Doe', rate: 6000, img: 'https://i.pravatar.cc/150?u=johndoe' },
-        '5': { name: 'Jane Smith', rate: 4000, img: 'https://i.pravatar.cc/150?u=janesmith' },
+    // Form Local State
+    const [cardNumber, setCardNumber] = useState('');
+    const [expiryDate, setExpiryDate] = useState('');
+    const [cardType, setCardType] = useState('unknown');
+
+    useEffect(() => {
+        fetchExpert();
+    }, [consultantId]);
+
+    const fetchExpert = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/api/consultants/`);
+            const expertData = res.data.find(e => e.id.toString() === consultantId);
+            setExpert(expertData);
+        } catch (err) {
+            console.error('Failed to fetch expert:', err);
+        }
     };
 
-    const expert = expertsDb[consultantId] || expertsDb['1'];
+    const detectCardType = (number) => {
+        const cleanNumber = number.replace(/\D/g, '');
+        if (cleanNumber.startsWith('4')) return 'visa';
+        if (/^5[1-5]/.test(cleanNumber)) return 'mastercard';
+        if (/^(506|507|650)/.test(cleanNumber)) return 'verve';
+        return 'unknown';
+    };
 
-    const handlePaymentMock = (e) => {
+    const handleCardNumberChange = (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 16) value = value.slice(0, 16);
+        const formatted = value.match(/.{1,4}/g)?.join(' ') || '';
+        setCardNumber(formatted);
+        setCardType(detectCardType(value));
+    };
+
+    const handleExpiryChange = (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 4) value = value.slice(0, 4);
+        if (value.length >= 2) value = value.slice(0, 2) + '/' + value.slice(2);
+        setExpiryDate(value);
+    };
+
+    const handlePayment = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        // Simulate Interswitch external payment processing
-        setTimeout(() => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await axios.post(`${API_URL}/api/payment/initiate/`, {
+                consultant_id: consultantId
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const paymentData = response.data;
+
+            await triggerPayment(paymentData, async (iswResponse) => {
+                if (iswResponse.resp === "00" || iswResponse.desc === "Approved") {
+                    await axios.post(`${API_URL}/api/payment/callback/`, {
+                        txn_ref: paymentData.txn_ref,
+                        response_code: iswResponse.resp,
+                        status: 'SUCCESS'
+                    });
+                    setSuccess(true);
+                    setLoading(false);
+                } else {
+                    setLoading(false);
+                    alert("Payment was not successful. Please try again.");
+                }
+            });
+        } catch (error) {
+            console.error("Payment initiation failed:", error);
             setLoading(false);
-            setSuccess(true);
-        }, 3000);
+            alert("Failed to initiate payment. Please verify you are logged in and try again.");
+        }
     };
+
+    if (!expert) return (
+        <div className="min-h-[85vh] flex items-center justify-center bg-earth-100">
+            <div className="w-12 h-12 border-4 border-sage-200 border-t-sage-600 rounded-full animate-spin"></div>
+        </div>
+    );
 
     return (
         <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 bg-earth-100">
@@ -54,7 +120,7 @@ export default function Checkout() {
                                     <h2 className="text-xl font-bold text-gray-900 mb-8">Order Summary</h2>
 
                                     <div className="flex items-center gap-4 mb-8 bg-white p-4 rounded-2xl shadow-sm border border-sage-100">
-                                        <img src={expert.img} alt={expert.name} className="w-16 h-16 rounded-full border-2 border-sage-200" />
+                                        <img src={expert.profile_pic_url || `https://i.pravatar.cc/150?u=${expert.id}`} alt={expert.name} className="w-16 h-16 rounded-full border-2 border-sage-200 object-cover" />
                                         <div>
                                             <div className="font-bold text-gray-900 text-lg">{expert.name}</div>
                                             <div className="text-sage-700 text-sm font-medium">1x Expert Consultation</div>
@@ -88,47 +154,59 @@ export default function Checkout() {
 
                                     <div className="flex justify-between items-end border-t border-sage-200 pt-6">
                                         <div className="text-gray-500 font-medium">Total Amount</div>
-                                        <div className="text-3xl font-black text-gray-900">₦{expert.rate.toLocaleString()}</div>
+                                        <div className="text-3xl font-black text-gray-900">₦{parseFloat(expert.rate).toLocaleString()}</div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Right Pane - Interswitch Payment Gateway Mockup */}
+                            {/* Right Pane - Interswitch Payment Gateway */}
                             <div className="lg:w-3/5 p-8 lg:p-12 bg-white relative">
                                 <div className="flex justify-between items-center mb-10">
                                     <h2 className="text-2xl font-bold text-gray-900">Payment Details</h2>
-                                    <div className="flex gap-1.5 opacity-60">
-                                        {/* Mock credit card network icons */}
-                                        <div className="w-10 h-6 bg-blue-900 rounded flex items-center justify-center text-[10px] text-white font-bold italic">VISA</div>
-                                        <div className="w-10 h-6 bg-red-600 rounded flex items-center justify-center text-[10px] text-white font-bold">MASTER</div>
-                                        <div className="w-10 h-6 bg-gray-900 rounded flex items-center justify-center text-[10px] text-white font-bold tracking-tighter">VERVE</div>
+                                    <div className="flex gap-2 opacity-40 grayscale hover:grayscale-0 transition-all">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-2" />
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-2" />
+                                        <img src="https://interswitchgroup.com/assets/images/verve-logo.png" alt="Verve" className="h-2 px-1 bg-blue-900 rounded-[2px]" />
                                     </div>
                                 </div>
 
-                                <form onSubmit={handlePaymentMock} className="space-y-6 max-w-md mx-auto">
-                                    {/* Realistic Card Input Fields */}
+                                <form onSubmit={handlePayment} className="space-y-6 max-w-md mx-auto">
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Cardholder Name</label>
-                                            <input required type="text" placeholder="e.g. OLUWAKEMI ADEBAYO" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50" />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Card Number</label>
-                                            <div className="relative">
-                                                <input required type="text" maxLength="19" placeholder="0000 0000 0000 0000" className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono text-lg" />
-                                                <CreditCard className="w-6 h-6 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                                            <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Card Information</label>
+                                            <div className="relative group">
+                                                <input 
+                                                    required 
+                                                    type="text" 
+                                                    value={cardNumber}
+                                                    onChange={handleCardNumberChange}
+                                                    placeholder="0000 0000 0000 0000" 
+                                                    className="w-full pl-4 pr-12 py-4 rounded-xl border border-gray-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all bg-gray-50/50 font-mono text-lg placeholder:opacity-30" 
+                                                />
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                                    {cardType === 'visa' && <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4" />}
+                                                    {cardType === 'mastercard' && <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-4" />}
+                                                    {cardType === 'verve' && <img src="https://interswitchgroup.com/assets/images/verve-logo.png" alt="Verve" className="h-4 px-1 bg-blue-900 rounded-sm" />}
+                                                    {cardType === 'unknown' && <CreditCard className="w-6 h-6 text-gray-300 group-focus-within:text-blue-500 transition-colors" />}
+                                                </div>
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Expiry Date</label>
-                                                <input required type="text" maxLength="5" placeholder="MM/YY" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono" />
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Expiry</label>
+                                                <input 
+                                                    required 
+                                                    type="text" 
+                                                    value={expiryDate}
+                                                    onChange={handleExpiryChange}
+                                                    placeholder="MM/YY" 
+                                                    className="w-full px-4 py-4 rounded-xl border border-gray-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all bg-gray-50/50 font-mono text-center placeholder:opacity-30" 
+                                                />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">CVV</label>
-                                                <input required type="password" maxLength="3" placeholder="•••" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono text-center tracking-[0.3em]" />
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">CVV</label>
+                                                <input required type="password" maxLength="3" placeholder="•••" className="w-full px-4 py-4 rounded-xl border border-gray-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all bg-gray-50/50 font-mono text-center tracking-[0.3em] placeholder:opacity-30" />
                                             </div>
                                         </div>
                                     </div>
@@ -137,25 +215,23 @@ export default function Checkout() {
                                         <button
                                             type="submit"
                                             disabled={loading}
-                                            className="w-full bg-[#00428F] text-white font-bold py-4 rounded-xl shadow-[0_8px_20px_-4px_rgba(0,66,143,0.5)] hover:bg-[#00306A] transition-all flex items-center justify-center gap-3 active:scale-[0.98] relative overflow-hidden group"
+                                            className="w-full bg-[#00428F] text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-900/20 hover:bg-[#00306A] transition-all flex items-center justify-center gap-3 active:scale-[0.98] group relative overflow-hidden"
                                         >
-                                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
                                             {loading ? (
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Authenticating...
+                                                    <Loader2 className="w-6 h-6 animate-spin" /> Verifying...
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <span className="font-medium">Pay ₦{expert.rate.toLocaleString()} via</span>
+                                                    <span className="tracking-tight">Authorize ₦{parseFloat(expert.rate).toLocaleString()} via</span>
                                                     <img src="/interswitch.png" alt="Interswitch" className="h-5 object-contain brightness-0 invert" />
                                                 </>
                                             )}
                                         </button>
-                                        <div className="text-center mt-6 flex flex-col items-center justify-center gap-2 text-xs text-gray-400 font-medium">
+                                        <div className="text-center mt-6 flex flex-col items-center justify-center gap-2 text-[10px] text-gray-400 font-black uppercase tracking-widest leading-none">
                                             <div className="flex items-center gap-1">
-                                                <ShieldCheck className="w-4 h-4 text-green-500" /> Secure 256-bit SSL Encryption
+                                                <ShieldCheck className="w-3 h-3 text-green-500" /> Secure Interswitch Gateway
                                             </div>
-                                            <div>Merchant ID: MX153376</div>
                                         </div>
                                     </div>
                                 </form>
@@ -191,7 +267,7 @@ export default function Checkout() {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-500 text-sm">Amount Paid</span>
-                                    <span className="font-bold text-gray-900">₦{expert.rate.toLocaleString()}</span>
+                                    <span className="font-bold text-gray-900">₦{parseFloat(expert.rate).toLocaleString()}</span>
                                 </div>
                             </div>
 

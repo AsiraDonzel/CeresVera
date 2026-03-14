@@ -20,11 +20,11 @@ import {
     ShieldAlert,
     HelpCircle,
     Video,
-    X
+    X,
+    ChevronDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import CryptoJS from 'crypto-js';
 import { useGoogleLogin } from '@react-oauth/google';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -37,6 +37,7 @@ export default function Auth() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [phone, setPhone] = useState('');
+    const [expertiseCategory, setExpertiseCategory] = useState('General');
     const [recoveryCode, setRecoveryCode] = useState(['', '', '', '']);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -56,6 +57,15 @@ export default function Auth() {
                 localStorage.setItem('access_token', res.data.access);
                 localStorage.setItem('refresh_token', res.data.refresh);
                 localStorage.setItem('user_role', res.data.role || 'farmer');
+                localStorage.setItem('user_name', res.data.name || res.data.username || 'User');
+                localStorage.setItem('user_id', res.data.user_id || res.data.id);
+                localStorage.setItem('user', JSON.stringify({
+                    token: res.data.access,
+                    role: res.data.role || 'farmer',
+                    username: res.data.username || 'User',
+                    name: res.data.name || res.data.username || 'User',
+                    id: res.data.user_id || res.data.id
+                }));
                 navigate(res.data.role === 'agronomist' ? '/expert-dashboard' : '/dashboard');
             } catch (err) {
                 setError('Google authentication failed.');
@@ -72,29 +82,37 @@ export default function Auth() {
         try {
             if (mode === 'login') {
                 setLoading(true);
-                const hashedPassword = CryptoJS.SHA256(password).toString();
                 const res = await axios.post(`${API_URL}/api/auth/login/`, {
                     username: email,
-                    password: hashedPassword
+                    password: password
                 });
 
                 localStorage.setItem('access_token', res.data.access);
                 localStorage.setItem('refresh_token', res.data.refresh);
                 const userRole = res.data.role || 'farmer';
                 localStorage.setItem('user_role', userRole);
+                localStorage.setItem('user_name', res.data.name || res.data.username || 'User');
+                localStorage.setItem('user_id', res.data.user_id || res.data.id);
+                localStorage.setItem('user', JSON.stringify({
+                    token: res.data.access,
+                    role: userRole,
+                    username: res.data.username || 'User',
+                    name: res.data.name || res.data.username || 'User',
+                    id: res.data.user_id || res.data.id
+                }));
                 navigate(userRole === 'agronomist' ? '/expert-dashboard' : '/dashboard');
 
             } else if (mode === 'register-farmer' || mode === 'register-expert') {
                 setLoading(true);
-                const hashedPassword = CryptoJS.SHA256(password).toString();
                 await axios.post(`${API_URL}/api/auth/register/`, {
                     username: email,
                     email,
-                    password: hashedPassword,
-                    confirm_password: hashedPassword,
+                    password: password,
+                    confirm_password: confirmPassword,
                     role: role,
                     name: name,
-                    phone: phone
+                    phone: phone,
+                    expertise_category: expertiseCategory
                 });
                 setMode('login');
                 alert('Registration successful! Please sign in.');
@@ -226,6 +244,12 @@ export default function Auth() {
                                     <p className="text-gray-500 mt-2 font-medium">Join the sustainable agricultural revolution.</p>
                                 </div>
 
+                                {error && (
+                                    <div className="bg-rose-50 border-2 border-rose-100 text-rose-600 px-6 py-4 rounded-2xl flex items-center gap-3 font-bold text-sm">
+                                        <AlertCircle className="w-5 h-5 shrink-0" /> {error}
+                                    </div>
+                                )}
+
                                 <form className="space-y-6" onSubmit={handleSubmit}>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
@@ -251,6 +275,27 @@ export default function Auth() {
                                             <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-16 pr-6 py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20" placeholder="farmer@ceresvera.com" />
                                         </div>
                                     </div>
+
+                                    {mode === 'register-expert' && (
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Specialty Category</label>
+                                            <div className="relative">
+                                                <Award className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-forest-500" />
+                                                <select 
+                                                    value={expertiseCategory} 
+                                                    onChange={e => setExpertiseCategory(e.target.value)}
+                                                    className="w-full pl-16 pr-6 py-5 bg-forest-50 border-2 border-forest-100 focus:border-forest-500 rounded-2xl outline-none appearance-none font-bold text-forest-700 cursor-pointer"
+                                                >
+                                                    <option value="Agronomy">Agronomy</option>
+                                                    <option value="Livestock">Livestock</option>
+                                                    <option value="Soil Health">Soil Health</option>
+                                                    <option value="Pest Control">Pest Control</option>
+                                                    <option value="General">General Expertise</option>
+                                                </select>
+                                                <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-forest-300 pointer-events-none" />
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">

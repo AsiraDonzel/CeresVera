@@ -41,8 +41,8 @@ export default function FarmerRequests() {
         <div className="flex flex-col space-y-8 pb-12">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl font-black text-gray-900 tracking-tight">Farmer's Requests</h1>
-                    <p className="text-gray-500 font-medium mt-1">Review incoming bookings and provide expert guidance.</p>
+                    <h1 className="text-4xl font-black text-app-text tracking-tight">Farmer's Requests</h1>
+                    <p className="text-app-text-muted font-medium mt-1">Review incoming bookings and provide expert guidance.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="relative">
@@ -50,7 +50,7 @@ export default function FarmerRequests() {
                         <input
                             type="text"
                             placeholder="Search requests..."
-                            className="pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-harvest-500 outline-none w-64 shadow-sm font-medium"
+                            className="pl-11 pr-4 py-2.5 bg-app-card border border-app-border rounded-xl focus:ring-2 focus:ring-harvest-500 outline-none w-64 shadow-sm font-medium text-app-text placeholder:text-app-text-muted"
                         />
                     </div>
                 </div>
@@ -61,7 +61,7 @@ export default function FarmerRequests() {
                     <motion.div
                         key={req.id}
                         whileHover={{ y: -4 }}
-                        className="bg-white rounded-[2rem] border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group flex flex-col"
+                        className="bg-app-card rounded-[2rem] border border-app-border shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group flex flex-col"
                     >
                         <div className="p-8 space-y-6 flex-1">
                             <div className="flex justify-between items-start">
@@ -73,27 +73,27 @@ export default function FarmerRequests() {
                             </div>
 
                             <div>
-                                <h3 className="text-2xl font-black text-gray-900 leading-tight group-hover:text-harvest-600 transition-colors uppercase">{req.farmerName}</h3>
-                                <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-1">Cultivator Profile</p>
+                                <h3 className="text-2xl font-black text-app-text leading-tight group-hover:text-harvest-600 transition-colors uppercase">{req.farmerName}</h3>
+                                <p className="text-app-text-muted font-bold uppercase tracking-widest text-[10px] mt-1">Cultivator Profile</p>
                             </div>
 
                             <div className="space-y-4">
-                                <div className="flex items-center gap-3 text-gray-700 font-bold">
+                                <div className="flex items-center gap-3 text-app-text font-bold">
                                     <Leaf className="w-5 h-5 text-forest-600" />
-                                    <span>Affected Crop: <span className="text-forest-700 bg-forest-50 px-2 py-0.5 rounded-lg">{req.crop}</span></span>
+                                    <span>Affected Crop: <span className="text-forest-700 dark:text-forest-400 bg-forest-50 dark:bg-forest-900/20 px-2 py-0.5 rounded-lg">{req.crop}</span></span>
                                 </div>
-                                <div className="flex gap-4 border-t border-gray-50 pt-4">
-                                    <div className="flex items-center gap-2 text-gray-500">
+                                <div className="flex gap-4 border-t border-app-border pt-4">
+                                    <div className="flex items-center gap-2 text-app-text-muted">
                                         <MapPin className="w-4 h-4" /> <span className="text-xs font-medium">{req.location}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-gray-500">
+                                    <div className="flex items-center gap-2 text-app-text-muted">
                                         <Droplets className="w-4 h-4" /> <span className="text-xs font-medium">{req.soilType}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-6 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between mt-auto">
+                        <div className="p-6 bg-app-accent-subtle border-t border-app-border flex items-center justify-between mt-auto">
                             <button onClick={() => setSelectedRequest(req)} className="text-harvest-600 font-black text-sm uppercase tracking-widest hover:text-harvest-800 transition-colors">Details</button>
                             <button onClick={() => navigate('/schedule')} className="flex items-center gap-2 px-6 py-2.5 bg-harvest-500 text-white font-black rounded-xl text-xs hover:bg-harvest-600 transition-all">Set Schedule <ArrowRight className="w-4 h-4" /></button>
                         </div>
@@ -110,22 +110,22 @@ export default function FarmerRequests() {
                     >
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-                            className="bg-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl relative"
+                            className="bg-app-card w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl relative border border-app-border"
                             onClick={e => e.stopPropagation()}
                         >
                             <div className="p-10 space-y-8">
-                                <h2 className="text-3xl font-black uppercase text-gray-900">{selectedRequest.farmerName} - Full Details</h2>
+                                <h2 className="text-3xl font-black uppercase text-app-text">{selectedRequest.farmerName} - Full Details</h2>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 italic">
-                                        <p className="text-[10px] text-gray-400 font-black uppercase mb-1">Crop Affected</p>
-                                        <p className="font-bold text-gray-900">{selectedRequest.crop}</p>
+                                    <div className="p-4 bg-app-subtle rounded-2xl border border-app-border italic">
+                                        <p className="text-[10px] text-app-text-muted font-black uppercase mb-1">Crop Affected</p>
+                                        <p className="font-bold text-app-text">{selectedRequest.crop}</p>
                                     </div>
-                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 italic">
-                                        <p className="text-[10px] text-gray-400 font-black uppercase mb-1">Soil Type</p>
-                                        <p className="font-bold text-gray-900">{selectedRequest.soilType}</p>
+                                    <div className="p-4 bg-app-subtle rounded-2xl border border-app-border italic">
+                                        <p className="text-[10px] text-app-text-muted font-black uppercase mb-1">Soil Type</p>
+                                        <p className="font-bold text-app-text">{selectedRequest.soilType}</p>
                                     </div>
                                 </div>
-                                <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 italic text-gray-700 leading-relaxed font-medium">
+                                <div className="p-6 bg-app-subtle rounded-2xl border border-app-border italic text-app-text leading-relaxed font-medium">
                                     "{selectedRequest.problem}"
                                 </div>
                                 <div className="flex gap-4">

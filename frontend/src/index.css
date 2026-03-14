@@ -1,4 +1,5 @@
 @import "tailwindcss";
+/* CSS entry point */
 @plugin "@tailwindcss/typography";
 
 @theme {
@@ -47,10 +48,49 @@
   --color-earth-700: var(--color-harvest-700);
   --color-earth-800: var(--color-harvest-800);
   --color-earth-900: var(--color-harvest-900);
+
+  /* Functional Theme Colors */
+  --color-app-bg: var(--theme-bg);
+  --color-app-text: var(--theme-text);
+  --color-app-text-muted: var(--theme-muted);
+  --color-app-surface: var(--theme-surface);
+  --color-app-border: var(--theme-border);
+  
+  /* Semantic Accent Variants (Themed) */
+  --color-app-subtle: var(--theme-subtle);
+  --color-app-card: var(--theme-card);
+  --color-app-card-border: var(--theme-card-border);
+  --color-app-accent-subtle: var(--theme-accent-subtle);
+}
+
+:root {
+  --theme-bg: #ffffff;
+  --theme-text: #111827;
+  --theme-muted: #6b7280;
+  --theme-surface: #f9fafb;
+  --theme-border: #e5e7eb;
+  
+  --theme-subtle: #f8fafc;
+  --theme-card: #ffffff;
+  --theme-card-border: #f1f5f9;
+  --theme-accent-subtle: #f0fdf4; /* Light green for sage-50 */
+}
+
+.dark {
+  --theme-bg: #09090b; /* Deep Zinc Black */
+  --theme-text: #fafafa;
+  --theme-muted: #a1a1aa;
+  --theme-surface: #121214;
+  --theme-border: #27272a;
+  
+  --theme-subtle: #0f1110;
+  --theme-card: #18181b;
+  --theme-card-border: #27272a;
+  --theme-accent-subtle: #064e3b15; /* Transparent Emerald/Forest tint */
 }
 
 body {
-  @apply bg-white text-gray-900 antialiased;
+  @apply bg-app-bg text-app-text antialiased transition-colors duration-300;
 }
 
 .font-sans {

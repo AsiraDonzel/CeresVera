@@ -35,7 +35,7 @@ export default function Crops() {
     })).filter(group => group.crops.length > 0);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-earth-50 to-white">
+        <div className="min-h-screen bg-app-subtle">
             {/* Hero Banner */}
             <div className="bg-gradient-to-r from-sage-800 to-sage-700 text-white py-16 px-4">
                 <div className="max-w-5xl mx-auto">
@@ -64,7 +64,7 @@ export default function Crops() {
                         placeholder="Search for a crop by name..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-sage-400 shadow-sm text-sm transition-shadow"
+                        className="w-full px-5 py-3.5 bg-app-card border border-app-border rounded-xl text-app-text focus:outline-none focus:ring-2 focus:ring-sage-400 shadow-sm text-sm transition-shadow placeholder:text-app-text-muted"
                     />
                 </div>
 
@@ -96,9 +96,9 @@ export default function Crops() {
                                             whileHover={{ scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
                                             onClick={() => setSelectedCrop(crop)}
-                                            className="bg-white border border-gray-100 rounded-2xl p-5 cursor-pointer shadow-sm hover:shadow-md hover:border-sage-200 transition-all group"
+                                            className="bg-app-card border border-app-border rounded-2xl p-5 cursor-pointer shadow-sm hover:shadow-md hover:border-sage-200 transition-all group"
                                         >
-                                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-sage-700 transition-colors tracking-tight leading-tight mb-1">
+                                            <h3 className="text-lg font-bold text-app-text group-hover:text-sage-700 transition-colors tracking-tight leading-tight mb-1">
                                                 {crop.name}
                                             </h3>
                                             <p className="text-sm text-gray-400 font-mono italic mb-4">
@@ -107,12 +107,12 @@ export default function Crops() {
                                             
                                             <div className="flex flex-wrap gap-2">
                                                 {crop.nigeriaStates && crop.nigeriaStates[0] && (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-earth-50 text-earth-700 text-[10px] font-bold uppercase rounded-md">
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-app-accent-subtle text-earth-700 dark:text-earth-400 text-[10px] font-bold uppercase rounded-md">
                                                         <MapPin className="w-3 h-3" /> {crop.nigeriaStates[0]}
                                                     </span>
                                                 )}
                                                 {crop.seasons && crop.seasons[0] && (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-sage-50 text-sage-700 text-[10px] font-bold uppercase rounded-md truncate max-w-[120px]">
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-app-accent-subtle text-sage-700 dark:text-sage-400 text-[10px] font-bold uppercase rounded-md truncate max-w-[120px]">
                                                         <Calendar className="w-3 h-3 shrink-0" /> {crop.seasons[0]}
                                                     </span>
                                                 )}
@@ -141,7 +141,7 @@ export default function Crops() {
                             animate={{ y: 0, opacity: 1, scale: 1 }}
                             exit={{ y: 20, opacity: 0, scale: 0.95 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="bg-white rounded-[2rem] shadow-2xl overflow-hidden w-full max-w-2xl my-auto relative"
+                            className="bg-app-card rounded-[2rem] shadow-2xl overflow-hidden w-full max-w-2xl my-auto relative border border-app-border"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Modal Header */}
@@ -167,7 +167,7 @@ export default function Crops() {
                             </div>
 
                             {/* Modal Content Details */}
-                            <div className="p-8 bg-gray-50 flex-grow">
+                            <div className="p-8 bg-app-subtle flex-grow">
                                 <div className="grid sm:grid-cols-2 gap-8">
 
                                     {/* Best Seasons to Plant */}
@@ -179,7 +179,7 @@ export default function Crops() {
                                         {selectedCrop.seasons && selectedCrop.seasons.length > 0 ? (
                                             <ul className="space-y-2">
                                                 {selectedCrop.seasons.map((season, i) => (
-                                                    <li key={i} className="flex items-center text-gray-700 bg-white px-4 py-3 rounded-xl shadow-sm border border-sage-100/50 text-sm font-medium">
+                                                    <li key={i} className="flex items-center text-app-text bg-app-card px-4 py-3 rounded-xl shadow-sm border border-app-border text-sm font-medium">
                                                         <div className="w-1.5 h-1.5 rounded-full bg-sage-400 mr-3 shrink-0" />
                                                         {season}
                                                     </li>
@@ -199,7 +199,7 @@ export default function Crops() {
                                         {selectedCrop.nigeriaStates && selectedCrop.nigeriaStates.length > 0 ? (
                                             <ul className="space-y-2">
                                                 {selectedCrop.nigeriaStates.map((state, i) => (
-                                                    <li key={i} className="flex items-center text-gray-700 bg-white px-4 py-3 rounded-xl shadow-sm border border-earth-100/50 text-sm font-medium">
+                                                    <li key={i} className="flex items-center text-app-text bg-app-card px-4 py-3 rounded-xl shadow-sm border border-app-border text-sm font-medium">
                                                         <div className="w-1.5 h-1.5 rounded-full bg-earth-400 mr-3 shrink-0" />
                                                         {state}
                                                     </li>

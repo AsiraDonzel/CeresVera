@@ -1,8 +1,14 @@
 from rest_framework import viewsets, status, generics, permissions, parsers
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Consultant, Scan, Transaction, UserProfile
-from .serializers import ConsultantSerializer, ScanSerializer, TransactionSerializer, RegisterSerializer, UserProfileSerializer, CustomTokenObtainPairSerializer
+from .models import Consultant, Scan, Transaction, UserProfile, Notification, Conversation, Message
+from .serializers import (
+    ConsultantSerializer, ScanSerializer, TransactionSerializer, 
+    RegisterSerializer, UserProfileSerializer, CustomTokenObtainPairSerializer,
+    ExpertReviewSerializer, NotificationSerializer, MessageSerializer, ConversationSerializer
+)
+import pusher
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.db.models import Count
@@ -19,9 +25,36 @@ from google.auth.transport import requests as google_requests
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-class ConsultantViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Consultant.objects.filter(is_active=True).order_by('-is_premium', 'id')
+class ConsultantViewSet(viewsets.ModelViewSet):
+    def get_queryset(self):
+        # Strictly filter by APPROVED status in UserProfile
+        return Consultant.objects.filter(
+            is_active=True,
+            is_verified=True,
+            user__profile__verification_status='APPROVED'
+        ).order_by('-is_premium', 'id')
     serializer_class = ConsultantSerializer
+
+    @action(detail=False, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def toggle_visibility(self, request):
+        try:
+            consultant = Consultant.objects.get(user=request.user)
+            consultant.is_active = not consultant.is_active
+            consultant.save()
+            return Response({'is_active': consultant.is_active}, status=status.HTTP_200_OK)
+        except Consultant.DoesNotExist:
+            return Response({'error': 'Consultant profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class MarketplaceExpertListView(generics.ListAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = ConsultantSerializer
+
+    def get_queryset(self):
+        return Consultant.objects.filter(
+            is_verified=True,
+            is_active=True,
+            user__profile__role='agronomist' # Role is Expert/Agronomist
+        ).order_by('-is_premium', '-rating')
 
 class ScanUploadView(APIView):
     def post(self, request, *args, **kwargs):
@@ -106,7 +139,7 @@ class PaymentInitiateView(APIView):
             'pay_item_id': settings.INTERSWITCH_PAY_ITEM_ID,
             'amount': int(float(final_amount) * 100), # Ensure it's minor denomination (kobo)
             'txn_ref': str(transaction.reference),
-            'site_name': 'CeresVera',
+            'site_name': 'Hackathon Team 10',
             'currency': 'NGN'
         }
         
@@ -318,8 +351,8 @@ class AgricultureAdviserView(APIView):
 
         try:
             api_key = os.environ.get("GROQ_API_KEY")
-            if not api_key:
-                return Response({'error': 'GROQ API key not configured on server.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if not api_key or api_key == "your_groq_api_key_here":
+                return Response({'error': 'Cera AI is offline (API key missing or placeholder detected). Update backend/.env.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             client = Groq(api_key=api_key)
             completion = client.chat.completions.create(
@@ -370,7 +403,7 @@ class DeepseekAdviserView(APIView):
         try:
             api_key = os.environ.get("GROQ_API_KEY")
             if not api_key:
-                return Response({'error': 'GROQ API key not configured on server.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({'error': 'Cera AI is currently offline (API key missing). Please contact support.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             client = Groq(api_key=api_key)
 
@@ -407,8 +440,34 @@ class UserProfileUpdateView(APIView):
         try:
             user_profile, created = UserProfile.objects.get_or_create(user=request.user)
             serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
-            if serializer.is_valid():
+            if (serializer.is_valid()):
                 serializer.save()
+                
+                # If status updated to APPROVED, synchronize with Consultant model
+                if request.data.get('verification_status') == 'APPROVED':
+                    Consultant.objects.get_or_create(
+                        user=request.user,
+                        defaults={
+                            'name': f"{request.user.first_name} {request.user.last_name}",
+                            'specialty': user_profile.expertise_category or 'General',
+                            'bio': user_profile.bio or '',
+                            'rate': user_profile.consultation_rate or 0,
+                            'expertise_category': user_profile.expertise_category or 'General',
+                            'profile_image_url': user_profile.profile_picture.url if user_profile.profile_picture else '',
+                            'is_verified': True,
+                            'is_active': True
+                        }
+                    )
+                    # Update existing if already exists
+                    Consultant.objects.filter(user=request.user).update(
+                        is_verified=True,
+                        expertise_category=user_profile.expertise_category or 'General',
+                        name=f"{request.user.first_name} {request.user.last_name}",
+                        rate=user_profile.consultation_rate or 15000,
+                        profile_image_url=user_profile.profile_picture.url if user_profile.profile_picture else '',
+                        is_active=True
+                    )
+                
                 return Response(serializer.data, status=status.HTTP_200_OK)
             
             with open('error_log.txt', 'a') as f:
@@ -418,10 +477,7 @@ class UserProfileUpdateView(APIView):
             with open('error_log.txt', 'a') as f:
                 f.write(f"Exception: {str(e)}\n")
             return Response({'error': 'Server error', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-from django.utils.crypto import get_random_string
-import logging
 
-# ... (rest of the imports)
 
 class PasswordResetRequestView(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -468,3 +524,135 @@ class PasswordResetConfirmView(APIView):
             return Response({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class NotificationListView(generics.ListAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_at('-created_at')
+
+class AdminExpertPendingView(APIView):
+    permission_classes = (permissions.IsAdminUser,)
+
+    def get(self, request):
+        pending_experts = UserProfile.objects.filter(role='agronomist', verification_status='PENDING')
+        serializer = UserProfileSerializer(pending_experts, many=True)
+        # We need to include email/name from User too
+        data = []
+        for profile in pending_experts:
+            p_data = UserProfileSerializer(profile).data
+            p_data['email'] = profile.user.email
+            p_data['full_name'] = f"{profile.user.first_name} {profile.user.last_name}"
+            data.append(p_data)
+        return Response(data)
+
+class AdminExpertReviewView(APIView):
+    permission_classes = (permissions.IsAdminUser,)
+
+    def post(self, request, profile_id):
+        try:
+            profile = UserProfile.objects.get(id=profile_id)
+            serializer = ExpertReviewSerializer(data=request.data)
+            if serializer.is_valid():
+                status = serializer.validated_data['status']
+                reason = serializer.validated_data.get('rejection_reason', '')
+                
+                profile.verification_status = status
+                if status == 'REJECTED':
+                    profile.rejection_reason = reason
+                elif status == 'APPROVED':
+                    # Create or update marketplace Consultant entry
+                    Consultant.objects.get_or_create(
+                        user=profile.user,
+                        defaults={
+                            'name': f"{profile.user.first_name} {profile.user.last_name}",
+                            'specialty': 'General Agronomy', # Default specialty
+                            'bio': profile.bio or '',
+                            'rate': profile.consultation_rate or 0,
+                            'expertise_category': profile.expertise_category or 'General',
+                            'profile_image_url': profile.profile_picture.url if profile.profile_picture else '',
+                            'is_verified': True,
+                            'is_active': True
+                        }
+                    )
+                    # For existing consultants, update their verified status
+                    Consultant.objects.filter(user=profile.user).update(
+                        is_verified=True,
+                        expertise_category=profile.expertise_category or 'General',
+                        name=f"{profile.user.first_name} {profile.user.last_name}",
+                        bio=profile.bio or '',
+                        rate=profile.consultation_rate or 0,
+                        profile_image_url=profile.profile_picture.url if profile.profile_picture else ''
+                    )
+
+                profile.save()
+
+                # Notify user
+                title = "Account Verified" if status == 'APPROVED' else "Account Review Result"
+                message = "Your expert profile has been approved! You are now live on the marketplace." if status == 'APPROVED' else f"Your expert profile was not approved. Reason: {reason}"
+                
+                Notification.objects.create(
+                    user=profile.user,
+                    title=title,
+                    message=message
+                )
+
+                # TODO: send_mail(title, message, settings.DEFAULT_FROM_EMAIL, [profile.user.email])
+
+                return Response({'status': f'Expert {status.lower()} successfully'})
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class ConversationViewSet(viewsets.ModelViewSet):
+    serializer_class = ConversationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Conversation.objects.filter(participants=self.request.user).order_by('-last_message_at')
+
+    def create(self, request, *args, **kwargs):
+        participant_ids = request.data.get('participants', [])
+        if not participant_ids:
+            return Response({'error': 'Participants required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        participant_ids = [int(pid) for pid in participant_ids]
+        if request.user.id not in participant_ids:
+            participant_ids.append(request.user.id)
+        
+        conversations = Conversation.objects.annotate(pcnt=Count('participants')).filter(pcnt=len(participant_ids))
+        for p_id in participant_ids:
+            conversations = conversations.filter(participants__id=p_id)
+        
+        if conversations.exists():
+            return Response(ConversationSerializer(conversations.first()).data)
+            
+        conversation = Conversation.objects.create()
+        conversation.participants.set(participant_ids)
+        return Response(ConversationSerializer(conversation).data, status=status.HTTP_201_CREATED)
+
+class MessageCreateView(generics.CreateAPIView):
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        message = serializer.save(sender=self.request.user)
+        message.conversation.last_message_at = timezone.now()
+        message.conversation.save()
+        
+        try:
+            pusher_client = pusher.Pusher(
+                app_id=os.environ.get('PUSHER_APP_ID', '12345'),
+                key=os.environ.get('PUSHER_KEY', 'local_key'),
+                secret=os.environ.get('PUSHER_SECRET', 'local_secret'),
+                cluster=os.environ.get('PUSHER_CLUSTER', 'mt1'),
+                ssl=True
+            )
+            pusher_client.trigger(
+                f'conversation_{message.conversation.id}', 
+                'new-message', 
+                MessageSerializer(message).data
+            )
+        except Exception as e:
+            print(f"Pusher Error: {e}")

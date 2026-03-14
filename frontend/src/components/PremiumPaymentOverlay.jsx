@@ -10,10 +10,43 @@ export default function PremiumPaymentOverlay({ isOpen, onClose, onPaymentSucces
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState('monthly'); // 'monthly' | 'annual'
+    
+    // UI Local State for Formatting
+    const [cardNumber, setCardNumber] = useState('');
+    const [expiryDate, setExpiryDate] = useState('');
+    const [cardType, setCardType] = useState('unknown'); // 'visa' | 'mastercard' | 'verve' | 'unknown'
 
     const plans = {
         monthly: { name: 'Monthly Plan', price: 2500, label: '₦2,500/mo' },
         annual: { name: 'Annual Plan', price: 25000, label: '₦25,000/yr', savings: 'Save ₦5,000' }
+    };
+
+    const detectCardType = (number) => {
+        const cleanNumber = number.replace(/\D/g, '');
+        if (cleanNumber.startsWith('4')) return 'visa';
+        if (/^5[1-5]/.test(cleanNumber)) return 'mastercard';
+        if (/^(506|507|650)/.test(cleanNumber)) return 'verve';
+        return 'unknown';
+    };
+
+    const handleCardNumberChange = (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 19) value = value.slice(0, 19);
+        
+        // Format with spaces
+        const formatted = value.match(/.{1,4}/g)?.join(' ') || '';
+        setCardNumber(formatted);
+        setCardType(detectCardType(value));
+    };
+
+    const handleExpiryChange = (e) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 4) value = value.slice(0, 4);
+        
+        if (value.length >= 2) {
+            value = value.slice(0, 2) + '/' + value.slice(2);
+        }
+        setExpiryDate(value);
     };
 
     const handlePayment = async (e) => {
@@ -135,33 +168,62 @@ export default function PremiumPaymentOverlay({ isOpen, onClose, onPaymentSucces
                                             <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Total to Pay</span>
                                             <span className="text-2xl font-black text-gray-900">₦{plans[selectedPlan].price.toLocaleString()}</span>
                                         </div>
-                                        <div className="text-right">
+                                        <div className="text-right flex flex-col items-end gap-1">
                                             <span className="text-[10px] font-black text-sage-600 bg-sage-100 px-2 py-1 rounded-full uppercase tracking-tighter">Priority Access</span>
+                                            <div className="flex gap-1 opacity-60">
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-2" />
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-2" />
+                                                <img src="https://interswitchgroup.com/assets/images/verve-logo.png" alt="Verve" className="h-2 px-1 bg-blue-900 rounded-[2px]" />
+                                            </div>
                                         </div>
                                     </div>
 
                                     <form onSubmit={handlePayment} className="space-y-5">
                                         <div>
                                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Cardholder Name</label>
-                                            <input required type="text" placeholder="e.g. OLUWAKEMI ADEBAYO" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50" />
+                                            <input 
+                                                required 
+                                                type="text" 
+                                                placeholder="e.g. OLUWAKEMI ADEBAYO" 
+                                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 placeholder:opacity-30" 
+                                            />
                                         </div>
 
                                         <div>
                                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Card Number</label>
                                             <div className="relative">
-                                                <input required type="text" maxLength="19" placeholder="0000 0000 0000 0000" className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono text-lg" />
-                                                <CreditCard className="w-6 h-6 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" />
+                                                <input 
+                                                    required 
+                                                    type="text" 
+                                                    value={cardNumber}
+                                                    onChange={handleCardNumberChange}
+                                                    placeholder="0000 0000 0000 0000" 
+                                                    className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono text-lg placeholder:opacity-30" 
+                                                />
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
+                                                    {cardType === 'visa' && <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4" />}
+                                                    {cardType === 'mastercard' && <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-4" />}
+                                                    {cardType === 'verve' && <img src="https://interswitchgroup.com/assets/images/verve-logo.png" alt="Verve" className="h-4 px-1 bg-blue-900 rounded-sm" />}
+                                                    {cardType === 'unknown' && <CreditCard className="w-6 h-6 text-gray-300" />}
+                                                </div>
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Expiry Date</label>
-                                                <input required type="text" maxLength="5" placeholder="MM/YY" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono" />
+                                                <input 
+                                                    required 
+                                                    type="text" 
+                                                    value={expiryDate}
+                                                    onChange={handleExpiryChange}
+                                                    placeholder="MM/YY" 
+                                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono placeholder:opacity-30" 
+                                                />
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">CVV</label>
-                                                <input required type="password" maxLength="3" placeholder="•••" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono text-center tracking-[0.3em]" />
+                                                <input required type="password" maxLength="3" placeholder="•••" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono text-center tracking-[0.3em] placeholder:opacity-30" />
                                             </div>
                                         </div>
 
@@ -183,8 +245,8 @@ export default function PremiumPaymentOverlay({ isOpen, onClose, onPaymentSucces
                                                     </>
                                                 )}
                                             </button>
-                                            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400 font-medium">
-                                                <Lock className="w-3 h-3" /> Secure 256-bit SSL Encryption by Interswitch
+                                            <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-gray-400 font-medium uppercase tracking-widest">
+                                                <Lock className="w-3 h-3" /> Secure Interswitch Gateway
                                             </div>
                                         </div>
                                     </form>

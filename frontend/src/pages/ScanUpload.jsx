@@ -112,19 +112,19 @@ export default function ScanUpload() {
     };
 
     return (
-        <div className="p-8 space-y-8 bg-earth-50 min-h-full">
+        <div className="p-8 space-y-8 bg-app-subtle min-h-full">
 
-            <div className="bg-white rounded-3xl p-8 shadow-sm border border-sage-100">
+            <div className="bg-app-card rounded-3xl p-8 shadow-sm border border-app-border">
                 {!preview ? (
                     <div
                         onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
-                        className="border-2 border-dashed border-sage-300 rounded-2xl p-16 text-center hover:bg-sage-50 transition-colors cursor-pointer flex flex-col items-center justify-center"
+                        className="border-2 border-dashed border-app-border rounded-2xl p-16 text-center hover:bg-app-accent-subtle transition-colors cursor-pointer flex flex-col items-center justify-center"
                         onClick={() => document.getElementById('file-upload').click()}
                     >
                         <div className="p-4 bg-earth-100 text-earth-700 rounded-full mb-4 group-hover:scale-110 transition-transform">
                             <UploadCloud className="w-8 h-8" />
                         </div>
-                        <h3 className="text-xl font-black text-sage-900 mb-2">Drag & drop an image</h3>
+                        <h3 className="text-xl font-black text-app-text mb-2">Drag & drop an image</h3>
                         <p className="text-gray-500 font-medium mb-8">or use your camera for instant detection</p>
                         
                         <div className="flex gap-4">
@@ -146,9 +146,9 @@ export default function ScanUpload() {
                             </button>
                         </div>
                         
-                        <div className="mt-8 pt-8 border-t border-sage-100 w-full flex flex-col items-center">
-                            <p className="text-sm text-gray-500 mb-4">Need more AI insight instead?</p>
-                            <Link to="/chat" className="flex items-center gap-2 text-sage-700 font-bold hover:text-sage-900 transition-colors">
+                        <div className="mt-8 pt-8 border-t border-app-border w-full flex flex-col items-center">
+                            <p className="text-sm text-app-text-muted mb-4">Need more AI insight instead?</p>
+                            <Link to="/chat" className="flex items-center gap-2 text-sage-700 dark:text-sage-400 font-bold hover:text-sage-900 transition-colors">
                                 <MessageSquare className="w-4 h-4" /> Ask Cera AI Assistant <ArrowRight className="w-4 h-4" />
                             </Link>
                         </div>
@@ -178,8 +178,8 @@ export default function ScanUpload() {
                         </div>
 
                         {!result && !isScanning && (
-                            <div className="flex justify-between items-center bg-earth-100 p-4 rounded-xl mt-4">
-                                <button onClick={() => setPreview(null)} className="text-gray-600 font-medium px-4 py-2 hover:bg-white rounded-lg transition-colors">
+                            <div className="flex justify-between items-center bg-app-subtle p-4 rounded-xl mt-4">
+                                <button onClick={() => setPreview(null)} className="text-app-text-muted font-medium px-4 py-2 hover:bg-app-card rounded-lg transition-colors">
                                     Choose different image
                                 </button>
                                 <button onClick={performScan} className="bg-sage-700 text-white px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
@@ -193,7 +193,7 @@ export default function ScanUpload() {
                             {result && (
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                                    className="bg-white border-2 border-sage-100 p-6 rounded-2xl shadow-sm"
+                                    className="bg-app-card border-2 border-app-border p-6 rounded-2xl shadow-sm"
                                 >
                                     <div className="flex items-start gap-4">
                                         <div className={`p-3 rounded-full ${result.isHealthy ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
@@ -202,8 +202,8 @@ export default function ScanUpload() {
                                         <div className="flex-1">
                                             <div className="flex justify-between items-start">
                                                 <div>
-                                                    <h3 className="text-2xl font-bold text-gray-900">{result.disease_name}</h3>
-                                                    <p className="text-gray-600 mt-1">{result.description}</p>
+                                                    <h3 className="text-2xl font-bold text-app-text">{result.disease_name}</h3>
+                                                    <p className="text-app-text-muted mt-1">{result.description}</p>
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="text-sm text-gray-500 font-medium">Confidence</div>
@@ -211,9 +211,9 @@ export default function ScanUpload() {
                                                 </div>
                                             </div>
 
-                                            <div className="mt-6 p-4 bg-earth-100 rounded-xl border border-earth-300">
-                                                <h4 className="font-semibold text-gray-900 mb-2">Recommended Action</h4>
-                                                <p className="text-gray-700">{result.recommended_action}</p>
+                                            <div className="mt-6 p-4 bg-app-subtle rounded-xl border border-app-border">
+                                                <h4 className="font-semibold text-app-text mb-2">Recommended Action</h4>
+                                                <p className="text-app-text-muted">{result.recommended_action}</p>
                                             </div>
 
                                             <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3">
@@ -224,13 +224,13 @@ export default function ScanUpload() {
                                                         setFile(null);
                                                         setTimeout(() => document.getElementById('camera-upload')?.click(), 100);
                                                     }}
-                                                    className="inline-flex items-center justify-center bg-white border-2 border-sage-200 text-sage-700 px-6 py-3 rounded-xl font-bold hover:bg-sage-50 transition-all flex items-center gap-2"
+                                                    className="inline-flex items-center justify-center bg-app-card border-2 border-app-border text-sage-700 dark:text-sage-400 px-6 py-3 rounded-xl font-bold hover:bg-app-accent-subtle transition-all flex items-center gap-2"
                                                 >
                                                     <Camera className="w-4 h-4" /> Open Camera
                                                 </button>
                                                 <Link 
                                                     to="/chat" 
-                                                    className="inline-flex items-center justify-center bg-white border-2 border-sage-200 text-sage-700 px-6 py-3 rounded-xl font-bold hover:bg-sage-50 transition-all flex items-center gap-2"
+                                                    className="inline-flex items-center justify-center bg-app-card border-2 border-app-border text-sage-700 dark:text-sage-400 px-6 py-3 rounded-xl font-bold hover:bg-app-accent-subtle transition-all flex items-center gap-2"
                                                 >
                                                     <MessageSquare className="w-4 h-4" /> Ask Cera AI
                                                 </Link>

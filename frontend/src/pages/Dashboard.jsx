@@ -68,14 +68,14 @@ export default function Dashboard() {
     ];
 
     return (
-        <div className="p-8 space-y-8 bg-sage-50 min-h-full">
+        <div className="p-8 space-y-8 bg-app-subtle min-h-full">
             {/* Overview Header */}
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="space-y-1">
-                    <h2 className="text-2xl font-black text-sage-900">Good morning, {userName}!</h2>
-                    <p className="text-gray-500 font-medium">Here's what's happening on your farm today.</p>
+                    <h2 className="text-2xl font-black text-app-text leading-tight">Good morning, {userName}!</h2>
+                    <p className="text-app-text-muted font-medium">Here's what's happening on your farm today.</p>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-sage-100 rounded-xl text-sm font-bold text-sage-700 shadow-sm hover:shadow-md transition-all">
+                <button className="flex items-center gap-2 px-4 py-2 bg-app-card border border-app-border rounded-xl text-sm font-bold text-sage-700 shadow-sm hover:shadow-md transition-all shrink-0">
                     Last 30 days <ChevronDown className="w-4 h-4" />
                 </button>
             </div>
@@ -83,17 +83,17 @@ export default function Dashboard() {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-white p-6 rounded-[2rem] border border-sage-50 shadow-sm relative overflow-hidden group">
+                    <div key={i} className="bg-app-card p-6 rounded-[2rem] border border-app-card-border shadow-sm relative overflow-hidden group">
                         <div className="flex justify-between items-start mb-6">
-                            <div className="p-3 bg-earth-50 rounded-xl text-sage-700 group-hover:bg-sage-700 group-hover:text-white transition-all duration-300">
+                            <div className="p-3 bg-app-accent-subtle rounded-xl text-sage-700 group-hover:bg-sage-700 group-hover:text-white transition-all duration-300">
                                 {stat.icon}
                             </div>
-                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-black tracking-tight ${stat.up ? 'bg-sage-50 text-sage-700' : 'bg-rose-50 text-rose-600'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-black tracking-tight ${stat.up ? 'bg-sage-50 dark:bg-sage-900/20 text-sage-700' : 'bg-rose-50 text-rose-600'}`}>
                                 <ArrowUpRight className={`w-3 h-3 ${stat.up ? '' : 'rotate-90'}`} /> {stat.change}
                             </div>
                         </div>
-                        <div className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">{stat.label}</div>
-                        <div className="text-3xl font-black text-sage-900 tracking-tight">{stat.value}</div>
+                        <div className="text-app-text-muted text-xs font-bold uppercase tracking-wider mb-1">{stat.label}</div>
+                        <div className="text-3xl font-black text-app-text tracking-tight">{stat.value}</div>
                     </div>
                 ))}
             </div>
@@ -101,9 +101,9 @@ export default function Dashboard() {
             {/* Main Content Grid */}
             <div className="grid lg:grid-cols-3 gap-8">
                 {/* Project Summary Table */}
-                <div className="lg:col-span-2 bg-white rounded-[2rem] border border-sage-50 shadow-sm overflow-hidden flex flex-col">
-                    <div className="p-8 border-b border-sage-50 flex justify-between items-center bg-white">
-                        <h3 className="text-lg font-black text-sage-900">Crop Health Analysis</h3>
+                <div className="lg:col-span-2 bg-app-card rounded-[2rem] border border-app-card-border shadow-sm overflow-hidden flex flex-col">
+                    <div className="p-8 border-b border-app-border flex justify-between items-center bg-app-card">
+                        <h3 className="text-lg font-black text-app-text">Crop Health Analysis</h3>
                         <Link to="/scan" className="text-sm font-bold text-sage-700 hover:scale-105 transition-transform flex items-center gap-1">
                             New Analysis <ArrowUpRight className="w-4 h-4" />
                         </Link>
@@ -111,7 +111,7 @@ export default function Dashboard() {
                     
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-earth-50 text-sage-600 text-[10px] font-black uppercase tracking-widest">
+                            <thead className="bg-app-accent-subtle text-sage-600 text-[10px] font-black uppercase tracking-widest">
                                 <tr>
                                     <th className="px-8 py-4">Crop Name</th>
                                     <th className="px-8 py-4">Date</th>
@@ -120,18 +120,18 @@ export default function Dashboard() {
                             </thead>
                             <tbody className="divide-y divide-sage-50">
                                 {recentScans.map((scan, i) => (
-                                    <tr key={i} className="group hover:bg-earth-50 transition-colors cursor-pointer">
+                                    <tr key={i} className="group hover:bg-app-accent-subtle transition-colors cursor-pointer">
                                         <td className="px-8 py-5">
-                                            <div className="font-bold text-sage-900 group-hover:text-sage-700 transition-colors">{scan.crop}</div>
+                                            <div className="font-bold text-app-text group-hover:text-sage-700 transition-colors">{scan.crop}</div>
                                         </td>
                                         <td className="px-8 py-5">
                                             <div className="text-sm font-bold text-gray-500">{scan.date}</div>
                                         </td>
                                         <td className="px-8 py-5">
                                             <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${
-                                                scan.status === 'Healthy' ? 'bg-sage-100 text-sage-700' : 
-                                                scan.status === 'Delayed' ? 'bg-earth-100 text-earth-600' : 
-                                                'bg-rose-100 text-rose-600'
+                                                scan.status === 'Healthy' ? 'bg-sage-100 dark:bg-sage-900/20 text-sage-700' : 
+                                                scan.status === 'Delayed' ? 'bg-earth-100 dark:bg-earth-900/20 text-earth-600' : 
+                                                'bg-rose-100 dark:bg-rose-900/20 text-rose-600'
                                             }`}>
                                                 {scan.status}
                                             </span>
@@ -144,10 +144,10 @@ export default function Dashboard() {
                 </div>
 
                 {/* Overall Progress Chart */}
-                <div className="bg-white rounded-[2rem] border border-sage-50 shadow-sm p-8 flex flex-col">
+                <div className="bg-app-card rounded-[2rem] border border-app-card-border shadow-sm p-8 flex flex-col">
                     <div className="flex justify-between items-center mb-8">
-                        <h3 className="text-lg font-black text-sage-900">Health Index</h3>
-                        <button className="text-xs font-bold text-sage-500 flex items-center gap-1">Weekly <ChevronDown className="w-3 h-3" /></button>
+                        <h3 className="text-lg font-black text-app-text">Health Index</h3>
+                        <button className="text-xs font-bold text-app-text-muted flex items-center gap-1">Weekly <ChevronDown className="w-3 h-3" /></button>
                     </div>
 
                     <div className="flex-1 min-h-[250px] flex items-end justify-between gap-2 px-2">
@@ -156,7 +156,7 @@ export default function Dashboard() {
                                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-sage-900 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
                                     {d.val}%
                                 </div>
-                                <div className="relative w-full bg-earth-50 rounded-xl h-full flex items-end overflow-hidden border border-sage-50 group-hover:border-sage-100">
+                                <div className="relative w-full bg-app-subtle rounded-xl h-full flex items-end overflow-hidden border border-app-border group-hover:border-sage-100">
                                     <motion.div 
                                         initial={{ height: 0 }}
                                         animate={{ height: `${d.val}%` }}
@@ -164,7 +164,7 @@ export default function Dashboard() {
                                         className={`w-full ${d.val > 70 ? 'bg-sage-600' : d.val > 40 ? 'bg-sage-400' : 'bg-earth-400'} group-hover:bg-sage-700 transition-colors shadow-inner`}
                                     />
                                 </div>
-                                <div className="text-[10px] font-black text-gray-400 text-center mt-3 group-hover:text-sage-700 transition-colors uppercase tracking-tight">{d.label}</div>
+                                <div className="text-[10px] font-black text-app-text-muted text-center mt-3 group-hover:text-sage-700 transition-colors uppercase tracking-tight">{d.label}</div>
                             </div>
                         ))}
                     </div>

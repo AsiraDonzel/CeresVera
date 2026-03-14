@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Camera, ShieldCheck, Stethoscope, ArrowRight, LayoutDashboard } from 'lucide-react';
+import { Camera, ShieldCheck, Stethoscope, ArrowRight, Star, LayoutDashboard } from 'lucide-react';
 
 export default function LandingPage() {
     const containerVariants = {
@@ -20,52 +20,85 @@ export default function LandingPage() {
     };
 
     return (
-        <div className="w-full relative overflow-hidden">
+        <div className="w-full relative overflow-hidden bg-app-bg text-app-text">
             {/* Hero Section */}
-            <section className="relative px-4 py-24 sm:py-32 lg:px-8 bg-gradient-to-b from-white to-sage-100 flex flex-col items-center text-center">
+            <section className="relative px-4 py-24 sm:py-32 lg:px-8 bg-gradient-to-b from-app-bg to-app-subtle flex flex-col items-center text-center">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
                     className="max-w-4xl mx-auto space-y-8"
                 >
-                    <span className="inline-block py-1 px-4 rounded-full bg-sage-100 text-sage-800 border border-sage-200 text-sm font-semibold tracking-wide">
+                    <span className="inline-block py-1 px-4 rounded-full bg-app-accent-subtle text-sage-800 border border-app-border text-sm font-semibold tracking-wide">
                         The Truth of the Harvest
                     </span>
-                    <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-gray-900">
+                    <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-app-text">
                         Intelligent Care for <span className="text-sage-700 block mt-2">Sustainable Farming.</span>
                     </h1>
-                    <p className="max-w-2xl mx-auto text-xl text-gray-600 leading-relaxed">
+                    <p className="max-w-2xl mx-auto text-xl text-app-text-muted leading-relaxed">
                         CeresVera provides absolute clarity on crop health. Detect diseases instantly using AI and connect with certified agronomy experts for real truth you can trust.
                     </p>
-                    <div className="flex justify-center flex-col sm:flex-row gap-4 mt-8">
-                        {(isLoggedIn && userRole === 'agronomist') ? (
+
+                    {isLoggedIn && userRole !== 'farmer' ? (
+                        <div className="flex justify-center mt-8">
                             <Link
                                 to="/expert-dashboard"
                                 className="inline-flex items-center justify-center gap-2 px-12 py-4 text-base font-black text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
                             >
                                 <LayoutDashboard className="w-5 h-5" />
-                                Go to Dashboard
+                                Go to Expert Dashboard
                             </Link>
-                        ) : (
-                            <>
-                                <Link
-                                    to="/scan"
-                                    className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
-                                >
-                                    <Camera className="w-5 h-5" />
-                                    Scan Now
-                                </Link>
-                                <Link
-                                    to="/consultants"
-                                    className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-gray-800 bg-white border-2 border-sage-300 rounded-full hover:bg-sage-100 transition-colors"
-                                >
-                                    Find Experts
-                                    <ArrowRight className="w-5 h-5" />
-                                </Link>
-                            </>
-                        )}
-                    </div>
+                        </div>
+                    ) : !isLoggedIn ? (
+                        /* Testimonial Carousel - Only for visitors */
+                        <div className="pt-12 pb-8 overflow-hidden relative group">
+                            <motion.div 
+                                className="flex gap-8 items-center"
+                                animate={{ x: [0, -100 * 5] }}
+                                transition={{ 
+                                    repeat: Infinity, 
+                                    duration: 30, 
+                                    ease: "linear" 
+                                }}
+                            >
+                                {[
+                                    { name: "Abiola J.", role: "Rice Farmer", text: "CeresVera saved my entire harvest after detecting early blight.", color: "sage" },
+                                    { name: "Dr. Amadi", role: "Agronomist", text: "The AI precision here is unmatched in the digital ag space.", color: "emerald" },
+                                    { name: "Kemi O.", role: "Maize Grower", text: "Consulting an expert through the portal was seamless and vital.", color: "forest" },
+                                    { name: "FarmCentral", role: "Cooperative", text: "A game changer for our diagnostic speed and accuracy.", color: "teal" },
+                                    { name: "Samuel T.", role: "Vineyard Owner", text: "The truth is in the data. Highly recommend to all farmers.", color: "lime" },
+                                    // Repeat for smooth loop
+                                    { name: "Abiola J.", role: "Rice Farmer", text: "CeresVera saved my entire harvest after detecting early blight.", color: "sage" },
+                                    { name: "Dr. Amadi", role: "Agronomist", text: "The AI precision here is unmatched in the digital ag space.", color: "emerald" },
+                                ].map((t, i) => (
+                                    <div key={i} className={`flex-shrink-0 w-80 p-6 rounded-2xl bg-app-card border border-app-border shadow-sm text-left transition-all hover:shadow-lg`}>
+                                        <div className="flex items-center gap-1 mb-3 text-amber-500">
+                                            {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-current" />)}
+                                        </div>
+                                        <p className="text-sm font-medium text-app-text-muted italic mb-4 leading-relaxed line-clamp-2">"{t.text}"</p>
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-full bg-app-accent-subtle flex items-center justify-center font-black text-sage-700 text-xs`}>{t.name.charAt(0)}</div>
+                                            <div>
+                                                <h4 className="text-xs font-black text-app-text tracking-tight">{t.name}</h4>
+                                                <p className="text-[10px] text-app-text-muted font-bold uppercase tracking-widest">{t.role}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </motion.div>
+                        </div>
+                    ) : (
+                        /* Logged in Farmers see their specialized dashboard link too */
+                        <div className="flex justify-center mt-8">
+                            <Link
+                                to="/dashboard"
+                                className="inline-flex items-center justify-center gap-2 px-12 py-4 text-base font-black text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
+                            >
+                                <LayoutDashboard className="w-5 h-5" />
+                                Go to Farmer Dashboard
+                            </Link>
+                        </div>
+                    )}
                 </motion.div>
 
                 {/* Background Decorative Blur */}
@@ -73,11 +106,11 @@ export default function LandingPage() {
             </section>
 
             {/* Features Section */}
-            <section className="py-24 bg-white px-4 sm:px-6 lg:px-8">
+            <section className="py-24 bg-app-bg px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">How It Works</h2>
-                        <p className="mt-4 text-lg text-gray-600">Three simple steps to healthier crops.</p>
+                        <h2 className="text-3xl font-bold text-app-text sm:text-4xl">How It Works</h2>
+                        <p className="mt-4 text-lg text-app-text-muted">Three simple steps to healthier crops.</p>
                     </div>
 
                     <motion.div
@@ -92,12 +125,12 @@ export default function LandingPage() {
                             { icon: <ShieldCheck />, title: "2. AI Analysis", desc: "Our neural network instantly detects diseases with high precision." },
                             { icon: <Stethoscope />, title: "3. Expert Consult", desc: "Unlock premium agronomy advice using Interswitch payments." }
                         ].map((feature, idx) => (
-                            <motion.div key={idx} variants={itemVariants} className="flex flex-col items-center text-center p-8 rounded-3xl bg-earth-100 shadow-sm border border-earth-300 hover:shadow-md transition-shadow">
-                                <div className="p-4 bg-sage-100 text-sage-700 rounded-2xl mb-6 shadow-inner">
+                            <motion.div key={idx} variants={itemVariants} className="flex flex-col items-center text-center p-8 rounded-3xl bg-app-card shadow-sm border border-app-card-border hover:shadow-md transition-shadow">
+                                <div className="p-4 bg-app-accent-subtle text-sage-700 rounded-2xl mb-6 shadow-inner border border-app-border">
                                     {feature.icon}
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-                                <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+                                <h3 className="text-xl font-bold text-app-text mb-3">{feature.title}</h3>
+                                <p className="text-app-text-muted leading-relaxed">{feature.desc}</p>
                             </motion.div>
                         ))}
                     </motion.div>

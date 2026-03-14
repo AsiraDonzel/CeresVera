@@ -151,19 +151,19 @@ export default function WeatherDashboard() {
     const advice = getCropAdvice(weatherData);
 
     return (
-        <div className="p-8 space-y-8 bg-earth-50 min-h-full">
+        <div className="p-8 space-y-8 bg-app-subtle min-h-full">
             <div className="max-w-6xl mx-auto space-y-8">
 
                 {/* State Selector */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 mb-6 relative z-30">
+                    className="bg-app-card rounded-2xl shadow-lg border border-app-border p-5 mb-6 relative z-30">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div className="flex-1">
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Select State</label>
                             <div className="relative">
                                 <button
                                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                                    className="w-full text-left bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between hover:border-sky-400 transition-colors font-medium text-gray-900"
+                                    className="w-full text-left bg-app-subtle border border-app-border rounded-xl px-4 py-3 flex items-center justify-between hover:border-sky-400 transition-colors font-medium text-app-text"
                                 >
                                     <span>📍 {selectedState.name}</span>
                                     <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
@@ -172,14 +172,14 @@ export default function WeatherDashboard() {
                                     {dropdownOpen && (
                                         <motion.div
                                             initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                                            className="absolute top-full mt-2 left-0 w-full bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden z-50"
+                                            className="absolute top-full mt-2 left-0 w-full bg-app-card border border-app-border rounded-xl shadow-2xl overflow-hidden z-50"
                                         >
                                             <div className="max-h-72 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-1 p-2">
                                                 {NIGERIAN_STATES.map((state) => (
                                                     <button
                                                         key={state.name}
                                                         onClick={() => { setSelectedState(state); setDropdownOpen(false); }}
-                                                        className={`text-left text-sm px-3 py-2 rounded-lg transition-colors ${selectedState.name === state.name ? 'bg-sky-100 text-sky-700 font-bold' : 'hover:bg-gray-50 text-gray-700'}`}
+                                                        className={`text-left text-sm px-3 py-2 rounded-lg transition-colors ${selectedState.name === state.name ? 'bg-sky-100 dark:bg-sky-900/20 text-sky-700 font-bold' : 'hover:bg-app-subtle text-app-text'}`}
                                                     >
                                                         {state.name}
                                                     </button>
@@ -247,8 +247,8 @@ export default function WeatherDashboard() {
 
                         {/* 7-Day Forecast */}
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                            className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                            <h2 className="font-bold text-gray-900 text-lg mb-5 flex items-center gap-2">
+                            className="bg-app-card rounded-3xl shadow-sm border border-app-border p-6">
+                            <h2 className="font-bold text-app-text text-lg mb-5 flex items-center gap-2">
                                 <TrendingUp className="w-5 h-5 text-sky-600" /> 7-Day Forecast
                             </h2>
                             <div className="grid grid-cols-7 gap-2">
@@ -257,11 +257,11 @@ export default function WeatherDashboard() {
                                     const d = new Date(date);
                                     return (
                                         <motion.div key={date} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i }}
-                                            className="flex flex-col items-center bg-sky-50 rounded-2xl p-2 sm:p-3 text-center">
-                                            <p className="text-xs font-bold text-gray-500">{i === 0 ? 'Today' : DAYS[d.getDay()]}</p>
+                                            className="flex flex-col items-center bg-app-subtle rounded-2xl p-2 sm:p-3 text-center">
+                                            <p className="text-xs font-bold text-app-text-muted">{i === 0 ? 'Today' : DAYS[d.getDay()]}</p>
                                             <info.Icon className={`w-6 h-6 my-2 ${info.color}`} />
-                                            <p className="text-sm font-bold text-gray-900">{daily.temperature_2m_max[i].toFixed(0)}°</p>
-                                            <p className="text-xs text-gray-400">{daily.temperature_2m_min[i].toFixed(0)}°</p>
+                                            <p className="text-sm font-bold text-app-text">{daily.temperature_2m_max[i].toFixed(0)}°</p>
+                                            <p className="text-xs text-app-text-muted">{daily.temperature_2m_min[i].toFixed(0)}°</p>
                                             {daily.precipitation_sum[i] > 1 && (
                                                 <p className="text-xs text-blue-500 mt-1 font-medium">{daily.precipitation_sum[i].toFixed(0)}mm</p>
                                             )}
@@ -275,8 +275,8 @@ export default function WeatherDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Climate Risks */}
                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                                className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                                <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+                                className="bg-app-card rounded-3xl shadow-sm border border-app-border p-6">
+                                <h2 className="font-bold text-app-text text-lg mb-4 flex items-center gap-2">
                                     <AlertTriangle className="w-5 h-5 text-amber-500" /> Climate Risk Assessment
                                 </h2>
                                 <div className="space-y-3">
@@ -286,7 +286,7 @@ export default function WeatherDashboard() {
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span>{risk.icon}</span>
                                                 <span className="font-bold text-sm">{risk.label}</span>
-                                                <span className={`ml-auto text-xs font-bold px-2 py-0.5 rounded-full ${risk.level === 'HIGH' ? 'bg-red-200' : risk.level === 'MEDIUM' ? 'bg-amber-200' : 'bg-green-200'}`}>
+                                                <span className={`ml-auto text-xs font-bold px-2 py-0.5 rounded-full ${risk.level === 'HIGH' ? 'bg-red-200 dark:bg-red-900/40 text-red-900 dark:text-red-100' : risk.level === 'MEDIUM' ? 'bg-amber-200 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100' : 'bg-green-200 dark:bg-green-900/40 text-green-900 dark:text-green-100'}`}>
                                                     {risk.level}
                                                 </span>
                                             </div>
@@ -298,14 +298,14 @@ export default function WeatherDashboard() {
 
                             {/* Crop Advice */}
                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                                className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                                <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+                                className="bg-app-card rounded-3xl shadow-sm border border-app-border p-6">
+                                <h2 className="font-bold text-app-text text-lg mb-4 flex items-center gap-2">
                                     <Sprout className="w-5 h-5 text-sage-600" /> Weekly Farming Advice
                                 </h2>
                                 <div className="space-y-3">
                                     {advice.map((tip, i) => (
                                         <motion.div key={i} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 * i }}
-                                            className="bg-sage-50 rounded-xl px-4 py-3 text-sm text-gray-700 leading-relaxed">
+                                            className="bg-app-subtle rounded-xl px-4 py-3 text-sm text-app-text-muted leading-relaxed">
                                             {tip}
                                         </motion.div>
                                     ))}
@@ -315,8 +315,8 @@ export default function WeatherDashboard() {
 
                         {/* UV & Extra Stats */}
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-                            className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                            <h2 className="font-bold text-gray-900 text-lg mb-5 flex items-center gap-2">
+                            className="bg-app-card rounded-3xl shadow-sm border border-app-border p-6">
+                            <h2 className="font-bold text-app-text text-lg mb-5 flex items-center gap-2">
                                 <Gauge className="w-5 h-5 text-teal-600" /> Weekly Climate Summary
                             </h2>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -342,11 +342,11 @@ export default function WeatherDashboard() {
                                         sub: 'Peak gust forecast'
                                     },
                                 ].map(({ label, icon, value, sub }) => (
-                                    <div key={label} className="bg-gradient-to-br from-sky-50 to-teal-50 rounded-2xl p-4 text-center">
+                                    <div key={label} className="bg-app-subtle rounded-2xl p-4 text-center">
                                         <div className="text-2xl mb-1">{icon}</div>
-                                        <p className="text-xs text-gray-500 font-medium">{label}</p>
-                                        <p className="text-lg font-bold text-gray-900 mt-1">{value}</p>
-                                        <p className="text-xs text-gray-400">{sub}</p>
+                                        <p className="text-xs text-app-text-muted font-medium">{label}</p>
+                                        <p className="text-lg font-bold text-app-text mt-1">{value}</p>
+                                        <p className="text-xs text-app-text-muted/60">{sub}</p>
                                     </div>
                                 ))}
                             </div>

@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-    Leaf, User, Menu, X, ArrowRight, Activity, Map, Video,
-    CheckCircle, Shield, AlertTriangle, Sparkles, Cloud,
-    LayoutDashboard, Briefcase, DollarSign, Users, Settings,
-    HelpCircle, Bell, Search, LogOut, ChevronDown, Monitor,
-    Star, ArrowUpRight, MessageSquare, ShieldAlert, Calendar
+    Menu, X, LayoutDashboard, Database, Users, Cloud,
+    Sparkles, Settings, Search, Bell, HelpCircle, LogOut,
+    ChevronRight, ChevronDown, Monitor, Star, Droplets,
+    Wind, Thermometer, MapPin, ExternalLink, Mail, Phone,
+    CheckCircle2, Camera, Leaf, Activity, Briefcase, Calendar,
+    DollarSign, MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import OnboardingWizard from './OnboardingWizard';
+import ThemeToggle from "./ThemeToggle";
 
 export default function Layout({ children }) {
     const location = useLocation();
@@ -42,14 +44,20 @@ export default function Layout({ children }) {
         '/dashboard', '/expert-dashboard', '/scan', '/hotspots',
         '/chat', '/consultants', '/settings', '/schedule',
         '/payouts', '/expert-circles', '/predictive-analytics', '/profile',
-        '/farmer-requests' // Added to dashboard routes
+        '/farmer-requests', '/messaging'
     ];
     const isDashboardPage = dashboardRoutes.some(route => location.pathname === route);
 
+    const isLoggedIn = !!localStorage.getItem('access_token');
     const navLinks = [
         { name: 'Crops', path: '/crops' },
         { name: 'Diseases', path: '/diseases' },
         { name: 'Pests', path: '/pests' },
+        ...(!isLoggedIn ? [
+            { name: 'About Us', path: '/about' },
+            { name: 'Donate', path: '/donate' },
+            { name: 'Contact Us', path: '/contact' }
+        ] : []),
     ];
 
     const farmerSidebarItems = [
@@ -58,6 +66,7 @@ export default function Layout({ children }) {
         { name: 'Farm Weather', icon: <Cloud className="w-5 h-5" />, path: '/hotspots' },
         { name: 'Cera AI', icon: <Sparkles className="w-5 h-5" />, path: '/chat' },
         { name: 'Consultants', icon: <Users className="w-5 h-5" />, path: '/consultants' },
+        { name: 'Live Chat', icon: <MessageSquare className="w-5 h-5" />, path: '/messaging' },
         { name: 'Settings', icon: <Settings className="w-5 h-5" />, path: '/settings' },
     ];
 
@@ -67,6 +76,7 @@ export default function Layout({ children }) {
         { name: 'My Schedule', icon: <Calendar className="w-5 h-5" />, path: '/schedule' },
         { name: 'Wallet & Payouts', icon: <DollarSign className="w-5 h-5" />, path: '/payouts' },
         { name: 'Expert Circles', icon: <MessageSquare className="w-5 h-5" />, path: '/expert-circles' },
+        { name: 'Live Chat', icon: <MessageSquare className="w-5 h-5" />, path: '/messaging' },
         { name: 'Settings', icon: <Settings className="w-5 h-5" />, path: '/settings' },
     ];
 
@@ -85,11 +95,11 @@ export default function Layout({ children }) {
 
     if (isDashboardPage) {
         return (
-            <div className={`flex min-h-screen bg-${themeColor}-50 font-sans selection:bg-${themeColor}-100 selection:text-${themeColor}-900`}>
-                <aside className={`w-64 bg-white border-r border-${themeColor}-100 flex flex-col hidden lg:flex shrink-0 sticky top-0 h-screen`}>
+            <div className={`flex min-h-screen bg-app-bg font-sans selection:bg-${themeColor}-100 selection:text-${themeColor}-900`}>
+                <aside className={`w-64 bg-app-card border-r border-app-border flex flex-col hidden lg:flex shrink-0 sticky top-0 h-screen`}>
                     <div className="p-8">
-                        <Link to="/" className="flex items-center space-x-2 text-forest-900 group">
-                            <Leaf className="w-8 h-8 text-forest-700 group-hover:-rotate-12 transition-transform" />
+                        <Link to="/" className="flex items-center space-x-2 text-app-text group">
+                            <Leaf className="w-8 h-8 text-sage-700 group-hover:-rotate-12 transition-transform" />
                             <span className="font-bold text-2xl tracking-tight">Ceres<span className="text-forest-500 font-medium">Vera</span></span>
                         </Link>
                     </div>
@@ -115,20 +125,18 @@ export default function Layout({ children }) {
                 </aside>
 
                 <div className="flex-1 flex flex-col min-w-0">
-                    <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-50 flex items-center justify-between px-8 shrink-0 sticky top-0 z-30">
+                    <header className="h-20 bg-app-bg/80 backdrop-blur-md border-b border-app-border flex items-center justify-between px-8 shrink-0 sticky top-0 z-30">
                         <div className="flex items-center gap-4">
-                            <button onClick={() => setIsMenuOpen(true)} className="p-2 text-gray-600 lg:hidden">
+                            <button onClick={() => setIsMenuOpen(true)} className="p-2 text-app-text-muted lg:hidden">
                                 <Menu className="w-6 h-6" />
                             </button>
-                            <h1 className="text-xl font-black text-gray-900 tracking-tight">
+                            <h1 className="text-xl font-black text-app-text tracking-tight">
                                 {sidebarItems.find(item => item.path === location.pathname)?.name || 'CeresVera'}
                             </h1>
                         </div>
 
-                        {/* Search Bar Removed for Experts per refinement */}
-
-
                         <div className="flex items-center gap-4">
+                            <ThemeToggle />
                             <div className="relative">
                                 <button 
                                     onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
@@ -146,10 +154,10 @@ export default function Layout({ children }) {
                                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                             animate={{ opacity: 1, y: 0, scale: 1 }}
                                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            className="absolute right-0 mt-3 w-80 bg-white border border-gray-100 rounded-2xl shadow-2xl z-[60] overflow-hidden"
+                                            className="absolute right-0 mt-3 w-80 bg-app-card border border-app-border rounded-2xl shadow-2xl z-[60] overflow-hidden"
                                         >
-                                            <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                                                <span className="font-black text-xs uppercase tracking-widest text-gray-900">Recent Alerts</span>
+                                            <div className="p-4 border-b border-app-border flex justify-between items-center bg-app-subtle">
+                                                <span className="font-black text-xs uppercase tracking-widest text-app-text">Recent Alerts</span>
                                                 <button 
                                                     onClick={() => setNotifications([])} 
                                                     className="text-[10px] font-bold text-forest-600 uppercase hover:text-forest-800 transition-colors"
@@ -191,19 +199,17 @@ export default function Layout({ children }) {
                         </div>
                     </header>
 
-                    <main className={`flex-1 overflow-y-auto bg-${themeColor}-50/50 flex flex-col`}>
+                    <main className={`flex-1 overflow-y-auto bg-app-subtle flex flex-col`}>
                         <div className="p-8 flex-grow">
                             {children}
                         </div>
 
-                        <footer className={`px-8 py-6 border-t border-${themeColor}-100 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-bold text-gray-400 uppercase tracking-widest`}>
+                        <footer className={`px-8 py-6 border-t border-app-border flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-bold text-app-text-muted uppercase tracking-widest`}>
                             <div className="flex items-center gap-2">
                                 <Leaf className={`w-4 h-4 text-${themeColor}-600`} />
                                 <span>CeresVera Platform v2.0</span>
                             </div>
                             <div className="flex items-center gap-6">
-                                <Link to="/about" className={themeHoverText}>Our Mission</Link>
-                                <Link to="/contact" className={themeHoverText}>Direct Support</Link>
                                 <span>© 2026 CeresVera Stewardship</span>
                             </div>
                         </footer>
@@ -221,7 +227,7 @@ export default function Layout({ children }) {
                             <motion.aside
                                 initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
                                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                                className="fixed top-0 left-0 bottom-0 w-72 bg-white z-50 p-6 flex flex-col lg:hidden shadow-2xl"
+                                className="fixed top-0 left-0 bottom-0 w-72 bg-app-bg z-50 p-6 flex flex-col lg:hidden shadow-2xl border-r border-app-border"
                             >
                                 <div className="flex justify-between items-center mb-8">
                                     <Link to="/" className={`flex items-center space-x-2 text-${themeColor}-900`}>
@@ -256,8 +262,8 @@ export default function Layout({ children }) {
     }
 
     return (
-        <div className={`min-h-screen flex flex-col font-sans bg-${themeColor}-50 text-gray-800 selection:bg-${themeColor}-100 selection:text-${themeColor}-900`}>
-            <header className={`bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-${themeColor}-100`}>
+        <div className={`min-h-screen flex flex-col font-sans bg-app-bg text-app-text selection:bg-${themeColor}-100 selection:text-${themeColor}-900`}>
+            <header className={`bg-app-bg/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-app-border`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
                         <Link to="/" className="flex items-center space-x-2 text-sage-900 group">
@@ -267,15 +273,20 @@ export default function Layout({ children }) {
 
                         <nav className="hidden md:flex space-x-6 items-center">
                             {navLinks.map(link => (
-                                <Link key={link.path} to={link.path} className="text-gray-600 hover:text-forest-700 font-bold transition-colors">{link.name}</Link>
+                                <Link key={link.path} to={link.path} className="text-app-text-muted hover:text-sage-700 font-bold transition-colors">{link.name}</Link>
                             ))}
-                            <div className="w-px h-6 bg-gray-200 mx-2" />
-                            <div className="flex items-center gap-4">
-                                <Link to={userRole === 'farmer' ? '/dashboard' : '/expert-dashboard'} className="text-gray-600 hover:text-forest-700 font-bold">Dashboard</Link>
-                            </div>
+                            {localStorage.getItem('access_token') && (
+                                <>
+                                    <div className="w-px h-6 bg-gray-200 mx-2" />
+                                    <div className="flex items-center gap-4">
+                                        <Link to={userRole === 'farmer' ? '/dashboard' : '/expert-dashboard'} className="text-gray-600 hover:text-forest-700 font-bold">Dashboard</Link>
+                                    </div>
+                                </>
+                            )}
                         </nav>
 
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-6">
+                            <ThemeToggle />
                             {localStorage.getItem('access_token') ? (
                                 <div className="flex items-center gap-3">
                                     <Link to="/settings" className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden flex-shrink-0 hover:scale-105 transition-transform bg-sage-50 flex items-center justify-center">
@@ -296,33 +307,58 @@ export default function Layout({ children }) {
                     </div>
                 </div>
 
-                <AnimatePresence>
-                    {isMenuOpen && (
-                        <>
-                            <motion.div
-                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                onClick={() => setIsMenuOpen(false)}
-                                className="fixed inset-0 bg-gray-900/40 z-40 md:hidden"
-                            />
-                            <motion.div
-                                initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-                                className="fixed top-0 right-0 bottom-0 w-72 bg-white z-50 p-6 md:hidden shadow-2xl"
-                            >
-                                <div className="flex justify-between items-center mb-8">
-                                    <span className="font-bold text-xl">Menu</span>
-                                    <button onClick={() => setIsMenuOpen(false)}><X className="w-6 h-6 text-gray-400" /></button>
-                                </div>
-                                <nav className="space-y-4">
-                                    {navLinks.map(link => (
-                                        <Link key={link.path} to={link.path} onClick={() => setIsMenuOpen(false)} className="block text-lg font-bold text-gray-900">{link.name}</Link>
-                                    ))}
-                                    <Link to="/settings" onClick={() => setIsMenuOpen(false)} className="block text-lg font-bold text-gray-900 border-t border-gray-100 pt-4">Profile & Settings</Link>
-                                </nav>
-                            </motion.div>
-                        </>
-                    )}
-                </AnimatePresence>
             </header>
+            <AnimatePresence>
+                {isMenuOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setIsMenuOpen(false)}
+                            className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] md:hidden"
+                        />
+                        <motion.div
+                            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className="fixed top-0 right-0 bottom-0 w-72 bg-app-bg z-[70] p-6 md:hidden shadow-2xl border-l border-app-border"
+                        >
+                            <div className="flex justify-between items-center mb-8 text-app-text">
+                                <span className="font-bold text-xl tracking-tight">Ceres<span className="text-forest-500 font-medium">Vera</span></span>
+                                <button onClick={() => setIsMenuOpen(false)} className="p-2 -mr-2 text-app-text-muted hover:text-app-text transition-colors">
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+                            <nav className="space-y-2">
+                                {navLinks.map(link => (
+                                    <Link 
+                                        key={link.path} 
+                                        to={link.path} 
+                                        onClick={() => setIsMenuOpen(false)} 
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${location.pathname === link.path ? 'bg-app-accent-subtle text-forest-700' : 'text-app-text-muted hover:bg-app-subtle hover:text-app-text'}`}
+                                    >
+                                        {link.name}
+                                    </Link>
+                                ))}
+                                <div className="pt-4 mt-4 border-t border-app-border">
+                                    <Link 
+                                        to="/settings" 
+                                        onClick={() => setIsMenuOpen(false)} 
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${location.pathname === '/settings' ? 'bg-app-accent-subtle text-forest-700' : 'text-app-text-muted hover:bg-app-subtle hover:text-app-text'}`}
+                                    >
+                                        <Settings className="w-5 h-5" /> Profile & Settings
+                                    </Link>
+                                    <Link 
+                                        to={userRole === 'farmer' ? '/dashboard' : '/expert-dashboard'}
+                                        onClick={() => setIsMenuOpen(false)} 
+                                        className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-app-text-muted hover:bg-app-subtle hover:text-app-text transition-all"
+                                    >
+                                        <LayoutDashboard className="w-5 h-5" /> Dashboard
+                                    </Link>
+                                </div>
+                            </nav>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
 
             {showOnboarding && <OnboardingWizard onClose={() => setShowOnboarding(false)} />}
 
@@ -347,6 +383,7 @@ export default function Layout({ children }) {
                             <ul className="space-y-2 text-sm text-gray-400">
                                 <li><Link to="/crops" className="hover:text-white transition-colors">Crops</Link></li>
                                 <li><Link to="/diseases" className="hover:text-white transition-colors">Diseases</Link></li>
+                                <li><Link to="/pests" className="hover:text-white transition-colors">Pests</Link></li>
                             </ul>
                         </div>
                         <div>

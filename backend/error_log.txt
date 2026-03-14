@@ -36,3 +36,271 @@ Data: {
   "verification_status": "pending",
   "expertise_tags": []
 }
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: test@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: test@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+Exception: column api_consultant.profile_image_url does not exist
+LINE 1: ... "api_consultant"."bio", "api_consultant"."rate", "api_consu...
+                                                             ^
+
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}

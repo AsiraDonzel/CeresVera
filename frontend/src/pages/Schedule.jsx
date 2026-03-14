@@ -111,15 +111,56 @@ export default function Schedule() {
 
     const hasCompletedAll = appointments.length > 0 && appointments.every(apt => apt.status === 'Completed');
 
+    // Jitsi Meet Integration Logic
+    useEffect(() => {
+        if (activeVideoCall && !window.JitsiMeetExternalAPI) {
+            const script = document.createElement('script');
+            script.src = 'https://meet.jit.si/external_api.js';
+            script.async = true;
+            script.onload = () => initJitsi();
+            document.body.appendChild(script);
+        } else if (activeVideoCall && window.JitsiMeetExternalAPI) {
+            initJitsi();
+        }
+    }, [activeVideoCall]);
+
+    const initJitsi = () => {
+        if (!activeVideoCall) return;
+        
+        const domain = 'meet.jit.si';
+        const options = {
+            roomName: `CeresVera-Consult-${activeVideoCall.id}-${activeVideoCall.farmer.replace(/\s+/g, '-')}`,
+            width: '100%',
+            height: '100%',
+            parentNode: document.querySelector('#jitsi-container'),
+            userInfo: {
+                displayName: 'Expert Adviser' // Should ideally match user name
+            },
+            configOverwrite: {
+                startWithAudioMuted: false,
+                startWithVideoMuted: false,
+                prejoinPageEnabled: false,
+            },
+            interfaceConfigOverwrite: {
+                TILE_VIEW_MAX_COLUMNS: 8,
+            }
+        };
+        const api = new window.JitsiMeetExternalAPI(domain, options);
+        
+        // Handle closing
+        api.addEventListener('videoConferenceLeft', () => {
+            setActiveVideoCall(null);
+        });
+    };
+
     return (
         <div className="min-h-screen bg-earth-50 pt-24 pb-12 relative overflow-hidden">
-            {/* Ambient Background Glows */}
+            {/* ... existing ambient glows and header ... */}
             <div className="absolute top-0 right-0 w-[50rem] h-[50rem] bg-sage-200/40 rounded-full blur-[120px] -z-10 mix-blend-multiply opacity-70"></div>
             <div className="absolute bottom-0 left-0 w-[40rem] h-[40rem] bg-earth-200/50 rounded-full blur-[100px] -z-10 mix-blend-multiply opacity-50"></div>
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-
-                {/* Header */}
+                {/* ... existing header and grid ... */}
                 <motion.div 
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -150,8 +191,7 @@ export default function Schedule() {
                 </motion.div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-                    {/* Interactive Calendar Widget */}
+                    {/* ... existing layout ... */}
                     <motion.div 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -159,7 +199,6 @@ export default function Schedule() {
                         className="lg:col-span-5"
                     >
                         <div className="bg-white/90 backdrop-blur-xl rounded-[2rem] p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative lg:sticky lg:top-28">
-                            {/* Decorative element */}
                             <div className="absolute -top-6 -right-6 w-24 h-24 bg-sage-100 rounded-full blur-2xl opacity-50 z-0"></div>
                             
                             <div className="flex items-center justify-between mb-8 relative z-10">
@@ -185,21 +224,18 @@ export default function Schedule() {
                                 </div>
                             </div>
 
-                            {/* Days of week */}
                             <div className="grid grid-cols-7 gap-2 text-center text-xs font-black text-gray-400 uppercase tracking-widest mb-4 relative z-10">
                                 <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
                             </div>
 
-                            {/* Dates grid */}
                             <div className="grid grid-cols-7 gap-2 text-center text-sm font-bold text-gray-700 relative z-10">
-                                {/* Padding for start of month - Simplified dynamic grid start */}
                                 {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay() }).map((_, i) => (
                                     <div key={`pad-${i}`} className="aspect-square flex items-center justify-center opacity-0"></div>
                                 ))}
 
                                 {generateDays().map(day => {
                                     const isSelected = selectedDate === day;
-                                    const hasAppointment = appointments.some(apt => apt.date === day || (day === 15 && !apt.date)); // Fallback mock mapping
+                                    const hasAppointment = appointments.some(apt => apt.date === day || (day === 15 && !apt.date));
                                     const isSavedSlot = savedSlots.includes(day);
 
                                     return (
@@ -209,7 +245,7 @@ export default function Schedule() {
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => {
                                                 setSelectedDate(day);
-                                                setFilterStatus('All'); // Reset filters
+                                                setFilterStatus('All');
                                             }}
                                             className={`aspect-square rounded-2xl flex flex-col items-center justify-center relative transition-colors ${
                                                 isSelected 
@@ -218,8 +254,6 @@ export default function Schedule() {
                                             }`}
                                         >
                                             <span className="z-10">{day}</span>
-                                            
-                                            {/* Indicators */}
                                             <div className="flex gap-1 absolute bottom-2">
                                                 {hasAppointment && (
                                                     <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-red-400'}`}></span>
@@ -233,7 +267,6 @@ export default function Schedule() {
                                 })}
                             </div>
 
-                            {/* Legend */}
                             <div className="mt-8 pt-6 border-t border-gray-100 flex flex-wrap gap-4 relative z-10 text-xs font-bold text-gray-500">
                                 <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-400"></span> Booked Consultation</div>
                                 <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-sage-500"></span> Available Open Slot</div>
@@ -241,7 +274,6 @@ export default function Schedule() {
                         </div>
                     </motion.div>
 
-                    {/* Agenda */}
                     <motion.div 
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -280,7 +312,6 @@ export default function Schedule() {
                             </div>
                         </div>
 
-                        {/* Mark all completed shortcut */}
                         {appointments.length > 0 && !hasCompletedAll && (
                             <div className="flex justify-end">
                                 <button onClick={markAllCompleted} className="text-sm font-bold text-sage-600 hover:text-sage-800 transition-colors flex items-center gap-1.5 bg-sage-50 px-3 py-1.5 rounded-full">
@@ -318,9 +349,7 @@ export default function Schedule() {
                                                         : 'bg-white border-gray-100 shadow-[0_4px_20px_rgb(0,0,0,0.02)] hover:border-sage-200'
                                                 }`}
                                             >
-                                                {/* Left Green Bar for upcoming */}
                                                 {!isCompleted && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-sage-400"></div>}
-                                                {/* Left Gray bar for completed */}
                                                 {isCompleted && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gray-300"></div>}
 
                                                 <div className="flex items-center gap-6 w-full sm:w-auto pl-2">
@@ -376,11 +405,10 @@ export default function Schedule() {
                             </AnimatePresence>
                         </div>
                     </motion.div>
-
                 </div>
             </div>
 
-            {/* Set Availability Glassmorphic Overlay */}
+            {/* Set Availability Overlay */}
             <AnimatePresence>
                 {isAvailabilityOverlayOpen && (
                     <motion.div
@@ -485,53 +513,36 @@ export default function Schedule() {
                 )}
             </AnimatePresence>
 
-            {/* Premium Video Call Overlay Modal */}
+            {/* Real Jitsi Video Call Overlay */}
             <AnimatePresence>
                 {activeVideoCall && (
                     <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/90 backdrop-blur-md"
                     >
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-                            className="bg-black text-white w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl relative border border-gray-800"
+                            className="bg-black text-white w-full max-w-5xl h-[80vh] rounded-[3rem] overflow-hidden shadow-2xl relative border border-gray-800 flex flex-col"
                         >
-                            <div className="absolute top-6 left-8 z-10">
-                                <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> REC
-                                </span>
-                            </div>
-                            <button onClick={() => setActiveVideoCall(null)} className="absolute top-6 right-8 z-10 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors backdrop-blur-md">
-                                <X className="w-5 h-5" />
-                            </button>
-
-                            {/* Mock Video Feed Area */}
-                            <div className="aspect-video bg-gray-900 relative flex items-center justify-center overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-0"></div>
-                                <div className="w-32 h-32 rounded-full bg-gray-800 border-4 border-gray-700 flex items-center justify-center z-10 shadow-xl">
-                                    <User className="w-12 h-12 text-gray-500" />
-                                </div>
-
-                                {/* Self View PIP */}
-                                <div className="absolute bottom-6 flex justify-between items-end w-full px-8 z-10">
+                            <div className="p-6 bg-gray-950 border-b border-gray-800 flex justify-between items-center sm:px-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-sage-500 rounded-xl flex items-center justify-center shadow-lg shadow-sage-500/20">
+                                        <VideoIcon className="w-5 h-5 text-white" />
+                                    </div>
                                     <div>
-                                        <h3 className="font-bold text-xl">{activeVideoCall.farmer}</h3>
-                                        <p className="text-gray-400 text-sm">Reviewing: {activeVideoCall.crop}</p>
-                                    </div>
-                                    <div className="w-24 h-36 bg-gray-800 rounded-2xl border-2 border-gray-600 shadow-xl flex items-center justify-center overflow-hidden">
-                                        <span className="text-xs text-gray-500 font-bold uppercase">You</span>
+                                        <h3 className="font-black text-lg tracking-tight">Active Consultation</h3>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Farmer: {activeVideoCall.farmer} • Crop: {activeVideoCall.crop}</p>
                                     </div>
                                 </div>
-                            </div>
-
-                            {/* Controls */}
-                            <div className="p-6 bg-gray-950 flex justify-center gap-4">
-                                <button className="w-14 h-14 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors"><Mic className="w-6 h-6" /></button>
-                                <button className="w-14 h-14 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors"><VideoIcon className="w-6 h-6" /></button>
-                                <button onClick={() => setActiveVideoCall(null)} className="w-14 h-14 rounded-full bg-red-600 hover:bg-red-500 flex items-center justify-center transition-colors shadow-lg shadow-red-900/50">
-                                    <Phone className="w-6 h-6 fill-white rotate-135 transform" />
+                                <button 
+                                    onClick={() => setActiveVideoCall(null)} 
+                                    className="p-3 bg-white/10 hover:bg-red-500/20 hover:text-red-400 rounded-2xl transition-all group"
+                                >
+                                    <X className="w-6 h-6 group-active:scale-95 transition-transform" />
                                 </button>
                             </div>
+
+                            <div id="jitsi-container" className="flex-1 bg-gray-900" />
                         </motion.div>
                     </motion.div>
                 )}

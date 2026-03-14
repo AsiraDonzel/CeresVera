@@ -34,7 +34,7 @@ export default function Pests() {
     })).filter(group => group.pests.length > 0);
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-earth-50 to-white">
+        <div className="min-h-screen bg-app-subtle">
             {/* Hero Banner */}
             <div className="bg-gradient-to-r from-earth-800 to-earth-700 text-white py-16 px-4">
                 <div className="max-w-5xl mx-auto">
@@ -63,7 +63,7 @@ export default function Pests() {
                         placeholder="Search for a pest or disease..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-earth-400 shadow-sm text-sm transition-shadow"
+                        className="w-full px-5 py-3.5 bg-app-card border border-app-border rounded-xl text-app-text focus:outline-none focus:ring-2 focus:ring-earth-400 shadow-sm text-sm transition-shadow placeholder:text-app-text-muted"
                     />
                 </div>
 
@@ -95,10 +95,10 @@ export default function Pests() {
                                             whileHover={{ scale: 1.02 }}
                                             whileTap={{ scale: 0.98 }}
                                             onClick={() => setSelectedPest(pest)}
-                                            className="bg-white border border-gray-100 rounded-2xl p-5 cursor-pointer shadow-sm hover:shadow-md hover:border-amber-300 transition-all group flex flex-col justify-between"
+                                            className="bg-app-card border border-app-border rounded-2xl p-5 cursor-pointer shadow-sm hover:shadow-md hover:border-amber-300 transition-all group flex flex-col justify-between"
                                         >
                                             <div>
-                                                <h3 className="text-lg font-bold text-gray-900 group-hover:text-amber-600 transition-colors tracking-tight leading-tight mb-2">
+                                                <h3 className="text-lg font-bold text-app-text group-hover:text-amber-600 transition-colors tracking-tight leading-tight mb-2">
                                                     {pest.name}
                                                 </h3>
                                                 <p className="text-xs text-gray-500 font-medium line-clamp-3 leading-relaxed mb-4">
@@ -132,7 +132,7 @@ export default function Pests() {
                             animate={{ y: 0, opacity: 1, scale: 1 }}
                             exit={{ y: 20, opacity: 0, scale: 0.95 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="bg-white rounded-[2rem] shadow-2xl overflow-hidden w-full max-w-lg my-auto relative"
+                            className="bg-app-card rounded-[2rem] shadow-2xl overflow-hidden w-full max-w-lg my-auto relative border border-app-border"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Modal Header */}
@@ -151,10 +151,10 @@ export default function Pests() {
                             </div>
 
                             {/* Modal Body */}
-                            <div className="p-8 space-y-8 bg-gray-50/50">
+                            <div className="p-8 space-y-8 bg-app-subtle">
                                 <div>
-                                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 border-b border-gray-200 pb-2">Description</h4>
-                                    <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                                    <h4 className="text-xs font-black text-app-text-muted uppercase tracking-widest mb-3 border-b border-app-border pb-2">Description</h4>
+                                    <p className="text-sm text-app-text leading-relaxed font-medium">
                                         {selectedPest.description}
                                     </p>
                                 </div>

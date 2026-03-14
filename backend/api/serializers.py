@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Consultant, Scan, Transaction, UserProfile
+from .models import Consultant, Scan, Transaction, UserProfile, Notification, Conversation, Message
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -14,8 +14,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'subscription_type', 'subscription_expiry',
             'crop_cycle_plans', 'farm_coordinates_lat', 'farm_coordinates_lon',
             'stewardship_score', 'soil_type', 'consultation_rate',
-            'expertise_tags', 'verification_status'
+            'expertise_tags', 'expertise_category', 'rating', 'verification_status', 
+            'documents_url', 'rejection_reason'
         )
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(read_only=True)
@@ -40,6 +46,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             data['role'] = profile.role
             data['is_premium'] = profile.is_premium
             data['phone_number'] = profile.phone_number
+            data['verification_status'] = profile.verification_status
             data['profile_pic'] = profile.profile_picture.url if profile.profile_picture else None
         except UserProfile.DoesNotExist:
             data['role'] = 'farmer' # Default fallback
@@ -55,10 +62,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     name = serializers.CharField(write_only=True, required=False, allow_blank=True)
     role = serializers.CharField(write_only=True, required=False, allow_blank=True)
     phone = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    expertise_category = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'confirm_password', 'name', 'role', 'phone')
+        fields = ('id', 'username', 'email', 'password', 'confirm_password', 'name', 'role', 'phone', 'expertise_category')
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate_email(self, value):
@@ -68,8 +76,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value.lower()
 
     def validate_password(self, value):
-        # We trust the frontend SHA-256 hash here.
-        # No regex required for simple hex string.
         if len(value) < 8:
             raise serializers.ValidationError("Password must be at least 8 characters long.")
         return value
@@ -84,6 +90,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         name = validated_data.pop('name', '')
         role = validated_data.pop('role', 'farmer')
         phone = validated_data.pop('phone', '')
+        expertise_category = validated_data.pop('expertise_category', 'General')
         
         user = User.objects.create_user(
             username=validated_data.get('username') or validated_data['email'],
@@ -96,6 +103,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         profile, created = UserProfile.objects.get_or_create(user=user)
         profile.role = role
         profile.phone_number = phone
+        profile.expertise_category = expertise_category
         profile.save()
         
         return user
@@ -116,3 +124,22 @@ class TransactionSerializer(serializers.ModelSerializer):
         model = Transaction
         fields = '__all__'
         read_only_fields = ('reference', 'status', 'created_at')
+
+class ExpertReviewSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=['APPROVED', 'REJECTED'])
+    rejection_reason = serializers.CharField(required=False, allow_blank=True)
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender_name = serializers.ReadOnlyField(source='sender.first_name')
+    
+    class Meta:
+        model = Message
+        fields = ('id', 'conversation', 'sender', 'sender_name', 'content', 'is_read', 'created_at')
+
+class ConversationSerializer(serializers.ModelSerializer):
+    messages = MessageSerializer(many=True, read_only=True)
+    participants = UserSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Conversation
+        fields = ('id', 'participants', 'messages', 'created_at', 'last_message_at')

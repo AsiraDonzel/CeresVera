@@ -100,11 +100,11 @@ export default function Chatbot() {
             if (response.ok) {
                 setMessages([...newMessages, { role: 'assistant', content: data.response }]);
             } else {
-                throw new Error(data.error || 'Failed to fetch response');
+                setMessages([...newMessages, { role: 'assistant', content: data.error || 'Failed to fetch response' }]);
             }
         } catch (error) {
             console.error("Adviser Error:", error);
-            setMessages([...newMessages, { role: 'assistant', content: "Sorry, I encountered an error connecting to the agronomy core. Please try again later." }]);
+            setMessages([...newMessages, { role: 'assistant', content: "Sorry, I encountered a connection error. Please try again later." }]);
         } finally {
             setIsLoading(false);
         }
@@ -142,11 +142,11 @@ export default function Chatbot() {
             if (response.ok) {
                 setDeepseekMessages([...newMessages, { role: 'assistant', content: data.response }]);
             } else {
-                throw new Error(data.error || 'Failed to fetch response');
+                setDeepseekMessages([...newMessages, { role: 'assistant', content: data.error || 'Failed to fetch response' }]);
             }
         } catch (error) {
             console.error("Deepseek Error:", error);
-            setDeepseekMessages([...newMessages, { role: 'assistant', content: "Sorry, I encountered an error connecting to Cera AI. Please try again later." }]);
+            setDeepseekMessages([...newMessages, { role: 'assistant', content: "Sorry, I encountered a connection error. Please try again later." }]);
         } finally {
             setIsDeepseekLoading(false);
         }
