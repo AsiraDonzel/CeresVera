@@ -39,13 +39,13 @@ export default function LandingPage() {
                         CeresVera provides absolute clarity on crop health. Detect diseases instantly using AI and connect with certified agronomy experts for real truth you can trust.
                     </p>
                     <div className="flex justify-center flex-col sm:flex-row gap-4 mt-8">
-                        {(isLoggedIn && userRole === 'expert') ? (
+                        {(isLoggedIn && userRole === 'agronomist') ? (
                             <Link
                                 to="/expert-dashboard"
                                 className="inline-flex items-center justify-center gap-2 px-12 py-4 text-base font-black text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
                             >
                                 <LayoutDashboard className="w-5 h-5" />
-                                View Dashboard
+                                Go to Dashboard
                             </Link>
                         ) : (
                             <>
