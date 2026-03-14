@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Sprout, ArrowLeft, Send, User, Loader2, Brain } from 'lucide-react';
+import { Sparkles, Sprout, ArrowLeft, Send, User, Loader2, Brain, ShieldCheck } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import PremiumPaymentOverlay from '../components/PremiumPaymentOverlay';
 
 const TOPICS = [
     "sustainable farming", "crop rotation", "soil health", "organic farming",
@@ -15,17 +16,24 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 export default function Chatbot() {
     const [activeMode, setActiveMode] = useState(null); // 'deepseek' | 'adviser' | null
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-    const isPremium = localStorage.getItem('is_premium') === 'true';
+    const [isPremium, setIsPremium] = useState(localStorage.getItem('is_premium') === 'true');
+    const [showPaymentOverlay, setShowPaymentOverlay] = useState(false);
     const token = localStorage.getItem('access_token');
 
     // Adviser State
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState(() => {
+        const saved = localStorage.getItem('adviser_messages');
+        return saved ? JSON.parse(saved) : [];
+    });
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
 
     // Deepseek State
-    const [deepseekMessages, setDeepseekMessages] = useState([]);
+    const [deepseekMessages, setDeepseekMessages] = useState(() => {
+        const saved = localStorage.getItem('deepseek_messages');
+        return saved ? JSON.parse(saved) : [];
+    });
     const [deepseekInputValue, setDeepseekInputValue] = useState('');
     const [isDeepseekLoading, setIsDeepseekLoading] = useState(false);
     const deepseekMessagesEndRef = useRef(null);
@@ -42,6 +50,22 @@ export default function Chatbot() {
         if (activeMode === 'adviser') scrollToBottom();
         if (activeMode === 'deepseek') scrollDeepseekToBottom();
     }, [messages, deepseekMessages, activeMode]);
+
+    useEffect(() => {
+        localStorage.setItem('adviser_messages', JSON.stringify(messages));
+    }, [messages]);
+
+    useEffect(() => {
+        localStorage.setItem('deepseek_messages', JSON.stringify(deepseekMessages));
+    }, [deepseekMessages]);
+
+    useEffect(() => {
+        const handlePremiumChange = () => {
+            setIsPremium(localStorage.getItem('is_premium') === 'true');
+        };
+        window.addEventListener('premiumStatusChanged', handlePremiumChange);
+        return () => window.removeEventListener('premiumStatusChanged', handlePremiumChange);
+    }, []);
 
     const handleAdviserSubmit = async (e, topicOverride = null) => {
         if (e) e.preventDefault();
@@ -474,8 +498,14 @@ export default function Chatbot() {
                                     ))}
                                 </div>
 
-                                <button className="w-full bg-gray-900 hover:bg-black text-white py-4 rounded-2xl font-black shadow-xl shadow-gray-200 transition-all active:scale-95">
-                                    Upgrade to Premium - ₦2,500/mo
+                                <button 
+                                    onClick={() => {
+                                        setShowUpgradeModal(false);
+                                        setShowPaymentOverlay(true);
+                                    }}
+                                    className="w-full bg-gray-900 hover:bg-black text-white py-4 rounded-2xl font-black shadow-xl shadow-gray-200 transition-all active:scale-95"
+                                >
+                                    Upgrade to Premium - ₦10,000
                                 </button>
                                 
                                 <button 
@@ -489,6 +519,12 @@ export default function Chatbot() {
                     </div>
                 )}
             </AnimatePresence>
+
+            <PremiumPaymentOverlay 
+                isOpen={showPaymentOverlay} 
+                onClose={() => setShowPaymentOverlay(false)}
+                onPaymentSuccess={() => setIsPremium(true)}
+            />
         </div>
     );
 }

@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { DollarSign, ArrowUpRight, ArrowDownRight, ShieldCheck, DownloadCloud, Loader2, CheckCircle2, Trash2 } from 'lucide-react';
+import PremiumPaymentOverlay from '../components/PremiumPaymentOverlay';
 
 export default function Payouts() {
     const navigate = useNavigate();
     const [isWithdrawing, setIsWithdrawing] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
-    const isPremium = localStorage.getItem('is_premium') === 'true';
+    const [isPremium, setIsPremium] = useState(localStorage.getItem('is_premium') === 'true');
+    const [showPaymentOverlay, setShowPaymentOverlay] = useState(false);
     const commission = isPremium ? 5 : 15;
     
     // Initial Mock Ledger Data
@@ -132,7 +134,7 @@ export default function Payouts() {
                     </div>
                     {!isPremium && (
                         <button 
-                            onClick={() => navigate('/checkout/premium')}
+                            onClick={() => setShowPaymentOverlay(true)}
                             className="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 active:scale-95"
                         >
                             Upgrade
@@ -284,6 +286,12 @@ export default function Payouts() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <PremiumPaymentOverlay 
+                isOpen={showPaymentOverlay} 
+                onClose={() => setShowPaymentOverlay(false)}
+                onPaymentSuccess={() => setIsPremium(true)}
+            />
         </div>
     );
 }

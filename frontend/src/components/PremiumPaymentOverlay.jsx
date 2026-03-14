@@ -1,0 +1,194 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ShieldCheck, CreditCard, CheckCircle, X, Lock, Loader2 } from 'lucide-react';
+
+export default function PremiumPaymentOverlay({ isOpen, onClose, onPaymentSuccess }) {
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState('monthly'); // 'monthly' | 'annual'
+
+    const plans = {
+        monthly: { name: 'Monthly Plan', price: 2500, label: '₦2,500/mo' },
+        annual: { name: 'Annual Plan', price: 25000, label: '₦25,000/yr', savings: 'Save ₦5,000' }
+    };
+
+    const handlePaymentMock = (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        // Simulate Interswitch external payment processing
+        setTimeout(() => {
+            setLoading(false);
+            setSuccess(true);
+            localStorage.setItem('is_premium', 'true');
+            // Trigger a custom event so other components know the status changed
+            window.dispatchEvent(new Event('premiumStatusChanged'));
+            
+            setTimeout(() => {
+                if (onPaymentSuccess) onPaymentSuccess();
+                onClose();
+                // Reset state for next time
+                setSuccess(false);
+            }, 2500);
+        }, 3000);
+    };
+
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md"
+                >
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="bg-white w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl relative border border-white"
+                    >
+                        {!success ? (
+                            <>
+                                {/* Modal Header */}
+                                <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 shadow-inner">
+                                            <ShieldCheck className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-lg font-bold text-gray-900 leading-tight">Farmer Premium Upgrade</h2>
+                                            <p className="text-xs text-gray-500 font-medium">Secure Payment via Interswitch</p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={onClose} 
+                                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                {/* Modal Body */}
+                                <div className="p-8">
+                                    {/* Plan Selection */}
+                                    <div className="grid grid-cols-2 gap-4 mb-8">
+                                        {Object.entries(plans).map(([key, plan]) => (
+                                            <button
+                                                key={key}
+                                                type="button"
+                                                onClick={() => setSelectedPlan(key)}
+                                                className={`p-4 rounded-2xl border-2 transition-all text-left relative overflow-hidden ${
+                                                    selectedPlan === key 
+                                                        ? 'border-sage-500 bg-sage-50 ring-2 ring-sage-500/10' 
+                                                        : 'border-gray-100 bg-white hover:border-gray-200'
+                                                }`}
+                                            >
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${selectedPlan === key ? 'text-sage-700' : 'text-gray-400'}`}>
+                                                        {plan.name}
+                                                    </span>
+                                                    {plan.savings && (
+                                                        <span className="bg-sage-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase">
+                                                            Save 16%
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="text-xl font-black text-gray-900">{plan.label}</div>
+                                                {plan.savings && (
+                                                    <div className="text-[10px] font-bold text-sage-600 mt-1">{plan.savings}</div>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="mb-8 p-4 bg-gray-50 rounded-2xl border border-gray-100 flex justify-between items-center">
+                                        <div>
+                                            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Total to Pay</span>
+                                            <span className="text-2xl font-black text-gray-900">₦{plans[selectedPlan].price.toLocaleString()}</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-[10px] font-black text-sage-600 bg-sage-100 px-2 py-1 rounded-full uppercase tracking-tighter">Priority Access</span>
+                                        </div>
+                                    </div>
+
+                                    <form onSubmit={handlePaymentMock} className="space-y-5">
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Cardholder Name</label>
+                                            <input required type="text" placeholder="e.g. OLUWAKEMI ADEBAYO" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50" />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Card Number</label>
+                                            <div className="relative">
+                                                <input required type="text" maxLength="19" placeholder="0000 0000 0000 0000" className="w-full pl-4 pr-12 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono text-lg" />
+                                                <CreditCard className="w-6 h-6 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Expiry Date</label>
+                                                <input required type="text" maxLength="5" placeholder="MM/YY" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">CVV</label>
+                                                <input required type="password" maxLength="3" placeholder="•••" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow bg-gray-50 font-mono text-center tracking-[0.3em]" />
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-4">
+                                            <button
+                                                type="submit"
+                                                disabled={loading}
+                                                className="w-full bg-[#00428F] text-white font-bold py-4 rounded-xl shadow-lg hover:bg-[#00306A] transition-all flex items-center justify-center gap-3 active:scale-[0.98] group relative overflow-hidden"
+                                            >
+                                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+                                                {loading ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <Loader2 className="w-5 h-5 animate-spin" /> Authenticating...
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <span className="font-medium">Pay ₦{plans[selectedPlan].price.toLocaleString()} using</span>
+                                                        <img src="/interswitch.png" alt="Interswitch" className="h-5 object-contain brightness-0 invert" />
+                                                    </>
+                                                )}
+                                            </button>
+                                            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400 font-medium">
+                                                <Lock className="w-3 h-3" /> Secure 256-bit SSL Encryption by Interswitch
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </>
+                        ) : (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="p-12 text-center flex flex-col items-center"
+                            >
+                                <div className="w-24 h-24 bg-sage-100 rounded-full flex items-center justify-center mb-6 relative">
+                                    <div className="absolute inset-0 bg-sage-400/20 rounded-full animate-ping"></div>
+                                    <CheckCircle className="w-12 h-12 text-sage-600 relative z-10" />
+                                </div>
+                                <h2 className="text-3xl font-black text-gray-900 mb-2">Upgrade Successful!</h2>
+                                <p className="text-gray-500 font-medium mb-8 text-lg">Welcome to CeresVera Premium. Your harvest just got smarter.</p>
+                                <div className="bg-gray-50 rounded-2xl p-6 w-full text-left border border-gray-100">
+                                    <div className="flex justify-between items-center mb-3">
+                                        <span className="text-gray-500 text-sm font-bold uppercase tracking-wider">Reference</span>
+                                        <span className="font-mono font-black text-gray-900 text-sm">ISW-{Math.random().toString(36).substring(2, 10).toUpperCase()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500 text-sm font-bold uppercase tracking-wider">Status</span>
+                                        <span className="font-black text-sage-600 text-sm uppercase">Active</span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+}
