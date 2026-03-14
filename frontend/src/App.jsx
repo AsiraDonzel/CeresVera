@@ -25,6 +25,9 @@ import Donate from './pages/Donate';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 import Chatbot from './pages/Chatbot';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import FAQ from './pages/FAQ';
 
 function App() {
   useEffect(() => {
@@ -63,6 +66,9 @@ function App() {
             <Route path="/predictive-analytics" element={<PredictiveAnalytics />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Settings />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/faq" element={<FAQ />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
