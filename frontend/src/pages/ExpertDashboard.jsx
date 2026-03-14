@@ -7,8 +7,20 @@ import {
     Clock, MoreHorizontal, MessageSquare, ShieldAlert
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ExpertPremiumPaymentOverlay from '../components/ExpertPremiumPaymentOverlay';
 
 export default function ExpertDashboard() {
+    const [isPremium, setIsPremium] = useState(localStorage.getItem('is_premium') === 'true');
+    const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+
+    useEffect(() => {
+        const handlePremiumUpdate = () => {
+            setIsPremium(localStorage.getItem('is_premium') === 'true');
+        };
+        window.addEventListener('premiumStatusChanged', handlePremiumUpdate);
+        return () => window.removeEventListener('premiumStatusChanged', handlePremiumUpdate);
+    }, []);
+
     const [stats, setStats] = useState([
         { label: 'Total Balance', value: '₦45,200', change: '+12%', icon: <DollarSign className="w-5 h-5" />, up: true },
         { label: 'Escrow Funds', value: '₦12,500', change: '+5%', icon: <ShieldAlert className="w-5 h-5" />, up: true },
@@ -36,13 +48,35 @@ export default function ExpertDashboard() {
 
     return (
         <div className="p-8 space-y-8 bg-earth-50 min-h-full">
+            <ExpertPremiumPaymentOverlay 
+                isOpen={isUpgradeOpen} 
+                onClose={() => setIsUpgradeOpen(false)} 
+            />
+
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div className="space-y-1">
-                    <h2 className="text-2xl font-black text-earth-900">Welcome back, Dr. {userName}!</h2>
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-2xl font-black text-earth-900">Welcome back, Dr. {userName}!</h2>
+                        {isPremium && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 bg-harvest-100 text-harvest-700 rounded-full border border-harvest-200 shadow-sm">
+                                <Award className="w-3.5 h-3.5 fill-harvest-400" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Gold Veritas</span>
+                            </div>
+                        )}
+                    </div>
                     <p className="text-gray-500 font-medium">You have {pendingRequests.filter(r => r.status === 'At risk').length} urgent requests today.</p>
                 </div>
                 <div className="flex gap-3">
+                    {!isPremium && (
+                        <button 
+                            onClick={() => setIsUpgradeOpen(true)}
+                            className="bg-harvest-400 hover:bg-harvest-500 text-earth-900 px-6 py-2.5 rounded-xl text-sm font-black shadow-lg shadow-harvest-400/20 transition-all flex items-center gap-2 group"
+                        >
+                            <Award className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                            Upgrade to Veritas
+                        </button>
+                    )}
                     <button className="px-6 py-2.5 bg-earth-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-earth-700/20 hover:bg-earth-900 hover:-translate-y-0.5 transition-all">
                         Withdraw Funds
                     </button>
