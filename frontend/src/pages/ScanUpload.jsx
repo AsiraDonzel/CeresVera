@@ -148,7 +148,7 @@ export default function ScanUpload() {
                         
                         <div className="mt-8 pt-8 border-t border-sage-100 w-full flex flex-col items-center">
                             <p className="text-sm text-gray-500 mb-4">Need more AI insight instead?</p>
-                            <Link to="/chatbot" className="flex items-center gap-2 text-sage-700 font-bold hover:text-sage-900 transition-colors">
+                            <Link to="/chat" className="flex items-center gap-2 text-sage-700 font-bold hover:text-sage-900 transition-colors">
                                 <MessageSquare className="w-4 h-4" /> Ask Cera AI Assistant <ArrowRight className="w-4 h-4" />
                             </Link>
                         </div>
@@ -229,7 +229,7 @@ export default function ScanUpload() {
                                                     <Camera className="w-4 h-4" /> Open Camera
                                                 </button>
                                                 <Link 
-                                                    to="/chatbot" 
+                                                    to="/chat" 
                                                     className="inline-flex items-center justify-center bg-white border-2 border-sage-200 text-sage-700 px-6 py-3 rounded-xl font-bold hover:bg-sage-50 transition-all flex items-center gap-2"
                                                 >
                                                     <MessageSquare className="w-4 h-4" /> Ask Cera AI
