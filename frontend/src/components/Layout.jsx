@@ -19,10 +19,10 @@ export default function Layout({ children }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
-    const mockNotifications = [
+    const [notifications, setNotifications] = useState([
         { id: 1, title: 'New Request', desc: 'Kemi Adebayo booked a consult.', time: '2m ago' },
         { id: 2, title: 'Payout Alert', desc: '₦45,200 settled to bank.', time: '1h ago' },
-    ];
+    ]);
 
     useEffect(() => {
         if (localStorage.getItem('show_onboarding') === 'true') {
@@ -135,7 +135,9 @@ export default function Layout({ children }) {
                                     className={`p-2.5 text-gray-400 hover:text-${themeColor}-700 ${themeHoverBg} rounded-xl transition-all relative`}
                                 >
                                     <Bell className="w-5 h-5" />
-                                    <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-rose-500 border-2 border-white rounded-full"></span>
+                                    {notifications.length > 0 && (
+                                        <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-rose-500 border-2 border-white rounded-full"></span>
+                                    )}
                                 </button>
                                 
                                 <AnimatePresence>
@@ -148,16 +150,30 @@ export default function Layout({ children }) {
                                         >
                                             <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
                                                 <span className="font-black text-xs uppercase tracking-widest text-gray-900">Recent Alerts</span>
-                                                <button onClick={() => setIsNotificationsOpen(false)} className="text-[10px] font-bold text-forest-600 uppercase">Clear</button>
+                                                <button 
+                                                    onClick={() => setNotifications([])} 
+                                                    className="text-[10px] font-bold text-forest-600 uppercase hover:text-forest-800 transition-colors"
+                                                >
+                                                    Clear
+                                                </button>
                                             </div>
                                             <div className="divide-y divide-gray-50 max-h-96 overflow-y-auto">
-                                                {mockNotifications.map((note) => (
-                                                    <div key={note.id} className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
-                                                        <h4 className="text-sm font-bold text-gray-900">{note.title}</h4>
-                                                        <p className="text-xs text-gray-500 mt-1 font-medium">{note.desc}</p>
-                                                        <span className="text-[10px] text-gray-400 font-bold mt-2 inline-block lowercase tracking-tight">{note.time}</span>
+                                                {notifications.length > 0 ? (
+                                                    notifications.map((note) => (
+                                                        <div key={note.id} className="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+                                                            <h4 className="text-sm font-bold text-gray-900">{note.title}</h4>
+                                                            <p className="text-xs text-gray-500 mt-1 font-medium">{note.desc}</p>
+                                                            <span className="text-[10px] text-gray-400 font-bold mt-2 inline-block lowercase tracking-tight">{note.time}</span>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="p-8 text-center bg-white">
+                                                        <div className="w-12 h-12 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                            <Bell className="w-5 h-5" />
+                                                        </div>
+                                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">No new alerts</p>
                                                     </div>
-                                                ))}
+                                                )}
                                             </div>
                                         </motion.div>
                                     )}
