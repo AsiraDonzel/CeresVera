@@ -1,0 +1,38 @@
+
+--- Request to /api/auth/profile/ ---
+User: andrewmary@gmail.com
+Data: {
+  "phone_number": "",
+  "farm_name": "",
+  "address_line": "",
+  "state": "",
+  "country": "Nigeria",
+  "primary_crop": "",
+  "bio": "Michael Chen is a Senior Software Architect with over 15 years of experience in designing and implementing high-availability distributed systems. He specializes in cloud-native microservices architecture, DevOps transformation, and cross-functional team leadership. Throughout his career, Michael has focused on creating scalable, secure solutions for large-scale enterprises, bridging the gap between complex engineering challenges and strategic business objectives. He is a passionate advocate for open-source development and continuous technical mentorship, dedicated to fostering engineering excellence in every project he leads.",
+  "experience_years": 15,
+  "linkedin_url": "https://www.linkedin.com/in/michaelchen-software-architect-test",
+  "certificates": [
+    "AWS Certified Solutions Architect \u2013 Professional",
+    "Microsoft Certified: Azure Solutions Architect Expert",
+    "Google Cloud Professional Cloud Architect",
+    "Certified Kubernetes Administrator (CKA)",
+    "TOGAF 9 Certified"
+  ]
+}
+
+--- Request to /api/auth/profile/ ---
+User: andrewmary@gmail.com
+Data: {
+  "is_premium": true,
+  "subscription_type": "monthly"
+}
+
+--- Request to /api/auth/profile/ ---
+User: experttest@gmail.com
+Data: {
+  "bio": "Michael Chen is a Senior Software Architect with over 15 years of experience in designing and implementing high-availability distributed systems. He specializes in cloud-native microservices architecture, DevOps transformation, and cross-functional team leadership. Throughout his career, Michael has focused on creating scalable, secure solutions for large-scale enterprises, bridging the gap between complex engineering challenges and strategic business objectives. He is a passionate advocate for open-source development and continuous technical mentorship, dedicated to fostering engineering excellence in every project he leads.",
+  "phone_number": "0812345678",
+  "role": "agronomist",
+  "verification_status": "pending",
+  "expertise_tags": []
+}

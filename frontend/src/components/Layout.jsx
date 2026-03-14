@@ -126,16 +126,7 @@ export default function Layout({ children }) {
                         </div>
 
                         {/* Search Bar Removed for Experts per refinement */}
-                        {userRole === 'farmer' && (
-                            <div className="hidden md:flex items-center relative w-96 max-lg">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                <input
-                                    type="text"
-                                    placeholder="Search diagnoses, weather, or resources..."
-                                    className={`w-full pl-11 pr-4 py-2.5 bg-gray-50 rounded-xl border-none focus:ring-2 focus:ring-forest-500 transition-all text-sm font-medium`}
-                                />
-                            </div>
-                        )}
+
 
                         <div className="flex items-center gap-4">
                             <div className="relative">

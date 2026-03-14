@@ -6,7 +6,16 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ('profile_picture', 'farm_location', 'primary_crop', 'farm_size')
+        fields = (
+            'role', 'profile_picture', 'is_premium', 'ai_queries_count', 
+            'farm_location', 'primary_crop', 'farm_size', 'phone_number',
+            'bio', 'linkedin_url', 'certificates', 'experience_years',
+            'farm_name', 'address_line', 'state', 'country',
+            'subscription_type', 'subscription_expiry',
+            'crop_cycle_plans', 'farm_coordinates_lat', 'farm_coordinates_lon',
+            'stewardship_score', 'soil_type', 'consultation_rate',
+            'expertise_tags', 'verification_status'
+        )
 
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(read_only=True)
@@ -23,14 +32,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         user = self.user
         data['id'] = user.id
         data['name'] = user.first_name or user.username
+        data['email'] = user.email
         
         # Safely get profile info
         try:
             profile = user.profile
             data['role'] = profile.role
+            data['is_premium'] = profile.is_premium
+            data['phone_number'] = profile.phone_number
             data['profile_pic'] = profile.profile_picture.url if profile.profile_picture else None
         except UserProfile.DoesNotExist:
             data['role'] = 'farmer' # Default fallback
+            data['is_premium'] = False
+            data['phone_number'] = None
             data['profile_pic'] = None
             
         return data
@@ -40,10 +54,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True, required=True)
     name = serializers.CharField(write_only=True, required=False, allow_blank=True)
     role = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    phone = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password', 'confirm_password', 'name', 'role')
+        fields = ('id', 'username', 'email', 'password', 'confirm_password', 'name', 'role', 'phone')
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate_email(self, value):
@@ -68,9 +83,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         validated_data.pop('confirm_password', None)
         name = validated_data.pop('name', '')
         role = validated_data.pop('role', 'farmer')
+        phone = validated_data.pop('phone', '')
         
         user = User.objects.create_user(
-            username=validated_data['email'],  # use email as username for consistency
+            username=validated_data.get('username') or validated_data['email'],
             email=validated_data['email'],
             password=validated_data['password'],
             first_name=name
@@ -79,6 +95,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         # Try to update the auto-created profile with the selected role
         profile, created = UserProfile.objects.get_or_create(user=user)
         profile.role = role
+        profile.phone_number = phone
         profile.save()
         
         return user

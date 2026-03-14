@@ -5,7 +5,8 @@ from .views import (
     ConsultantViewSet, ScanUploadView, PaymentInitiateView,
     PaymentCallbackView, PaymentReleaseEscrowView, HotspotListView,
     RegisterView, AvatarUploadView, UserProfileUpdateView, AgricultureAdviserView,
-    DeepseekAdviserView, GoogleAuthView, CustomTokenObtainPairView
+    DeepseekAdviserView, GoogleAuthView, CustomTokenObtainPairView,
+    PasswordResetRequestView, PasswordResetVerifyView, PasswordResetConfirmView
 )
 router = DefaultRouter()
 router.register(r'consultants', ConsultantViewSet, basename='consultant')
@@ -25,4 +26,7 @@ urlpatterns = [
     path('adviser/', AgricultureAdviserView.as_view(), name='agriculture_adviser'),
     path('deepseek/', DeepseekAdviserView.as_view(), name='deepseek_adviser'),
     path('auth/google/', GoogleAuthView.as_view(), name='google_auth'),
+    path('auth/password-reset-request/', PasswordResetRequestView.as_view(), name='password_reset_request'),
+    path('auth/password-reset-verify/', PasswordResetVerifyView.as_view(), name='password_reset_verify'),
+    path('auth/password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 ]

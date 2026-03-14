@@ -147,7 +147,7 @@ export default function Chatbot() {
                     <Sparkles className="w-8 h-8 text-sage-600" />
                 </motion.div>
                 <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 tracking-tight">
-                    Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-sage-600 to-earth-600">Cera AI</span>
+                    Welcome to <span className="text-sage-600 bg-clip-text bg-gradient-to-r from-sage-600 to-earth-600">Cera AI</span>
                 </h2>
                 <p className="text-lg text-gray-600 leading-relaxed">
                     Select an intelligence module below to begin. Whether you need an intelligent conversational partner or deep agronomic expertise, CeresVera is here to guide you.
@@ -200,10 +200,11 @@ export default function Chatbot() {
                 </div>
                 <button
                     onClick={() => setActiveMode(null)}
-                    className="text-sm font-medium text-gray-500 hover:text-gray-900 border border-gray-200 px-4 py-2 rounded-full transition-colors flex items-center gap-2 lg:hidden md:flex"
+                    className="text-sm font-black uppercase tracking-widest text-gray-400 hover:text-sage-600 border border-gray-100 px-6 py-2.5 rounded-2xl transition-all flex items-center gap-2 bg-gray-50/50 hover:bg-white hover:shadow-lg hover:shadow-sage-600/5 group"
                 >
-                    <ArrowLeft className="w-4 h-4" /> Switch Mode
+                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back
                 </button>
+
             </div>
 
             <div className="flex-1 bg-gray-50 border-x border-gray-200 overflow-y-auto p-4 space-y-6">

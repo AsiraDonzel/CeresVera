@@ -91,6 +91,7 @@ export default function Auth() {
                     username: email,
                     email,
                     password: hashedPassword,
+                    confirm_password: hashedPassword,
                     role: role,
                     name: name,
                     phone: phone
@@ -115,7 +116,27 @@ export default function Auth() {
                 }, 1000);
             }
         } catch (err) {
-            setError(err.response?.data?.error || 'Execution failed. Please verify your data.');
+            console.error('Auth error:', err);
+            if (err.response?.data) {
+                const data = err.response.data;
+                if (data.error) setError(data.error);
+                else if (data.detail) setError(data.detail);
+                else if (typeof data === 'object') {
+                    // Handle DRF field errors
+                    const fields = Object.keys(data);
+                    if (fields.length > 0) {
+                        const firstField = fields[0];
+                        const fieldError = data[firstField];
+                        setError(`${firstField}: ${Array.isArray(fieldError) ? fieldError[0] : fieldError}`);
+                    } else {
+                        setError('Execution failed. Please verify your data.');
+                    }
+                } else {
+                    setError('Execution failed. Please verify your data.');
+                }
+            } else {
+                setError(err.message || 'Execution failed. Please verify your data.');
+            }
         } finally {
             setLoading(false);
         }
@@ -154,7 +175,7 @@ export default function Auth() {
                                         <Leaf className="w-10 h-10 text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <h3 className="text-3xl font-black text-forest-700">Steward of the Land</h3>
+                                        <h3 className="text-3xl font-black text-forest-700">Farmer</h3>
                                         <p className="text-gray-600 font-medium leading-relaxed">Manage your crops, receive AI disease detection, and monitor climate data daily.</p>
                                     </div>
                                     <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -201,7 +222,7 @@ export default function Auth() {
                                     <button onClick={() => setMode('register-role')} className="text-forest-500 font-bold flex items-center gap-2 mb-8 hover:translate-x-[-4px] transition-transform">
                                         <ChevronLeft className="w-5 h-5" /> Change Role
                                     </button>
-                                    <h2 className="text-4xl font-black text-gray-900 tracking-tight">Create your {role === 'farmer' ? 'Steward' : 'Expert'} Account</h2>
+                                    <h2 className="text-4xl font-black text-gray-900 tracking-tight">Create your {role === 'farmer' ? 'Farmer' : 'Expert'} Account</h2>
                                     <p className="text-gray-500 mt-2 font-medium">Join the sustainable agricultural revolution.</p>
                                 </div>
 
@@ -227,7 +248,7 @@ export default function Auth() {
                                         <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
                                         <div className="relative">
                                             <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-16 pr-6 py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20" placeholder="steward@ceresvera.com" />
+                                            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-16 pr-6 py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20" placeholder="farmer@ceresvera.com" />
                                         </div>
                                     </div>
 
@@ -302,7 +323,7 @@ export default function Auth() {
                             <div className="flex-1 p-12 md:p-16 space-y-10">
                                 <div className="text-center md:text-left">
                                     <h1 className="text-4xl font-black text-gray-900 tracking-tight">Welcome Back</h1>
-                                    <p className="text-gray-500 mt-2 font-medium">Continue your stewardship journey.</p>
+                                    <p className="text-gray-500 mt-2 font-medium">Continue your farming journey.</p>
                                 </div>
 
                                 {error && (

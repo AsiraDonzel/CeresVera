@@ -6,6 +6,7 @@ from .serializers import ConsultantSerializer, ScanSerializer, TransactionSerial
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.db.models import Count
+from django.utils import timezone
 import json
 import os
 from groq import Groq
@@ -19,7 +20,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 class ConsultantViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Consultant.objects.filter(is_active=True)
+    queryset = Consultant.objects.filter(is_active=True).order_by('-is_premium', 'id')
     serializer_class = ConsultantSerializer
 
 class ScanUploadView(APIView):
@@ -247,7 +248,7 @@ class AgricultureAdviserView(APIView):
     Handles queries to the Groq llama-3.3-70b-versatile model for agricultural advice.
     Replaces the Streamlit implementation with a native REST API.
     """
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     AGRICULTURE_TOPICS = [
         "sustainable farming", "crop rotation", "soil health", "organic farming", 
@@ -261,6 +262,21 @@ class AgricultureAdviserView(APIView):
     ]
 
     def post(self, request, *args, **kwargs):
+        # AI Rate Limiting Check
+        user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        today = timezone.now().date()
+        
+        if user_profile.last_ai_query_date != today:
+            user_profile.ai_queries_count = 0
+            user_profile.last_ai_query_date = today
+            user_profile.save()
+            
+        if not user_profile.is_premium and user_profile.ai_queries_count >= 3:
+            return Response(
+                {'error': 'Daily limit reached', 'requires_upgrade': True}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         query = request.data.get('query', '')
         topic = request.data.get('topic', '')
 
@@ -285,6 +301,11 @@ class AgricultureAdviserView(APIView):
                 max_completion_tokens=1024,
                 top_p=1,
             )
+            
+            # Increment usage on success
+            user_profile.ai_queries_count += 1
+            user_profile.save()
+            
             response_content = completion.choices[0].message.content
             return Response({'response': response_content}, status=status.HTTP_200_OK)
 
@@ -295,9 +316,24 @@ class DeepseekAdviserView(APIView):
     """
     Handles queries to the Deepseek AI model (deepseek-chat) acting as the main CeraAI Assistant.
     """
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
+        # AI Rate Limiting Check
+        user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        today = timezone.now().date()
+        
+        if user_profile.last_ai_query_date != today:
+            user_profile.ai_queries_count = 0
+            user_profile.last_ai_query_date = today
+            user_profile.save()
+            
+        if not user_profile.is_premium and user_profile.ai_queries_count >= 3:
+            return Response(
+                {'error': 'Daily limit reached', 'requires_upgrade': True}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         query = request.data.get('query', '')
         
         if not query:
@@ -321,6 +357,10 @@ class DeepseekAdviserView(APIView):
                 top_p=1,
             )
             
+            # Increment usage on success
+            user_profile.ai_queries_count += 1
+            user_profile.save()
+            
             response_content = completion.choices[0].message.content
             return Response({'response': response_content}, status=status.HTTP_200_OK)
 
@@ -331,10 +371,72 @@ class UserProfileUpdateView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        with open('error_log.txt', 'a') as f:
+            f.write(f"\n--- Request to {request.path} ---\n")
+            f.write(f"User: {request.user}\n")
+            f.write(f"Data: {json.dumps(request.data, indent=2)}\n")
+        
+        try:
+            user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+            serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            with open('error_log.txt', 'a') as f:
+                f.write(f"Errors: {json.dumps(serializer.errors, indent=2)}\n")
+            return Response({'error': 'Validation failed', 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            with open('error_log.txt', 'a') as f:
+                f.write(f"Exception: {str(e)}\n")
+            return Response({'error': 'Server error', 'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+from django.utils.crypto import get_random_string
+import logging
 
+# ... (rest of the imports)
+
+class PasswordResetRequestView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        email = request.data.get('email')
+        try:
+            user = User.objects.get(email=email)
+            # In a real app, send this via email. Mocking for now.
+            reset_code = get_random_string(length=4, allowed_chars='0123456789')
+            request.session['reset_code'] = reset_code
+            request.session['reset_email'] = email
+            print(f"DEBUG: Password reset code for {email} is {reset_code}")
+            return Response({'message': 'Code sent successfully'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class PasswordResetVerifyView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        code = request.data.get('code')
+        stored_code = request.session.get('reset_code')
+        if code == stored_code:
+            return Response({'message': 'Code verified'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Invalid code'}, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        email = request.session.get('reset_email')
+        new_password = request.data.get('password')
+        if not email or not new_password:
+            return Response({'error': 'Session expired or missing data'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+            # Clear session
+            del request.session['reset_code']
+            del request.session['reset_email']
+            return Response({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
