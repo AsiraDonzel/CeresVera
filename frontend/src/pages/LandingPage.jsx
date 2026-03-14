@@ -11,11 +11,7 @@ export default function LandingPage() {
         }
     };
 
-    const itemVariants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: { y: 0, opacity: 1 }
-    };
-
+    const isLoggedIn = !!localStorage.getItem('access_token');
     const userRole = localStorage.getItem('user_role') || 'farmer';
 
     return (
@@ -38,7 +34,7 @@ export default function LandingPage() {
                         CeresVera provides absolute clarity on crop health. Detect diseases instantly using AI and connect with certified agronomy experts for real truth you can trust.
                     </p>
                     <div className="flex justify-center flex-col sm:flex-row gap-4 mt-8">
-                        {userRole === 'expert' ? (
+                        {(isLoggedIn && userRole === 'expert') ? (
                             <Link
                                 to="/expert-dashboard"
                                 className="inline-flex items-center justify-center gap-2 px-12 py-4 text-base font-black text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
