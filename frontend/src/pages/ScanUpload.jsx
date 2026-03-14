@@ -112,11 +112,7 @@ export default function ScanUpload() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-16">
-            <div className="text-center mb-12">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">AI Disease Detection</h1>
-                <p className="text-gray-600">Upload a clear picture of the plant leaf for instant analysis.</p>
-            </div>
+        <div className="p-8 space-y-8 bg-earth-50 min-h-full">
 
             <div className="bg-white rounded-3xl p-8 shadow-sm border border-sage-100">
                 {!preview ? (
@@ -128,8 +124,8 @@ export default function ScanUpload() {
                         <div className="p-4 bg-earth-100 text-earth-700 rounded-full mb-4 group-hover:scale-110 transition-transform">
                             <UploadCloud className="w-8 h-8" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Drag & drop an image</h3>
-                        <p className="text-gray-500 mb-6">or use your camera for instant detection</p>
+                        <h3 className="text-xl font-black text-sage-900 mb-2">Drag & drop an image</h3>
+                        <p className="text-gray-500 font-medium mb-8">or use your camera for instant detection</p>
                         
                         <div className="flex gap-4">
                             <input type="file" id="file-upload" className="hidden" accept="image/png, image/jpeg" onChange={handleFileInput} />
@@ -151,7 +147,7 @@ export default function ScanUpload() {
                         </div>
                         
                         <div className="mt-8 pt-8 border-t border-sage-100 w-full flex flex-col items-center">
-                            <p className="text-sm text-gray-500 mb-4">Need expert advice instead?</p>
+                            <p className="text-sm text-gray-500 mb-4">Need more AI insight instead?</p>
                             <Link to="/chatbot" className="flex items-center gap-2 text-sage-700 font-bold hover:text-sage-900 transition-colors">
                                 <MessageSquare className="w-4 h-4" /> Ask Cera AI Assistant <ArrowRight className="w-4 h-4" />
                             </Link>

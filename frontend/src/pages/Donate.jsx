@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, CreditCard, CheckCircle, X, Lock } from 'lucide-react';
+import { ShieldCheck, CreditCard, CheckCircle, X, Lock, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Donate() {
     const container = {
@@ -36,6 +37,12 @@ export default function Donate() {
             <div className="max-w-5xl mx-auto">
 
                 {/* Header Row */}
+                <div className="mb-8">
+                    <Link to="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-sage-700 font-bold transition-all group">
+                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                        Back to Home
+                    </Link>
+                </div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-16 pb-8 border-b border-gray-300 gap-6">
                     <div>
                         <h1 className="text-4xl sm:text-6xl font-black text-[#0F172A] tracking-tight mb-2">

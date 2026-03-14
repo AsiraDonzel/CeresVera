@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 const teamMembers = [
     { name: "Annalyse Kehs", role: "Executive Director", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" },
@@ -39,6 +40,10 @@ export default function About() {
                     alt="Lush agricultural field"
                     className="absolute inset-0 w-full h-full object-cover filter grayscale-[50%] contrast-[1.1]"
                 />
+                <Link to="/" className="absolute top-8 left-8 z-30 flex items-center gap-2 text-white/80 hover:text-white font-bold transition-all group">
+                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                    Back to Home
+                </Link>
                 <h1 className="relative z-30 text-5xl md:text-7xl font-bold text-white tracking-tight drop-shadow-lg text-center px-4">
                     About CeresVera
                 </h1>

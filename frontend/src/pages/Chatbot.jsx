@@ -186,7 +186,7 @@ export default function Chatbot() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col h-[calc(100vh-140px)] max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6"
+            className="flex flex-col h-[calc(100vh-240px)] max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6"
         >
             <div className="bg-white rounded-t-2xl border border-gray-200 p-4 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-3">
@@ -282,7 +282,7 @@ export default function Chatbot() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col h-[calc(100vh-140px)] max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6"
+            className="flex flex-col h-[calc(100vh-240px)] max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6"
         >
             {/* Header */}
             <div className="bg-white rounded-t-2xl border border-gray-200 p-4 flex items-center justify-between shadow-sm">
@@ -390,41 +390,14 @@ export default function Chatbot() {
     );
 
     return (
-        <div className="flex flex-col min-h-screen pt-20 bg-earth-50">
-            {/* Minimal Header (Always visible) */}
-            <div className="bg-white border-b border-sage-100 shadow-sm z-20 sticky top-20">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        {activeMode && (
-                            <button
-                                onClick={() => setActiveMode(null)}
-                                className="hidden lg:flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                            </button>
-                        )}
-                        <div>
-                            <h1 className="text-lg font-bold text-gray-900 font-display flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-sage-500" /> CeraAI Hub
-                            </h1>
-                        </div>
-                    </div>
+        <div className="flex flex-col min-h-[80vh] bg-earth-50">
 
-                    <div className="flex items-center gap-2 text-xs font-bold text-sage-600 bg-sage-50 px-3 py-1.5 rounded-full border border-sage-200">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sage-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-sage-500"></span>
-                        </span>
-                        SYS_ONLINE
-                    </div>
-                </div>
-            </div>
 
             {/* Dynamic Content Area */}
             <div className="flex-1 w-full relative flex flex-col">
                 <AnimatePresence mode="wait">
                     {!activeMode && (
-                        <motion.div key="selection" className="flex-1 flex flex-col absolute inset-0 bg-earth-50 z-10">
+                        <motion.div key="selection" className="flex-1 flex flex-col bg-earth-50 z-10">
                             {renderSelectionScreen()}
                         </motion.div>
                     )}
@@ -435,7 +408,7 @@ export default function Chatbot() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="flex-1 w-full absolute inset-0 z-10 bg-earth-50"
+                            className="flex-1 w-full bg-earth-50 z-10"
                         >
                             {renderDeepseekUI()}
                         </motion.div>
@@ -447,7 +420,7 @@ export default function Chatbot() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="flex-1 w-full absolute inset-0 z-10 bg-earth-50"
+                            className="flex-1 w-full bg-earth-50 z-10"
                         >
                             {renderAdviserUI()}
                         </motion.div>

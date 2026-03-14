@@ -52,11 +52,7 @@ export default function Consultants() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-16">
-            <div className="text-center mb-12 max-w-2xl mx-auto">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">Expert Marketplace</h1>
-                <p className="text-lg text-gray-600">Connect with certified agronomists and plant pathologists. Premium advice is verified via Gold Veritas.</p>
-            </div>
+        <div className="p-8 space-y-12 bg-earth-50 min-h-full">
 
             {/* Search and Filter Section */}
             <div className="mb-12 max-w-4xl mx-auto space-y-6">
@@ -99,7 +95,7 @@ export default function Consultants() {
                     <p className="text-gray-500">Try adjusting your search or filters to find exactly what you need.</p>
                 </div>
             ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                     {filteredExperts.map(expert => (
                         <div key={expert.id} className={`bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all border flex flex-col items-center text-center relative overflow-hidden group ${expert.is_premium ? 'border-amber-300 ring-1 ring-amber-100' : 'border-earth-300'}`}>
 

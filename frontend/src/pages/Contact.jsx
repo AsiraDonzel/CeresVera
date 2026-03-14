@@ -2,7 +2,8 @@ import { useRef, useState, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, Float, Sparkles, Loader } from '@react-three/drei';
-import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // 3D Spinning Flower Pot Component
 function FlowerPot() {
@@ -111,6 +112,10 @@ export default function Contact() {
                 </Suspense>
 
                 {/* Gradient overlay to blend canvas into background color */}
+                <Link to="/" className="absolute top-8 left-8 z-20 flex items-center gap-2 text-gray-400 hover:text-sage-700 font-bold transition-all group pointer-events-auto">
+                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                    Back to Home
+                </Link>
                 <div className="absolute inset-0 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6]/80 lg:via-transparent to-transparent pointer-events-none" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#FAF9F6] via-transparent to-transparent pointer-events-none h-32 bottom-0" />
             </div>

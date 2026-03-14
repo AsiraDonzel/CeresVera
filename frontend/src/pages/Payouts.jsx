@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { DollarSign, ArrowUpRight, ArrowDownRight, ShieldCheck, DownloadCloud, Loader2, CheckCircle2, Trash2 } from 'lucide-react';
 
 export default function Payouts() {
+    const navigate = useNavigate();
     const [isWithdrawing, setIsWithdrawing] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const isPremium = localStorage.getItem('is_premium') === 'true';
@@ -129,7 +131,10 @@ export default function Payouts() {
                         </p>
                     </div>
                     {!isPremium && (
-                        <button className="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <button 
+                            onClick={() => navigate('/checkout/premium')}
+                            className="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20 active:scale-95"
+                        >
                             Upgrade
                         </button>
                     )}

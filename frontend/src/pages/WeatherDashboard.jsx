@@ -151,21 +151,9 @@ export default function WeatherDashboard() {
     const advice = getCropAdvice(weatherData);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-sky-50 via-earth-50 to-sage-50 pb-16">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-sky-600 to-teal-700 text-white px-4 py-12">
-                <div className="max-w-6xl mx-auto">
-                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-                        <div className="flex items-center gap-3 mb-2">
-                            <Cloud className="w-8 h-8" />
-                            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Climate Intelligence</h1>
-                        </div>
-                        <p className="text-sky-100 text-lg">Real-time weather data & agricultural climate forecasts for Nigeria</p>
-                    </motion.div>
-                </div>
-            </div>
+        <div className="p-8 space-y-8 bg-earth-50 min-h-full">
+            <div className="max-w-6xl mx-auto space-y-8">
 
-            <div className="max-w-6xl mx-auto px-4 -mt-6">
                 {/* State Selector */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                     className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 mb-6 relative z-30">
@@ -370,7 +358,7 @@ export default function WeatherDashboard() {
                         </p>
                     </div>
                 )}
+                </div>
             </div>
-        </div>
     );
 }

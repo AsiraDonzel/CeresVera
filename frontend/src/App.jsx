@@ -16,6 +16,7 @@ import Payouts from './pages/Payouts';
 import ExpertCircles from './pages/ExpertCircles';
 import PredictiveAnalytics from './pages/PredictiveAnalytics';
 import Settings from './pages/Settings';
+import FarmerRequests from './pages/FarmerRequests';
 import About from './pages/About';
 import Crops from './pages/Crops';
 import Diseases from './pages/Diseases';
@@ -31,12 +32,11 @@ function App() {
     const oneSignalAppId = import.meta.env.VITE_ONESIGNAL_APP_ID;
     if (oneSignalAppId) {
       console.log('OneSignal mock initialized with App ID:', oneSignalAppId);
-      // window.OneSignal.push(() => window.OneSignal.init({ appId: oneSignalAppId }));
     }
   }, []);
 
   return (
-    <GoogleOAuthProvider clientId="605914999241-ca9qb0iib923ma24ptkpc2j4rjhdk7le.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
       <Router>
         <ScrollToTop />
         <Layout>
@@ -52,6 +52,7 @@ function App() {
             <Route path="/chat" element={<Chatbot />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/expert-dashboard" element={<ExpertDashboard />} />
+            <Route path="/farmer-requests" element={<FarmerRequests />} />
             <Route path="/scan" element={<ScanUpload />} />
             <Route path="/consultants" element={<Consultants />} />
             <Route path="/checkout/:consultantId" element={<Checkout />} />
@@ -61,6 +62,7 @@ function App() {
             <Route path="/expert-circles" element={<ExpertCircles />} />
             <Route path="/predictive-analytics" element={<PredictiveAnalytics />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/profile" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>

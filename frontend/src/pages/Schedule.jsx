@@ -13,7 +13,10 @@ export default function Schedule() {
     const [activeVideoCall, setActiveVideoCall] = useState(null);
     const [isAvailabilityOverlayOpen, setIsAvailabilityOverlayOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(15); 
-    
+    const [currentDate, setCurrentDate] = useState(new Date(2026, 9)); // Default to October 2026
+
+    const handlePrevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+    const handleNextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
     // States for the Modal Form
     const [selectedTimes, setSelectedTimes] = useState(['10:00 AM', '02:00 PM']);
     const [selectedType, setSelectedType] = useState('Video Call');
@@ -44,11 +47,8 @@ export default function Schedule() {
     }, [savedSlots]);
 
     const generateDays = () => {
-        const days = [];
-        for (let i = 1; i <= 31; i++) {
-            days.push(i);
-        }
-        return days;
+        const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+        return Array.from({ length: daysInMonth }, (_, i) => i + 1);
     };
 
     const toggleTimeSlot = (time) => {
@@ -163,15 +163,23 @@ export default function Schedule() {
                             <div className="absolute -top-6 -right-6 w-24 h-24 bg-sage-100 rounded-full blur-2xl opacity-50 z-0"></div>
                             
                             <div className="flex items-center justify-between mb-8 relative z-10">
-                                <div>
-                                    <h3 className="font-black text-gray-900 text-2xl tracking-tight">October</h3>
-                                    <p className="text-sage-600 font-bold text-sm">2026</p>
+                                <div className="min-w-[140px]">
+                                    <h3 className="font-black text-gray-900 text-2xl tracking-tight">
+                                        {currentDate.toLocaleString('default', { month: 'long' })}
+                                    </h3>
+                                    <p className="text-sage-600 font-bold text-sm">{currentDate.getFullYear()}</p>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button className="w-10 h-10 rounded-full bg-gray-50 hover:bg-sage-50 text-gray-400 hover:text-sage-700 flex items-center justify-center transition-colors border border-gray-100">
+                                    <button 
+                                        onClick={handlePrevMonth}
+                                        className="w-10 h-10 rounded-full bg-gray-50 hover:bg-sage-50 text-gray-400 hover:text-sage-700 flex items-center justify-center transition-colors border border-gray-100"
+                                    >
                                         <ChevronLeft className="w-5 h-5" />
                                     </button>
-                                    <button className="w-10 h-10 rounded-full bg-gray-50 hover:bg-sage-50 text-gray-400 hover:text-sage-700 flex items-center justify-center transition-colors border border-gray-100">
+                                    <button 
+                                        onClick={handleNextMonth}
+                                        className="w-10 h-10 rounded-full bg-gray-50 hover:bg-sage-50 text-gray-400 hover:text-sage-700 flex items-center justify-center transition-colors border border-gray-100"
+                                    >
                                         <ChevronRight className="w-5 h-5" />
                                     </button>
                                 </div>
@@ -184,11 +192,10 @@ export default function Schedule() {
 
                             {/* Dates grid */}
                             <div className="grid grid-cols-7 gap-2 text-center text-sm font-bold text-gray-700 relative z-10">
-                                {/* Padding for start of month */}
-                                <div className="aspect-square flex items-center justify-center opacity-0"></div>
-                                <div className="aspect-square flex items-center justify-center opacity-0"></div>
-                                <div className="aspect-square flex items-center justify-center opacity-0"></div>
-                                <div className="aspect-square flex items-center justify-center opacity-0"></div>
+                                {/* Padding for start of month - Simplified dynamic grid start */}
+                                {Array.from({ length: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay() }).map((_, i) => (
+                                    <div key={`pad-${i}`} className="aspect-square flex items-center justify-center opacity-0"></div>
+                                ))}
 
                                 {generateDays().map(day => {
                                     const isSelected = selectedDate === day;
@@ -247,7 +254,9 @@ export default function Schedule() {
                                     <Clock className="w-6 h-6 text-sage-700" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-gray-900 tracking-tight">Agenda for Oct {selectedDate}</h2>
+                                    <h2 className="text-xl font-black text-gray-900 tracking-tight">
+                                        Agenda for {currentDate.toLocaleString('default', { month: 'short' })} {selectedDate}
+                                    </h2>
                                     <div className="text-sm font-medium text-gray-500 mt-0.5">
                                         {appointments.length} Items Total
                                     </div>
@@ -408,7 +417,7 @@ export default function Schedule() {
                                         Set Availability
                                     </h2>
                                     <p className="text-sage-200 text-sm font-medium">
-                                        Configure slots for October {selectedDate}, 2026.
+                                        Configure slots for {currentDate.toLocaleString('default', { month: 'long' })} {selectedDate}, {currentDate.getFullYear()}.
                                     </p>
                                 </div>
                             </div>
