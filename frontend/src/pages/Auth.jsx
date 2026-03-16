@@ -189,10 +189,10 @@ export default function Auth() {
     };
 
     return (
-        <div className="min-h-screen bg-white flex flex-col items-center justify-center relative overflow-hidden font-sans">
+        <div className="min-h-screen bg-white dark:bg-[#09090b] flex flex-col items-center justify-center relative overflow-hidden font-sans">
             {/* Nature Accents */}
-            <div className="absolute -top-24 -left-24 w-96 h-96 bg-forest-50 rounded-full blur-3xl opacity-50" />
-            <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-harvest-50 rounded-full blur-3xl opacity-50" />
+            <div className="absolute -top-24 -left-24 w-96 h-96 bg-forest-50 dark:bg-forest-900 rounded-full blur-3xl opacity-50 dark:opacity-20" />
+            <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-harvest-50 dark:bg-harvest-900 rounded-full blur-3xl opacity-50 dark:opacity-20" />
 
             <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 z-10 py-6 sm:py-12">
                 <AnimatePresence mode="wait">
@@ -264,7 +264,7 @@ export default function Auth() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0 }}
-                            className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col md:flex-row min-h-[auto] sm:min-h-[700px] w-full"
+                            className="bg-white dark:bg-[#121214] rounded-[2rem] sm:rounded-[3rem] shadow-2xl border border-gray-100 dark:border-[#27272a] overflow-hidden flex flex-col md:flex-row min-h-[auto] sm:min-h-[700px] w-full"
                         >
                             <div className="flex-1 p-6 sm:p-12 md:p-16 space-y-6 sm:space-y-10">
                                 <div>
@@ -384,7 +384,7 @@ export default function Auth() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0 }}
-                            className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col md:flex-row max-w-5xl mx-auto w-full"
+                            className="bg-white dark:bg-[#121214] rounded-[2rem] sm:rounded-[3rem] shadow-2xl border border-gray-100 dark:border-[#27272a] overflow-hidden flex flex-col md:flex-row max-w-5xl mx-auto w-full"
                         >
                             {/* Left Side Visual */}
                             <div className="hidden md:flex w-2/5 bg-forest-500 items-center justify-center relative overflow-hidden">
@@ -459,7 +459,7 @@ export default function Auth() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            className="bg-white rounded-[3rem] shadow-2xl overflow-hidden max-w-md mx-auto w-full border border-gray-100"
+                            className="bg-white dark:bg-[#121214] rounded-[3rem] shadow-2xl overflow-hidden max-w-md mx-auto w-full border border-gray-100 dark:border-[#27272a]"
                         >
                             <div className="h-48 bg-forest-500 relative flex flex-col items-center justify-center text-white space-y-2 overflow-hidden">
                                 <ShieldAlert className="w-12 h-12 relative z-10" />
@@ -525,7 +525,7 @@ export default function Auth() {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSupportModal(false)} className="fixed inset-0 bg-forest-900/40 backdrop-blur-sm z-40" />
                         <motion.div
                             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                            className="fixed bottom-0 left-0 right-0 h-[70vh] bg-white rounded-t-[4rem] z-50 p-12 shadow-2xl flex flex-col items-center justify-center space-y-8"
+                            className="fixed bottom-0 left-0 right-0 h-[70vh] bg-white dark:bg-[#121214] rounded-t-[4rem] z-50 p-12 shadow-2xl flex flex-col items-center justify-center space-y-8"
                         >
                             <h2 className="text-4xl font-black text-forest-500">Direct Support</h2>
                             <p className="text-gray-500 font-medium text-center max-w-md">Our team is available 24/7. Contact us at 1-800-CERES-VERA or support@ceresvera.com</p>

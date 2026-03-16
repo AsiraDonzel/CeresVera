@@ -25,7 +25,7 @@ const faqs = [
     {
         icon: Zap,
         q: "How accurate are the AI crop scans?",
-        a: "We utilize state-of-the-art models (DeepSeek, Llama-3.3, and Gemini) to analyze your crops. For the best results, ensure your photos are clear and taken in good lighting.",
+        a: "We utilize state-of-the-art models (Llama-3.3, and Groq) to analyze your crops. For the best results, ensure your photos are clear and taken in good lighting.",
         color: "sage"
     },
     {
@@ -56,11 +56,11 @@ export default function FAQ() {
                 {/* FAQ List */}
                 <div className="space-y-4">
                     {faqs.map((faq, index) => (
-                        <div 
-                            key={index} 
+                        <div
+                            key={index}
                             className={`rounded-3xl border-2 transition-all p-2 ${activeIndex === index ? 'bg-gray-50 border-forest-100' : 'bg-white border-gray-50'}`}
                         >
-                            <button 
+                            <button
                                 onClick={() => setActiveIndex(activeIndex === index ? null : index)}
                                 className="w-full text-left p-6 flex items-center justify-between group"
                             >
@@ -74,7 +74,7 @@ export default function FAQ() {
                             </button>
                             <AnimatePresence>
                                 {activeIndex === index && (
-                                    <motion.div 
+                                    <motion.div
                                         initial={{ height: 0, opacity: 0 }}
                                         animate={{ height: 'auto', opacity: 1 }}
                                         exit={{ height: 0, opacity: 0 }}

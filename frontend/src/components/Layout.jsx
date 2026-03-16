@@ -90,13 +90,13 @@ export default function Layout({ children }) {
     const themeHoverBg = userRole === 'farmer' ? 'hover:bg-forest-50' : 'hover:bg-harvest-50';
 
     if (location.pathname === '/auth') {
-        return <main className="min-h-screen bg-earth-100">{children}</main>;
+        return <main className="min-h-screen bg-earth-100 dark:bg-[#09090b]">{children}</main>;
     }
 
     if (isDashboardPage) {
         return (
-            <div className={`flex min-h-screen bg-app-bg font-sans selection:bg-${themeColor}-100 selection:text-${themeColor}-900`}>
-                <aside className={`w-64 bg-app-card border-r border-app-border flex flex-col hidden lg:flex shrink-0 sticky top-0 h-screen`}>
+            <div className={`flex min-h-screen bg-app-bg dark:bg-[#09090b] font-sans selection:bg-${themeColor}-100 selection:text-${themeColor}-900`}>
+                <aside className={`w-64 bg-app-card dark:bg-[#121214] border-r border-app-border dark:border-[#27272a] flex flex-col hidden lg:flex shrink-0 sticky top-0 h-screen`}>
                     <div className="p-8">
                         <Link to="/" className="flex items-center space-x-2 text-app-text group">
                             <Leaf className="w-8 h-8 text-sage-700 group-hover:-rotate-12 transition-transform" />
@@ -263,8 +263,8 @@ export default function Layout({ children }) {
     }
 
     return (
-        <div className={`min-h-screen flex flex-col font-sans bg-app-bg text-app-text selection:bg-${themeColor}-100 selection:text-${themeColor}-900`}>
-            <header className={`bg-app-bg/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-app-border`}>
+        <div className={`min-h-screen flex flex-col font-sans bg-app-bg dark:bg-[#09090b] text-app-text dark:text-gray-50 selection:bg-${themeColor}-100 selection:text-${themeColor}-900`}>
+            <header className={`bg-app-bg/80 dark:bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-app-border dark:border-[#27272a]`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
                         <Link to="/" className="flex items-center space-x-2 text-sage-900 group">
