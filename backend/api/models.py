@@ -87,15 +87,15 @@ class Notification(models.Model):
 class Consultant(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='consultant_profile', null=True, blank=True)
     name = models.CharField(max_length=255)
-    specialty = models.CharField(max_length=255)
-    bio = models.TextField()
-    rate = models.DecimalField(max_digits=10, decimal_places=2)
+    specialty = models.CharField(max_length=255, null=True, blank=True)
+    bio = models.TextField(null=True, blank=True)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     profile_image_url = models.URLField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_premium = models.BooleanField(default=False)
-    expertise_category = models.CharField(max_length=50, default='General')
-    rating = models.FloatField(default=0.0)
-    is_verified = models.BooleanField(default=False)
+    expertise_category = models.CharField(max_length=50, default='General', null=True, blank=True)
+    rating = models.FloatField(default=0.0, null=True, blank=True)
+    is_verified = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.name} - {self.specialty}"

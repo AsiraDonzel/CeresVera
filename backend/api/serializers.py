@@ -87,16 +87,21 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('confirm_password', None)
-        name = validated_data.pop('name', '')
+        name = validated_data.pop('name', '').strip()
         role = validated_data.pop('role', 'farmer')
         phone = validated_data.pop('phone', '')
         expertise_category = validated_data.pop('expertise_category', 'General')
         
+        name_parts = name.split(' ', 1)
+        first_name = name_parts[0] if len(name_parts) > 0 else ''
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+
         user = User.objects.create_user(
             username=validated_data.get('username') or validated_data['email'],
             email=validated_data['email'],
             password=validated_data['password'],
-            first_name=name
+            first_name=first_name,
+            last_name=last_name
         )
         
         # Try to update the auto-created profile with the selected role

@@ -11,14 +11,14 @@ const TOPICS = [
     "irrigation methods", "plant diseases and treatment", "farm management"
 ];
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function Chatbot() {
     const [activeMode, setActiveMode] = useState(null); // 'deepseek' | 'adviser' | null
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [isPremium, setIsPremium] = useState(localStorage.getItem('is_premium') === 'true');
     const [showPaymentOverlay, setShowPaymentOverlay] = useState(false);
-    const token = localStorage.getItem('access_token');
+
 
     // Adviser State
     const [messages, setMessages] = useState(() => {
@@ -79,7 +79,8 @@ export default function Chatbot() {
         setIsLoading(true);
 
         try {
-            const response = await fetch(`${API_URL}/api/adviser/`, {
+            let token = localStorage.getItem('access_token');
+            let response = await fetch(`${API_URL}/api/adviser/`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -88,19 +89,53 @@ export default function Chatbot() {
                 body: JSON.stringify({ query: topicOverride ? '' : query, topic: topicOverride || '' })
             });
 
+            // Auto-refresh token on 401
+            if (response.status === 401) {
+                const refreshToken = localStorage.getItem('refresh_token');
+                if (refreshToken) {
+                    try {
+                        const refreshRes = await fetch(`${API_URL}/api/auth/refresh/`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ refresh: refreshToken })
+                        });
+                        if (refreshRes.ok) {
+                            const refreshData = await refreshRes.json();
+                            localStorage.setItem('access_token', refreshData.access);
+                            if (refreshData.refresh) localStorage.setItem('refresh_token', refreshData.refresh);
+                            token = refreshData.access;
+                            // Retry the original request
+                            response = await fetch(`${API_URL}/api/adviser/`, {
+                                method: 'POST',
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({ query: topicOverride ? '' : query, topic: topicOverride || '' })
+                            });
+                        }
+                    } catch (refreshErr) {
+                        console.error('Token refresh failed:', refreshErr);
+                    }
+                }
+            }
+
             const data = await response.json();
 
             if (response.status === 403 && data.requires_upgrade) {
                 setShowUpgradeModal(true);
-                setMessages(messages); // Revert query if needed or just stop
+                setMessages(messages);
                 setIsLoading(false);
                 return;
             }
 
-            if (response.ok) {
+            if (response.status === 401) {
+                setMessages([...newMessages, { role: 'assistant', content: "Your session has expired. Please log out and log back in to continue using CeraAI." }]);
+            } else if (response.ok) {
                 setMessages([...newMessages, { role: 'assistant', content: data.response }]);
             } else {
-                setMessages([...newMessages, { role: 'assistant', content: data.error || 'Failed to fetch response' }]);
+                console.error('Adviser API error:', data);
+                setMessages([...newMessages, { role: 'assistant', content: data.error || 'An error occurred. Please try again.' }]);
             }
         } catch (error) {
             console.error("Adviser Error:", error);
@@ -122,7 +157,8 @@ export default function Chatbot() {
         setIsDeepseekLoading(true);
 
         try {
-            const response = await fetch(`${API_URL}/api/deepseek/`, {
+            let token = localStorage.getItem('access_token');
+            let response = await fetch(`${API_URL}/api/deepseek/`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -130,6 +166,36 @@ export default function Chatbot() {
                 },
                 body: JSON.stringify({ query: query })
             });
+
+            // Auto-refresh token on 401
+            if (response.status === 401) {
+                const refreshToken = localStorage.getItem('refresh_token');
+                if (refreshToken) {
+                    try {
+                        const refreshRes = await fetch(`${API_URL}/api/auth/refresh/`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ refresh: refreshToken })
+                        });
+                        if (refreshRes.ok) {
+                            const refreshData = await refreshRes.json();
+                            localStorage.setItem('access_token', refreshData.access);
+                            if (refreshData.refresh) localStorage.setItem('refresh_token', refreshData.refresh);
+                            token = refreshData.access;
+                            response = await fetch(`${API_URL}/api/deepseek/`, {
+                                method: 'POST',
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({ query: query })
+                            });
+                        }
+                    } catch (refreshErr) {
+                        console.error('Token refresh failed:', refreshErr);
+                    }
+                }
+            }
 
             const data = await response.json();
 
@@ -139,13 +205,16 @@ export default function Chatbot() {
                 return;
             }
 
-            if (response.ok) {
+            if (response.status === 401) {
+                setDeepseekMessages([...newMessages, { role: 'assistant', content: "Your session has expired. Please log out and log back in to continue using CeraAI." }]);
+            } else if (response.ok) {
                 setDeepseekMessages([...newMessages, { role: 'assistant', content: data.response }]);
             } else {
-                setDeepseekMessages([...newMessages, { role: 'assistant', content: data.error || 'Failed to fetch response' }]);
+                console.error('CeraAI API error:', data);
+                setDeepseekMessages([...newMessages, { role: 'assistant', content: data.error || 'An error occurred. Please try again.' }]);
             }
         } catch (error) {
-            console.error("Deepseek Error:", error);
+            console.error("CeraAI Error:", error);
             setDeepseekMessages([...newMessages, { role: 'assistant', content: "Sorry, I encountered a connection error. Please try again later." }]);
         } finally {
             setIsDeepseekLoading(false);
@@ -191,7 +260,7 @@ export default function Chatbot() {
                         <Brain className="w-7 h-7 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-1">Cera AI</h3>
-                    <p className="text-xs font-medium text-sage-600 mb-3">Powered by DeepSeek</p>
+                    <p className="text-xs font-medium text-sage-600 mb-3">Powered by Groq</p>
                     <p className="text-gray-600 leading-relaxed mb-6">
                         Chat with Cera AI for general farming advice, crop disease guidance, operational analysis, and intelligent multi-turn conversation.
                     </p>
@@ -219,7 +288,7 @@ export default function Chatbot() {
                     </div>
                     <div>
                         <h2 className="font-bold text-gray-900">Cera AI</h2>
-                        <p className="text-xs text-gray-500">Powered by DeepSeek</p>
+                        <p className="text-xs text-gray-500">Powered by Groq</p>
                     </div>
                 </div>
                 <button
@@ -236,7 +305,7 @@ export default function Chatbot() {
                     <div className="h-full flex flex-col items-center justify-center text-center space-y-6 max-w-2xl mx-auto">
                         <Brain className="w-12 h-12 text-sage-300 mb-2" />
                         <h3 className="text-xl font-bold text-gray-700">Cera AI</h3>
-                        <p className="text-gray-500 text-sm pb-4">Ask anything! I am Cera, your intelligent AI farming assistant powered by DeepSeek, ready to help optimize your farm processes.</p>
+                        <p className="text-gray-500 text-sm pb-4">Ask anything! I am Cera, your intelligent AI farming assistant powered by Groq, ready to help optimize your farm processes.</p>
                     </div>
                 ) : (
                     deepseekMessages.map((msg, idx) => (
@@ -476,7 +545,7 @@ export default function Chatbot() {
                                     Premium Upgrade Required
                                 </div>
                                 <h3 className="text-3xl font-black tracking-tight mb-2">Unlock Unlimited AI</h3>
-                                <p className="text-amber-50 text-sm font-medium opacity-90">You've reached the daily limit for free AI queries.</p>
+                                <p className="text-amber-50 text-sm font-medium opacity-90">You've used all 5 free daily AI queries.</p>
                             </div>
 
                             <div className="p-8 space-y-6">
@@ -505,7 +574,7 @@ export default function Chatbot() {
                                     }}
                                     className="w-full bg-gray-900 hover:bg-black text-white py-4 rounded-2xl font-black shadow-xl shadow-gray-200 transition-all active:scale-95"
                                 >
-                                    Upgrade to Premium - ₦10,000
+                                    Upgrade to Premium — from ₦1,500/mo
                                 </button>
                                 
                                 <button 

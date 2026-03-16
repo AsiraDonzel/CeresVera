@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expert Marketplace - CeresVera</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+    <nav class="bg-white border-b border-gray-100 py-4 px-8 flex justify-between items-center sticky top-0 z-50">
+        <h1 class="text-2xl font-black tracking-tight text-sage-900">Ceres<span class="text-green-600">Vera</span> Marketplace</h1>
+        <a href="/auth/register" class="bg-green-600 text-white px-6 py-2 rounded-full font-bold hover:bg-green-700 transition-all">Join as Expert</a>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-12">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl font-black mb-4">Find Your Expert</h2>
+            <p class="text-gray-500 text-lg font-medium">Certified agronomists ready to help your farm thrive.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for expert in experts %}
+            <div class="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all p-8 flex flex-col gap-6 group">
+                <div class="flex items-center gap-4">
+                    <img 
+                        src="{{ expert.profile_image_url|default:'https://ui-avatars.com/api/?name='|add:expert.name }}" 
+                        alt="{{ expert.name }}" 
+                        class="w-16 h-16 rounded-2xl object-cover shadow-inner group-hover:scale-110 transition-transform"
+                    >
+                    <div>
+                        <h3 class="text-xl font-bold tracking-tight">{{ expert.name }}</h3>
+                        <p class="text-green-600 text-sm font-black uppercase tracking-widest">{{ expert.specialty|default:"General Agronomist" }}</p>
+                    </div>
+                </div>
+                
+                <p class="text-gray-500 leading-relaxed font-medium line-clamp-3">
+                    {{ expert.bio|default:"No bio available yet. This expert is ready to provide top-tier agricultural guidance." }}
+                </p>
+
+                <div class="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Starting at</span>
+                        <span class="text-lg font-black text-gray-900">₦{{ expert.rate|default:0 }}</span>
+                    </div>
+                    <button class="bg-gray-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-green-600 transition-colors">Book Consult</button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-20 text-center">
+                <p class="text-gray-400 font-bold text-xl uppercase tracking-widest">No experts found in the database.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>

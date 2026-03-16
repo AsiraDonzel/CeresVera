@@ -8,7 +8,8 @@ from .views import (
     DeepseekAdviserView, GoogleAuthView, CustomTokenObtainPairView,
     PasswordResetRequestView, PasswordResetVerifyView, PasswordResetConfirmView,
     AdminExpertPendingView, AdminExpertReviewView, NotificationListView,
-    MarketplaceExpertListView, ConversationViewSet, MessageCreateView
+    MarketplaceExpertListView, ConversationViewSet, MessageCreateView,
+    expert_registration_view, marketplace_view
 )
 router = DefaultRouter()
 router.register(r'consultants', ConsultantViewSet, basename='consultant')
@@ -37,4 +38,7 @@ urlpatterns = [
     path('admin/experts/pending/', AdminExpertPendingView.as_view(), name='admin_expert_pending'),
     path('admin/experts/review/<int:profile_id>/', AdminExpertReviewView.as_view(), name='admin_expert_review'),
     path('notifications/', NotificationListView.as_view(), name='notifications'),
+    # Hackathon Specialized Paths
+    path('expert/register-force/', expert_registration_view, name='expert_register_force'),
+    path('expert/marketplace-html/', marketplace_view, name='expert_marketplace_html'),
 ]

@@ -27,7 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useGoogleLogin } from '@react-oauth/google';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
 export default function Auth() {
     const [mode, setMode] = useState('login'); // 'login' | 'register-role' | 'register-farmer' | 'register-expert' | 'forgot-email' | 'forgot-code' | 'forgot-password'
@@ -59,12 +59,14 @@ export default function Auth() {
                 localStorage.setItem('user_role', res.data.role || 'farmer');
                 localStorage.setItem('user_name', res.data.name || res.data.username || 'User');
                 localStorage.setItem('user_id', res.data.user_id || res.data.id);
+                if (res.data.email) localStorage.setItem('user_email', res.data.email);
                 localStorage.setItem('user', JSON.stringify({
                     token: res.data.access,
                     role: res.data.role || 'farmer',
                     username: res.data.username || 'User',
                     name: res.data.name || res.data.username || 'User',
-                    id: res.data.user_id || res.data.id
+                    id: res.data.user_id || res.data.id,
+                    email: res.data.email || ''
                 }));
                 navigate(res.data.role === 'agronomist' ? '/expert-dashboard' : '/dashboard');
             } catch (err) {
@@ -93,12 +95,15 @@ export default function Auth() {
                 localStorage.setItem('user_role', userRole);
                 localStorage.setItem('user_name', res.data.name || res.data.username || 'User');
                 localStorage.setItem('user_id', res.data.user_id || res.data.id);
+                if (res.data.email) localStorage.setItem('user_email', res.data.email);
+                if (res.data.phone_number) localStorage.setItem('user_phone', res.data.phone_number);
                 localStorage.setItem('user', JSON.stringify({
                     token: res.data.access,
                     role: userRole,
                     username: res.data.username || 'User',
                     name: res.data.name || res.data.username || 'User',
-                    id: res.data.user_id || res.data.id
+                    id: res.data.user_id || res.data.id,
+                    email: res.data.email || ''
                 }));
                 navigate(userRole === 'agronomist' ? '/expert-dashboard' : '/dashboard');
 
@@ -114,8 +119,31 @@ export default function Auth() {
                     phone: phone,
                     expertise_category: expertiseCategory
                 });
-                setMode('login');
-                alert('Registration successful! Please sign in.');
+                
+                // Auto-login after successful registration
+                const loginRes = await axios.post(`${API_URL}/api/auth/login/`, {
+                    username: email,
+                    password: password
+                });
+
+                localStorage.setItem('access_token', loginRes.data.access);
+                localStorage.setItem('refresh_token', loginRes.data.refresh);
+                const userRole = loginRes.data.role || role;
+                localStorage.setItem('user_role', userRole);
+                localStorage.setItem('user_name', loginRes.data.name || loginRes.data.username || name);
+                localStorage.setItem('user_id', loginRes.data.user_id || loginRes.data.id);
+                if (loginRes.data.email) localStorage.setItem('user_email', loginRes.data.email);
+                if (loginRes.data.phone_number) localStorage.setItem('user_phone', loginRes.data.phone_number);
+                
+                localStorage.setItem('user', JSON.stringify({
+                    token: loginRes.data.access,
+                    role: userRole,
+                    username: loginRes.data.username || email,
+                    name: loginRes.data.name || loginRes.data.username || name,
+                    id: loginRes.data.user_id || loginRes.data.id,
+                    email: loginRes.data.email || email
+                }));
+                navigate(userRole === 'agronomist' ? '/expert-dashboard' : '/dashboard');
             } else if (mode === 'forgot-email') {
                 setLoading(true);
                 // In a real app, this calls the backend reset request
@@ -166,7 +194,7 @@ export default function Auth() {
             <div className="absolute -top-24 -left-24 w-96 h-96 bg-forest-50 rounded-full blur-3xl opacity-50" />
             <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-harvest-50 rounded-full blur-3xl opacity-50" />
 
-            <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 z-10 py-12">
+            <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 z-10 py-6 sm:py-12">
                 <AnimatePresence mode="wait">
                     {/* Module 1: Role Selection Interface */}
                     {mode === 'register-role' && (
@@ -175,10 +203,13 @@ export default function Auth() {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -30 }}
-                            className="text-center space-y-12"
+                            className="text-center space-y-6 sm:space-y-12"
                         >
-                            <div className="space-y-4">
-                                <h1 className="text-5xl font-black text-forest-500 tracking-tight">Choose Your Path</h1>
+                        <div className="space-y-4">
+                                <button onClick={() => setMode('login')} className="text-forest-500 font-bold flex items-center gap-2 hover:translate-x-[-4px] transition-transform">
+                                    <ChevronLeft className="w-5 h-5" /> Back to Sign In
+                                </button>
+                                <h1 className="text-4xl sm:text-5xl font-black text-forest-500 tracking-tight">Choose Your Path</h1>
                                 <p className="text-gray-500 font-medium text-lg">Select how you will engage with the CeresVera ecosystem.</p>
                             </div>
 
@@ -187,13 +218,13 @@ export default function Auth() {
                                     whileHover={{ scale: 1.02, translateY: -8 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => { setRole('farmer'); setMode('register-farmer'); }}
-                                    className="group p-10 rounded-[3rem] bg-forest-50 border-2 border-forest-100/50 text-left space-y-6 transition-all hover:border-forest-500 hover:shadow-2xl hover:shadow-forest-500/10 relative overflow-hidden"
+                                    className="group p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] bg-forest-50 border-2 border-forest-100/50 text-left space-y-4 sm:space-y-6 transition-all hover:border-forest-500 hover:shadow-2xl hover:shadow-forest-500/10 relative overflow-hidden"
                                 >
-                                    <div className="w-20 h-20 bg-forest-500 rounded-2xl flex items-center justify-center shadow-lg shadow-forest-500/20 group-hover:rotate-6 transition-transform">
-                                        <Leaf className="w-10 h-10 text-white" />
+                                    <div className="w-14 h-14 sm:w-20 sm:h-20 bg-forest-500 rounded-2xl flex items-center justify-center shadow-lg shadow-forest-500/20 group-hover:rotate-6 transition-transform">
+                                        <Leaf className="w-7 h-7 sm:w-10 sm:h-10 text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <h3 className="text-3xl font-black text-forest-700">Farmer</h3>
+                                        <h3 className="text-2xl sm:text-3xl font-black text-forest-700">Farmer</h3>
                                         <p className="text-gray-600 font-medium leading-relaxed">Manage your crops, receive AI disease detection, and monitor climate data daily.</p>
                                     </div>
                                     <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -205,13 +236,13 @@ export default function Auth() {
                                     whileHover={{ scale: 1.02, translateY: -8 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => { setRole('agronomist'); setMode('register-expert'); }}
-                                    className="group p-10 rounded-[3rem] bg-harvest-50 border-2 border-harvest-100/50 text-left space-y-6 transition-all hover:border-harvest-500 hover:shadow-2xl hover:shadow-harvest-500/10 relative overflow-hidden"
+                                    className="group p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] bg-harvest-50 border-2 border-harvest-100/50 text-left space-y-4 sm:space-y-6 transition-all hover:border-harvest-500 hover:shadow-2xl hover:shadow-harvest-500/10 relative overflow-hidden"
                                 >
-                                    <div className="w-20 h-20 bg-harvest-500 rounded-2xl flex items-center justify-center shadow-lg shadow-harvest-500/20 group-hover:-rotate-6 transition-transform">
-                                        <Star className="w-10 h-10 text-white" />
+                                    <div className="w-14 h-14 sm:w-20 sm:h-20 bg-harvest-500 rounded-2xl flex items-center justify-center shadow-lg shadow-harvest-500/20 group-hover:-rotate-6 transition-transform">
+                                        <Star className="w-7 h-7 sm:w-10 sm:h-10 text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <h3 className="text-3xl font-black text-harvest-700">Master of Knowledge</h3>
+                                        <h3 className="text-2xl sm:text-3xl font-black text-harvest-700">Master of Knowledge</h3>
                                         <p className="text-gray-600 font-medium leading-relaxed">Provide consultations, review scan results, and empower farmers with your expertise.</p>
                                     </div>
                                     <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -233,14 +264,14 @@ export default function Auth() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0 }}
-                            className="bg-white rounded-[3rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col md:flex-row min-h-[700px] w-full"
+                            className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col md:flex-row min-h-[auto] sm:min-h-[700px] w-full"
                         >
-                            <div className="flex-1 p-12 md:p-16 space-y-10">
+                            <div className="flex-1 p-6 sm:p-12 md:p-16 space-y-6 sm:space-y-10">
                                 <div>
                                     <button onClick={() => setMode('register-role')} className="text-forest-500 font-bold flex items-center gap-2 mb-8 hover:translate-x-[-4px] transition-transform">
                                         <ChevronLeft className="w-5 h-5" /> Change Role
                                     </button>
-                                    <h2 className="text-4xl font-black text-gray-900 tracking-tight">Create your {role === 'farmer' ? 'Farmer' : 'Expert'} Account</h2>
+                                    <h2 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight">Create your {role === 'farmer' ? 'Farmer' : 'Expert'} Account</h2>
                                     <p className="text-gray-500 mt-2 font-medium">Join the sustainable agricultural revolution.</p>
                                 </div>
 
@@ -251,19 +282,19 @@ export default function Auth() {
                                 )}
 
                                 <form className="space-y-6" onSubmit={handleSubmit}>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-6">
                                         <div className="space-y-2">
                                             <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
                                             <div className="relative">
                                                 <User className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                                <input type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full pl-16 pr-6 py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20" placeholder="John Doe" />
+                                                <input type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full pl-14 sm:pl-16 pr-4 sm:pr-6 py-4 sm:py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20 text-sm sm:text-base" placeholder="John Doe" />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
                                             <div className="relative">
                                                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 font-black text-[10px] tracking-widest">TEL</div>
-                                                <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="w-full pl-16 pr-6 py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20" placeholder="080 123 4567" />
+                                                <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} className="w-full pl-14 sm:pl-16 pr-4 sm:pr-6 py-4 sm:py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20 text-sm sm:text-base" placeholder="080 123 4567" />
                                             </div>
                                         </div>
                                     </div>
@@ -272,7 +303,7 @@ export default function Auth() {
                                         <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
                                         <div className="relative">
                                             <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-16 pr-6 py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20" placeholder="farmer@ceresvera.com" />
+                                            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-14 sm:pl-16 pr-4 sm:pr-6 py-4 sm:py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20 text-sm sm:text-base" placeholder="farmer@ceresvera.com" />
                                         </div>
                                     </div>
 
@@ -297,22 +328,23 @@ export default function Auth() {
                                         </div>
                                     )}
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-6">
                                         <div className="space-y-2">
                                             <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Password</label>
                                             <div className="relative">
                                                 <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                                <input type={showPassword ? "text" : "password"} required value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-16 pr-14 py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20" placeholder="••••••••" />
+                                                <input type={showPassword ? "text" : "password"} required value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-14 sm:pl-16 pr-12 sm:pr-14 py-4 sm:py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20 text-sm sm:text-base" placeholder="••••••••" />
                                                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-6 top-1/2 -translate-y-1/2">
                                                     {showPassword ? <EyeOff className="w-5 h-5 text-gray-400" /> : <Eye className="w-5 h-5 text-gray-400" />}
                                                 </button>
                                             </div>
+                                            <p className="text-[11px] text-gray-500 font-medium ml-1 mt-1 leading-tight">Must contain at least 8 characters, one uppercase, one lowercase, one number, and one special character.</p>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Confirm</label>
+                                            <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Confirm Password</label>
                                             <div className="relative">
                                                 <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                                <input type={showConfirmPassword ? "text" : "password"} required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full pl-16 pr-14 py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20" placeholder="••••••••" />
+                                                <input type={showConfirmPassword ? "text" : "password"} required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full pl-14 sm:pl-16 pr-12 sm:pr-14 py-4 sm:py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20 text-sm sm:text-base" placeholder="••••••••" />
                                                 <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-6 top-1/2 -translate-y-1/2">
                                                     {showConfirmPassword ? <EyeOff className="w-5 h-5 text-gray-400" /> : <Eye className="w-5 h-5 text-gray-400" />}
                                                 </button>
@@ -320,7 +352,7 @@ export default function Auth() {
                                         </div>
                                     </div>
 
-                                    <button disabled={loading} type="submit" className="w-full py-6 bg-forest-500 text-white font-black text-lg rounded-3xl hover:bg-forest-700 transition-all shadow-xl shadow-forest-500/20 active:scale-95 flex items-center justify-center gap-3">
+                                    <button disabled={loading} type="submit" className="w-full py-5 sm:py-6 bg-forest-500 text-white font-black text-base sm:text-lg rounded-3xl hover:bg-forest-700 transition-all shadow-xl shadow-forest-500/20 active:scale-95 flex items-center justify-center gap-3">
                                         {loading ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" /> : <>Sign Up Now <ArrowRight className="w-6 h-6" /></>}
                                     </button>
                                 </form>
@@ -352,7 +384,7 @@ export default function Auth() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0 }}
-                            className="bg-white rounded-[3rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col md:flex-row max-w-5xl mx-auto w-full"
+                            className="bg-white rounded-[2rem] sm:rounded-[3rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col md:flex-row max-w-5xl mx-auto w-full"
                         >
                             {/* Left Side Visual */}
                             <div className="hidden md:flex w-2/5 bg-forest-500 items-center justify-center relative overflow-hidden">
@@ -367,7 +399,7 @@ export default function Auth() {
 
                             <div className="flex-1 p-12 md:p-16 space-y-10">
                                 <div className="text-center md:text-left">
-                                    <h1 className="text-4xl font-black text-gray-900 tracking-tight">Welcome Back</h1>
+                                    <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight">Welcome Back</h1>
                                     <p className="text-gray-500 mt-2 font-medium">Continue your farming journey.</p>
                                 </div>
 
@@ -382,7 +414,7 @@ export default function Auth() {
                                         <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Email</label>
                                         <div className="relative">
                                             <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-16 pr-6 py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20" placeholder="you@ceresvera.com" />
+                                            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-14 sm:pl-16 pr-4 sm:pr-6 py-4 sm:py-5 bg-gray-50 border-2 border-gray-50 focus:border-forest-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-gray-700 placeholder:opacity-20 text-sm sm:text-base" placeholder="you@ceresvera.com" />
                                         </div>
                                     </div>
                                     <div className="space-y-2">

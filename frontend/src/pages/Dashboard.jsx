@@ -4,7 +4,8 @@ import {
     Camera, CheckCircle, Clock, AlertTriangle, ChevronRight, 
     CloudRain, MessageCircle, Activity, ArrowUpRight, CheckCircle2,
     LayoutDashboard, Database, Users, Cloud, Sparkles, Settings,
-    Search, Bell, HelpCircle, LogOut, Filter, ChevronDown, Monitor
+    Search, Bell, HelpCircle, LogOut, Filter, ChevronDown, Monitor,
+    X, Copy
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -12,7 +13,25 @@ export default function Dashboard() {
     const [recentScans, setRecentScans] = useState([]);
     const [weatherData, setWeatherData] = useState(null);
     const [toastMessage, setToastMessage] = useState('');
+    const [selectedScan, setSelectedScan] = useState(null);
     const userName = localStorage.getItem('user_name') || 'User';
+    const userEmail = localStorage.getItem('user_email') || '';
+    const userPhone = localStorage.getItem('user_phone') || '';
+    const farmName = localStorage.getItem('farm_name') || '';
+    const farmState = localStorage.getItem('state') || localStorage.getItem('farm_location') || '';
+    const primaryCrop = localStorage.getItem('primary_crop') || '';
+    const farmSize = localStorage.getItem('farm_size') || '';
+
+    const maskEmail = (email) => {
+        if (!email || email.length < 5) return email;
+        const [local, domain] = email.split('@');
+        if (!domain) return email;
+        return local.slice(0, 2) + '***@' + domain;
+    };
+    const maskPhone = (phone) => {
+        if (!phone || phone.length < 6) return phone;
+        return phone.slice(0, 4) + '****' + phone.slice(-3);
+    };
 
     useEffect(() => {
         const openWeatherKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
@@ -49,6 +68,29 @@ export default function Dashboard() {
             ]);
         }
     }, []);
+
+    const handleCopyReport = (scan) => {
+        if (!scan) return;
+        const report = `CeresVera Crop Health Analysis Report
+Date: ${scan.date} ${scan.time}
+Crop: ${scan.crop}
+Status: ${scan.status}
+Confidence: ${scan.confidence ? Math.round(scan.confidence) + '%' : 'N/A'}
+
+Description:
+${scan.description || (scan.status === 'Healthy' ? 'Your crop appears to be in optimal condition.' : 'No detailed description available.')}
+
+Recommended Action:
+${scan.recommended_action || (scan.status === 'Healthy' ? 'Continue your current care regimen.' : 'Please consult an expert for further verification.')}
+`;
+        navigator.clipboard.writeText(report).then(() => {
+            showToast("Report copied to clipboard.");
+            setSelectedScan(null);
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            showToast("Failed to copy report.");
+        });
+    };
 
     const stats = [
         { label: 'Total Analyses', value: '24', change: '+12%', icon: <Monitor className="w-5 h-5" />, up: true },
@@ -98,6 +140,50 @@ export default function Dashboard() {
                 ))}
             </div>
 
+            {/* Farm Profile Card */}
+            {farmName ? (
+                <div className="bg-app-card rounded-[2rem] border border-app-card-border shadow-sm p-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-sage-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className="p-2.5 bg-sage-50 rounded-xl">
+                            <Database className="w-5 h-5 text-sage-700" />
+                        </div>
+                        <div>
+                            <h3 className="font-black text-app-text text-sm">Farm Profile</h3>
+                            <p className="text-[10px] text-app-text-muted font-bold uppercase tracking-widest">Property & Crop Info</p>
+                        </div>
+                        <Link to="/settings" className="ml-auto text-[10px] font-black text-sage-600 hover:text-sage-800 uppercase tracking-widest transition-colors">Edit →</Link>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="bg-app-subtle rounded-xl p-4 border border-app-border">
+                            <div className="text-[9px] font-black text-app-text-muted uppercase tracking-widest mb-1">Farm Name</div>
+                            <div className="text-base font-bold text-app-text truncate">{farmName}</div>
+                        </div>
+                        <div className="bg-app-subtle rounded-xl p-4 border border-app-border">
+                            <div className="text-[9px] font-black text-app-text-muted uppercase tracking-widest mb-1">Crops</div>
+                            <div className="text-base font-bold text-app-text truncate">{primaryCrop || '—'}</div>
+                        </div>
+                        <div className="bg-app-subtle rounded-xl p-4 border border-app-border">
+                            <div className="text-[9px] font-black text-app-text-muted uppercase tracking-widest mb-1">Land Size</div>
+                            <div className="text-base font-bold text-app-text truncate">{farmSize || '—'}</div>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <Link to="/settings" className="block bg-app-card rounded-[2rem] border border-app-card-border shadow-sm p-6 hover:shadow-md transition-all group">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-sage-50 rounded-xl group-hover:bg-sage-100 transition-colors">
+                            <Database className="w-6 h-6 text-sage-600" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-bold text-app-text">Set up your farm profile</p>
+                            <p className="text-xs text-app-text-muted mt-0.5">Add your farm name, crop, and land size in Settings to personalize your dashboard.</p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-app-text-muted ml-auto group-hover:translate-x-1 transition-transform" />
+                    </div>
+                </Link>
+            )}
+
             {/* Main Content Grid */}
             <div className="grid lg:grid-cols-3 gap-8">
                 {/* Project Summary Table */}
@@ -120,7 +206,7 @@ export default function Dashboard() {
                             </thead>
                             <tbody className="divide-y divide-sage-50">
                                 {recentScans.map((scan, i) => (
-                                    <tr key={i} className="group hover:bg-app-accent-subtle transition-colors cursor-pointer">
+                                    <tr key={i} onClick={() => setSelectedScan(scan)} className="group hover:bg-app-accent-subtle transition-colors cursor-pointer">
                                         <td className="px-8 py-5">
                                             <div className="font-bold text-app-text group-hover:text-sage-700 transition-colors">{scan.crop}</div>
                                         </td>
@@ -175,6 +261,91 @@ export default function Dashboard() {
             <Link to="/scan" className="fixed bottom-8 right-8 lg:hidden w-16 h-16 bg-sage-700 text-white rounded-2xl shadow-2xl flex items-center justify-center z-50 transform hover:scale-110 hover:-rotate-6 transition-all active:scale-95 group">
                 <Camera className="w-7 h-7 group-hover:scale-110 transition-transform" />
             </Link>
+
+            {/* Scan Details Modal */}
+            <AnimatePresence>
+                {selectedScan && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        onClick={() => setSelectedScan(null)}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]"
+                        >
+                            {/* Modal Header */}
+                            <div className={`p-6 border-b flex justify-between items-center ${selectedScan.isHealthy || selectedScan.status === 'Healthy' ? 'bg-sage-50 border-sage-100' : 'bg-rose-50 border-rose-100'}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-3 rounded-2xl ${selectedScan.isHealthy || selectedScan.status === 'Healthy' ? 'bg-sage-200 text-sage-700' : 'bg-rose-200 text-rose-700'}`}>
+                                        {selectedScan.isHealthy || selectedScan.status === 'Healthy' ? <CheckCircle className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6" />}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-gray-900">Analysis Report</h3>
+                                        <p className="text-sm font-medium text-gray-500">{selectedScan.date} at {selectedScan.time}</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setSelectedScan(null)} className="p-2 bg-white/50 hover:bg-white rounded-full transition-colors text-gray-500">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Modal Body */}
+                            <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1 space-y-6">
+                                <div className="flex flex-wrap items-center justify-between gap-4">
+                                    <div>
+                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Detected Subject</div>
+                                        <div className="text-lg font-bold text-gray-900">{selectedScan.crop}</div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Health Status</div>
+                                        <div className={`inline-flex px-3 py-1 rounded-full text-xs font-black uppercase tracking-tight ${selectedScan.isHealthy || selectedScan.status === 'Healthy' ? 'bg-sage-100 text-sage-700' : 'bg-rose-100 text-rose-700'}`}>
+                                            {selectedScan.status}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <div className="text-xs font-black text-gray-400 uppercase tracking-widest">Confidence Score</div>
+                                        {selectedScan.confidence && <div className="text-xs font-black text-sage-600">{Math.round(selectedScan.confidence)}%</div>}
+                                    </div>
+                                    <p className="text-sm text-gray-700 font-medium leading-relaxed">
+                                        {selectedScan.description || (selectedScan.status === 'Healthy' ? 'Your crop appears to be in optimal condition. No immediate threats detected.' : 'No detailed description available for this scan.')}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h4 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
+                                        <Activity className="w-4 h-4 text-sage-600" /> Recommended Action
+                                    </h4>
+                                    <div className="bg-sage-50/50 rounded-2xl p-5 border border-sage-100">
+                                        <p className="text-sm text-gray-700 font-medium leading-relaxed">
+                                            {selectedScan.recommended_action || (selectedScan.status === 'Healthy' ? 'Continue with your current care regimen. Maintain regular watering schedules and monitor for changes.' : 'Please consult with a professional agronomist for a detailed treatment plan.')}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="p-6 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row items-center gap-3">
+                                <Link to="/consultants" className="w-full sm:w-auto px-6 py-3 bg-white border border-sage-200 text-sage-700 hover:bg-sage-50 rounded-xl font-bold transition-all text-center">
+                                    Find an Expert
+                                </Link>
+                                <button 
+                                    onClick={() => handleCopyReport(selectedScan)}
+                                    className="w-full sm:w-auto sm:ml-auto px-6 py-3 bg-sage-700 hover:bg-sage-800 text-white rounded-xl font-bold shadow-lg shadow-sage-700/20 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Copy className="w-4 h-4" /> Copy Report
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Toast */}
             <AnimatePresence>

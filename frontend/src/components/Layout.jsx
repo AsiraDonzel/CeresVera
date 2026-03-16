@@ -207,9 +207,10 @@ export default function Layout({ children }) {
                         <footer className={`px-8 py-6 border-t border-app-border flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-bold text-app-text-muted uppercase tracking-widest`}>
                             <div className="flex items-center gap-2">
                                 <Leaf className={`w-4 h-4 text-${themeColor}-600`} />
-                                <span>CeresVera Platform v2.0</span>
+                                <span>CeresVera Platform</span>
                             </div>
                             <div className="flex items-center gap-6">
+                                <a href="/contact" className={`hover:text-${themeColor}-600 transition-colors cursor-pointer`}>Direct Support</a>
                                 <span>© 2026 CeresVera Stewardship</span>
                             </div>
                         </footer>

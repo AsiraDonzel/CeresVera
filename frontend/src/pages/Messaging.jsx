@@ -4,7 +4,7 @@ import { Send, User, Search, MessageSquare, ChevronLeft, Image as ImageIcon, Pho
 import axios from 'axios';
 import Pusher from 'pusher-js';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function Messaging() {
     const [conversations, setConversations] = useState([]);
@@ -38,6 +38,15 @@ export default function Messaging() {
             // Optionally redirect to login
             // navigate('/auth');
         }
+
+        const handlePaymentSuccess = () => {
+            if (currentUser?.token || token) {
+                fetchConversations(currentUser?.token || token);
+            }
+        };
+
+        window.addEventListener('consultantPaid', handlePaymentSuccess);
+        return () => window.removeEventListener('consultantPaid', handlePaymentSuccess);
     }, []);
 
     useEffect(() => {

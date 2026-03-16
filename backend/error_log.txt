@@ -304,3 +304,83 @@ Data: {
   "expertise_category": "General",
   "consultation_rate": 15000
 }
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "verification_status": "APPROVED",
+  "expertise_category": "General",
+  "consultation_rate": 15000
+}

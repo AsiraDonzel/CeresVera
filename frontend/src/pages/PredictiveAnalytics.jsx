@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, Sprout, Droplets, Wind, Sparkles, Sliders, ChevronRight, Lock, ShieldCheck, Loader2, ArrowUpRight } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function PredictiveAnalytics() {
     const isPremium = localStorage.getItem('is_premium') === 'true';

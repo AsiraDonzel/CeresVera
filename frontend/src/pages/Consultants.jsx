@@ -2,14 +2,19 @@ import { useState, useEffect } from 'react';
 import { Lock, Star, GraduationCap, ArrowRight, Search, Filter, CheckCircle, ShieldCheck, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import ConsultantPaymentOverlay from '../components/ConsultantPaymentOverlay';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function Consultants() {
     const [experts, setExperts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    
+    // Payment Overlay State
+    const [selectedExpertForPayment, setSelectedExpertForPayment] = useState(null);
+    const [isPaymentOverlayOpen, setIsPaymentOverlayOpen] = useState(false);
 
     useEffect(() => {
         fetchExperts();
@@ -168,15 +173,30 @@ export default function Consultants() {
                                     >
                                         <MessageSquare className="w-5 h-5" />
                                     </button>
-                                    <Link to={`/checkout/${expert.id}`} className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-1.5 shadow-md active:scale-95 ${expert.is_premium ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-sage-600 hover:bg-sage-700 text-white'}`}>
+                                    <button 
+                                        onClick={() => {
+                                            setSelectedExpertForPayment(expert);
+                                            setIsPaymentOverlayOpen(true);
+                                        }} 
+                                        className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-1.5 shadow-md active:scale-95 ${expert.is_premium ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-sage-600 hover:bg-sage-700 text-white'}`}
+                                    >
                                         Consult <ArrowRight className="w-4 h-4" />
-                                    </Link>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
             )}
+            
+            <ConsultantPaymentOverlay 
+                isOpen={isPaymentOverlayOpen}
+                onClose={() => {
+                    setIsPaymentOverlayOpen(false);
+                    setSelectedExpertForPayment(null);
+                }}
+                expert={selectedExpertForPayment}
+            />
         </div>
     );
 }

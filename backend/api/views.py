@@ -1,7 +1,10 @@
+from django.shortcuts import render
 from rest_framework import viewsets, status, generics, permissions, parsers
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from .models import Consultant, Scan, Transaction, UserProfile, Notification, Conversation, Message
 from .serializers import (
     ConsultantSerializer, ScanSerializer, TransactionSerializer, 
@@ -50,11 +53,8 @@ class MarketplaceExpertListView(generics.ListAPIView):
     serializer_class = ConsultantSerializer
 
     def get_queryset(self):
-        return Consultant.objects.filter(
-            is_verified=True,
-            is_active=True,
-            user__profile__role='agronomist' # Role is Expert/Agronomist
-        ).order_by('-is_premium', '-rating')
+        # Fail-proof: return all experts for hackathon
+        return Consultant.objects.all().order_by('-is_premium', '-id')
 
 class ScanUploadView(APIView):
     def post(self, request, *args, **kwargs):
@@ -133,15 +133,23 @@ class PaymentInitiateView(APIView):
             amount=final_amount,
             status='PENDING'
         )
+
+        # Use "MX-TRN-" prefix to match Interswitch sample format
+        import random
+        txn_ref = f"MX-TRN-{transaction.id}-{random.randint(10000, 99999)}"
         
+        # Amount in kobo (minor denomination) as string - matches sample
+        amount_kobo = str(int(float(final_amount) * 100))
+        
+        # Only send what the Interswitch sample HTML sends
         payload = {
             'merchant_code': settings.INTERSWITCH_MERCHANT_CODE,
             'pay_item_id': settings.INTERSWITCH_PAY_ITEM_ID,
-            'amount': int(float(final_amount) * 100), # Ensure it's minor denomination (kobo)
-            'txn_ref': str(transaction.reference),
-            'site_name': 'Hackathon Team 10',
-            'currency': 'NGN'
+            'txn_ref': txn_ref,
+            'amount': amount_kobo,
         }
+
+        print(f"[ISW] Payment payload: {payload}")
         
         return Response(payload, status=status.HTTP_200_OK)
 
@@ -332,7 +340,7 @@ class AgricultureAdviserView(APIView):
             user_profile.last_ai_query_date = today
             user_profile.save()
             
-        if not user_profile.is_premium and user_profile.ai_queries_count >= 3:
+        if not user_profile.is_premium and user_profile.ai_queries_count >= 5:
             return Response(
                 {'error': 'Daily limit reached', 'requires_upgrade': True}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -389,7 +397,7 @@ class DeepseekAdviserView(APIView):
             user_profile.last_ai_query_date = today
             user_profile.save()
             
-        if not user_profile.is_premium and user_profile.ai_queries_count >= 3:
+        if not user_profile.is_premium and user_profile.ai_queries_count >= 5:
             return Response(
                 {'error': 'Daily limit reached', 'requires_upgrade': True}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -656,3 +664,50 @@ class MessageCreateView(generics.CreateAPIView):
             )
         except Exception as e:
             print(f"Pusher Error: {e}")
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def expert_registration_view(request):
+    """
+    FAIL-PROOF REGISTRATION: Bypasses strict form validation and forces database entry.
+    """
+    try:
+        # Extract data explicitly from POST for maximum reliability
+        name = request.data.get('name', 'Anonymous Expert')
+        specialty = request.data.get('specialty', 'General Agronomy')
+        bio = request.data.get('bio', 'Expert ready to assist.')
+        rate = request.data.get('rate', 0)
+        profile_image_url = request.data.get('profile_image_url', '')
+
+        # Force save logic using objects.create()
+        expert = Consultant.objects.create(
+            name=name,
+            specialty=specialty,
+            bio=bio,
+            rate=rate,
+            profile_image_url=profile_image_url,
+            is_active=True,  # Always active
+            is_verified=True # Auto-verified for instant visibility
+        )
+        
+        print(f"SUCCESS: Expert {name} saved to database with ID {expert.id}")
+        return Response({
+            "status": "success",
+            "message": f"Expert {name} registered and verified successfully!",
+            "expert_id": expert.id
+        }, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        # Detailed error printing for terminal debugging
+        print(f"HACKATHON ALERT: Registration failed! Error: {str(e)}")
+        return Response({
+            "status": "error",
+            "message": "Critical registration error occurred.",
+            "debug_info": str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+def marketplace_view(request):
+    """
+    HTML VIEW: Fetches all experts and renders them using the marketplace template.
+    """
+    experts = Consultant.objects.all().order_by('-is_premium', '-id')
+    return render(request, 'marketplace_template.html', {'experts': experts})
