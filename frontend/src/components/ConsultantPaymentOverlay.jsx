@@ -41,51 +41,51 @@ export default function ConsultantPaymentOverlay({ isOpen, onClose, expert }) {
         const selected = options.find(o => o.id === selectedOption);
 
         try {
+            console.log('[Payment] Initiating for expert:', expert.id, 'Amount:', selected.price);
             // Initiate payment with backend using authorized api service
             const res = await api.post(`/api/payment/initiate/`, {
                 consultant_id: expert.id,
-                amount: selected.price
+                amount: selected.price,
+                site_redirect_url: window.location.href
             });
+
+            console.log('[Payment] Initiation Success:', res.data);
 
             // Use the standardized triggerPayment service
             await triggerPayment(res.data, async (response) => {
+                console.log('[Payment] Interswitch Response:', response);
                 if (response.resp === '00' || response.desc === 'Approved by Financial Institution') {
                     // Payment Successful Verification
                     await api.post(`/api/payment/callback/`, {
-                        txn_ref: response.txnref,
+                        txn_ref: response.txnref || response.txn_ref,
                         response_code: response.resp,
                         status: 'SUCCESS'
                     });
                     
                     // Save paid consultant ID so they appear in chat/dashboard
-                    const paidExperts = JSON.parse(localStorage.getItem('paid_experts') || '[]');
-                    if (!paidExperts.includes(expert.id)) {
-                        paidExperts.push(expert.id);
-                        localStorage.setItem('paid_experts', JSON.stringify(paidExperts));
+                    const paidConsultants = JSON.parse(localStorage.getItem('paid_consultants') || '[]');
+                    if (!paidConsultants.includes(expert.id)) {
+                        paidConsultants.push(expert.id);
+                        localStorage.setItem('paid_consultants', JSON.stringify(paidConsultants));
                     }
-                    
-                    setIsProcessing(false);
-                    setIsSuccess(true);
-                    
-                    // Emit event for auto-refresh in chat if needed
-                    window.dispatchEvent(new Event('consultantPaid'));
 
+                    setIsSuccess(true);
+                    setIsProcessing(false);
                     setTimeout(() => {
-                        setIsSuccess(false);
                         onClose();
-                        // Navigate to chat
                         window.location.href = '/messaging';
-                    }, 3000);
+                    }, 2000);
                 } else {
                     setIsProcessing(false);
-                    // Standard service handles the alert
+                    alert(`Payment failed: ${response.desc || 'Unknown error'}`);
                 }
             });
 
         } catch (err) {
-            console.error('Payment initiation error', err);
+            console.error('Payment initiation error:', err.response?.data || err.message);
             setIsProcessing(false);
-            alert('Failed to initiate payment.');
+            const errorMsg = err.response?.data?.error || err.response?.data?.details || err.message;
+            alert(`Failed to initiate payment: ${errorMsg}`);
         }
     };
 

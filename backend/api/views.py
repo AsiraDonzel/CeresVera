@@ -122,12 +122,15 @@ class PaymentInitiateView(APIView):
 
     def post(self, request, *args, **kwargs):
         consultant_id = request.data.get('consultant_id')
+        # Trust frontend amount if provided, fallback to consultant rate
         amount = request.data.get('amount')
         
         if consultant_id:
             try:
                 consultant = Consultant.objects.get(id=consultant_id)
-                final_amount = consultant.rate
+                # Ensure we don't send 0 to Interswitch
+                consultant_rate = max(consultant.rate or 0, 15000)
+                final_amount = amount if amount else consultant_rate
             except Consultant.DoesNotExist:
                 return Response({'error': 'Consultant not found'}, status=status.HTTP_404_NOT_FOUND)
         elif amount:
@@ -136,30 +139,35 @@ class PaymentInitiateView(APIView):
         else:
             return Response({'error': 'Missing consultant_id or amount'}, status=status.HTTP_400_BAD_REQUEST)
             
+        # Generate reference first to save in DB
+        import random
+        # Create a unique txn_ref that Interswitch likes
+        temp_id = random.randint(100000, 999999)
+        txn_ref = f"MX-TRN-{temp_id}"
+
         transaction = Transaction.objects.create(
             user=request.user,
             consultant=consultant,
             amount=final_amount,
+            reference=txn_ref,
             status='PENDING'
         )
-
-        # Use "MX-TRN-" prefix to match Interswitch sample format
-        import random
-        txn_ref = f"MX-TRN-{transaction.id}-{random.randint(10000, 99999)}"
         
         # Amount in kobo (minor denomination) as string - matches sample
         amount_kobo = str(int(float(final_amount) * 100))
         
-        # Only send what the Interswitch sample HTML sends
+        # Exact payload structure from Interswitch sample
         payload = {
             'merchant_code': settings.INTERSWITCH_MERCHANT_CODE,
             'pay_item_id': settings.INTERSWITCH_PAY_ITEM_ID,
             'txn_ref': txn_ref,
             'amount': amount_kobo,
+            'currency': 566, # Naira
+            'mode': 'TEST',
+            'site_redirect_url': request.data.get('site_redirect_url', '')
         }
 
         print(f"[ISW] Payment payload: {payload}")
-        
         return Response(payload, status=status.HTTP_200_OK)
 
 class PaymentCallbackView(APIView):
@@ -485,10 +493,10 @@ class UserProfileUpdateView(APIView):
                     Consultant.objects.get_or_create(
                         user=request.user,
                         defaults={
-                            'name': f"{request.user.first_name} {request.user.last_name}",
+                            'name': f"{request.user.first_name} {request.user.last_name}".strip(),
                             'specialty': user_profile.expertise_category or 'General',
                             'bio': user_profile.bio or '',
-                            'rate': user_profile.consultation_rate or 0,
+                            'rate': max(user_profile.consultation_rate or 0, 15000),
                             'expertise_category': user_profile.expertise_category or 'General',
                             'profile_image_url': user_profile.profile_picture.url if user_profile.profile_picture else '',
                             'is_verified': True,
@@ -499,8 +507,8 @@ class UserProfileUpdateView(APIView):
                     Consultant.objects.filter(user=request.user).update(
                         is_verified=True,
                         expertise_category=user_profile.expertise_category or 'General',
-                        name=f"{request.user.first_name} {request.user.last_name}",
-                        rate=user_profile.consultation_rate or 15000,
+                        name=f"{request.user.first_name} {request.user.last_name}".strip(),
+                        rate=max(user_profile.consultation_rate or 0, 15000),
                         profile_image_url=user_profile.profile_picture.url if user_profile.profile_picture else '',
                         is_active=True
                     )

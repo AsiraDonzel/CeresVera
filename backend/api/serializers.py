@@ -133,6 +133,7 @@ class ConsultantSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     specialty = serializers.SerializerMethodField()
     expertise_category = serializers.SerializerMethodField()
+    rate = serializers.SerializerMethodField()
 
     class Meta:
         model = Consultant
@@ -143,14 +144,17 @@ class ConsultantSerializer(serializers.ModelSerializer):
         return obj.rate if obj.rate and obj.rate > 0 else 15000
 
     def get_bio(self, obj):
-        if obj.user and hasattr(obj.user, 'profile'):
-            return obj.user.profile.bio or obj.bio
-        return obj.bio
+        try:
+            if obj.user and hasattr(obj.user, 'profile') and obj.user.profile:
+                return obj.user.profile.bio or obj.bio or "Expert biological consultant."
+        except:
+            pass
+        return obj.bio or "Expert biological consultant."
 
     def get_name(self, obj):
-        if obj.user:
-            return f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.name
-        return obj.name
+        if obj.user and (obj.user.first_name or obj.user.last_name):
+            return f"{obj.user.first_name} {obj.user.last_name}".strip()
+        return obj.name or "CeresVera Expert"
 
     def get_specialty(self, obj):
         # Prefer the manual specialty in Consultant if set, otherwise maybe UserProfile? 
