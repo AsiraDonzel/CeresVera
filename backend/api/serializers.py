@@ -111,17 +111,20 @@ class RegisterSerializer(serializers.ModelSerializer):
         profile.expertise_category = expertise_category
         profile.save()
 
-        # If the role is expert, also create a Consultant record for marketplace visibility
         if role == 'agronomist':
+            full_name = name or (f"{first_name} {last_name}".strip()) or user.username
+            print(f"DEBUG: Creating Consultant for Expert {full_name} (User ID: {user.id})")
             Consultant.objects.create(
                 user=user,
-                name=name or user.username,
+                name=full_name,
                 expertise_category=expertise_category,
                 is_active=True,
                 is_verified=True,  # Auto-verified for the hackathon
+                rate=0,            # Required field (non-null in DB)
                 specialty="General Agronomy",
                 bio="Agricultural Expert ready to assist."
             )
+            print(f"DEBUG: Consultant created successfully.")
         
         return user
 
