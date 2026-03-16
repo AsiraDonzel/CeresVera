@@ -32,10 +32,10 @@ export default function LandingPage() {
                     <span className="inline-block py-1 px-4 rounded-full bg-app-accent-subtle text-sage-800 border border-app-border text-sm font-semibold tracking-wide">
                         The Truth of the Harvest
                     </span>
-                    <h1 className="text-4xl sm:text-7xl font-bold tracking-tight text-app-text dark:text-gray-50 leading-[1.1]">
+                    <h1 className="text-[clamp(2.25rem,10vw,4.5rem)] font-bold tracking-tight text-app-text dark:text-gray-50 leading-[1.1] sm:leading-[1.1]">
                         Intelligent Care for <span className="text-sage-700 dark:text-sage-400 block mt-2">Sustainable Farming.</span>
                     </h1>
-                    <p className="max-w-2xl mx-auto text-lg sm:text-xl text-app-text-muted dark:text-gray-400 leading-relaxed px-2 sm:px-0">
+                    <p className="max-w-2xl mx-auto text-base sm:text-xl text-app-text-muted dark:text-gray-400 leading-relaxed px-4 sm:px-0">
                         CeresVera provides absolute clarity on crop health. Detect diseases instantly using AI and connect with certified agronomy experts for real truth you can trust.
                     </p>
 
@@ -43,7 +43,7 @@ export default function LandingPage() {
                         <div className="flex justify-center mt-8 w-full max-w-full">
                             <Link
                                 to="/expert-dashboard"
-                                className="inline-flex items-center justify-center gap-2 px-12 py-4 text-base font-black text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
+                                className="inline-flex items-center justify-center gap-2 px-6 sm:px-12 py-3 sm:py-4 text-sm sm:text-base font-black text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
                             >
                                 <LayoutDashboard className="w-5 h-5" />
                                 Go to Expert Dashboard
@@ -76,11 +76,11 @@ export default function LandingPage() {
                                             {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-current" />)}
                                         </div>
                                         <p className="text-sm font-medium text-app-text-muted dark:text-gray-400 italic mb-4 leading-relaxed line-clamp-2">"{t.text}"</p>
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-full bg-app-accent-subtle dark:bg-[#064e3b15] flex items-center justify-center font-black text-sage-700 dark:text-sage-400 text-xs`}>{t.name.charAt(0)}</div>
-                                            <div>
-                                                <h4 className="text-xs font-black text-app-text dark:text-gray-50 tracking-tight">{t.name}</h4>
-                                                <p className="text-[10px] text-app-text-muted dark:text-gray-400 font-bold uppercase tracking-widest">{t.role}</p>
+                                        <div className="flex items-center gap-2 sm:gap-3">
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-app-accent-subtle dark:bg-[#064e3b15] flex items-center justify-center font-black text-sage-700 dark:text-sage-400 text-[10px] sm:text-xs shrink-0">{t.name.charAt(0)}</div>
+                                            <div className="min-w-0">
+                                                <h4 className="text-[11px] sm:text-xs font-black text-app-text dark:text-gray-50 tracking-tight truncate">{t.name}</h4>
+                                                <p className="text-[9px] sm:text-[10px] text-app-text-muted dark:text-gray-400 font-bold uppercase tracking-widest truncate">{t.role}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -92,7 +92,7 @@ export default function LandingPage() {
                         <div className="flex justify-center mt-8 w-full">
                             <Link
                                 to="/dashboard"
-                                className="inline-flex items-center justify-center gap-2 px-12 py-4 text-base font-black text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
+                                className="inline-flex items-center justify-center gap-2 px-6 sm:px-12 py-3 sm:py-4 text-sm sm:text-base font-black text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
                             >
                                 <LayoutDashboard className="w-5 h-5" />
                                 Go to Farmer Dashboard
@@ -106,11 +106,11 @@ export default function LandingPage() {
             </section>
 
             {/* Features Section */}
-            <section className="py-24 bg-app-bg dark:bg-[#09090b] px-4 sm:px-6 lg:px-8">
+            <section className="py-16 sm:py-24 bg-app-bg dark:bg-[#09090b] px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-app-text dark:text-gray-50 sm:text-4xl">How It Works</h2>
-                        <p className="mt-4 text-lg text-app-text-muted dark:text-gray-400">Three simple steps to healthier crops.</p>
+                    <div className="text-center mb-12 sm:mb-16">
+                        <h2 className="text-2xl sm:text-4xl font-bold text-app-text dark:text-gray-50">How It Works</h2>
+                        <p className="mt-3 text-base sm:text-lg text-app-text-muted dark:text-gray-400">Three simple steps to healthier crops.</p>
                     </div>
 
                     <motion.div

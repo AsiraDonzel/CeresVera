@@ -272,7 +272,7 @@ export default function Layout({ children }) {
                             <span className="font-bold text-lg sm:text-2xl tracking-tight">Ceres<span className="text-sage-500 font-medium">Vera</span></span>
                         </Link>
 
-                        <nav className="hidden md:flex space-x-6 items-center">
+                        <nav className="hidden lg:flex space-x-6 items-center">
                             {navLinks.map(link => (
                                 <Link key={link.path} to={link.path} className="text-app-text-muted hover:text-sage-700 font-bold transition-colors">{link.name}</Link>
                             ))}
@@ -286,7 +286,7 @@ export default function Layout({ children }) {
                             )}
                         </nav>
 
-                        <div className="flex items-center space-x-2 sm:space-x-6">
+                        <div className="flex items-center gap-2 sm:gap-6">
                             <ThemeToggle />
                             {localStorage.getItem('access_token') ? (
                                 <div className="flex items-center gap-3">
@@ -297,7 +297,7 @@ export default function Layout({ children }) {
                                             <span className="text-sage-700 font-bold capitalize">{userName.charAt(0)}</span>
                                         )}
                                     </Link>
-                                    <button onClick={() => setIsMenuOpen(true)} className="md:hidden p-2 text-gray-600">
+                                    <button onClick={() => setIsMenuOpen(true)} className="lg:hidden p-2 text-gray-600">
                                         <Menu className="w-6 h-6" />
                                     </button>
                                 </div>
@@ -315,12 +315,12 @@ export default function Layout({ children }) {
                         <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             onClick={() => setIsMenuOpen(false)}
-                            className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] md:hidden"
+                            className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] lg:hidden"
                         />
                         <motion.div
                             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="fixed top-0 right-0 bottom-0 w-72 bg-app-bg z-[70] p-6 md:hidden shadow-2xl border-l border-app-border"
+                            className="fixed top-0 right-0 bottom-0 w-72 bg-app-bg z-[70] p-6 lg:hidden shadow-2xl border-l border-app-border"
                         >
                             <div className="flex justify-between items-center mb-8 text-app-text">
                                 <span className="font-bold text-xl tracking-tight">Ceres<span className="text-forest-500 font-medium">Vera</span></span>
