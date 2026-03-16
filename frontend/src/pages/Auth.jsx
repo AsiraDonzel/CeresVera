@@ -1,36 +1,21 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    CheckCircle2,
-    Leaf,
-    ChevronRight,
-    ChevronLeft,
-    User,
-    Phone,
-    MapPin,
-    Star,
-    Award,
-    Mail,
-    Lock,
-    Eye,
-    EyeOff,
-    AlertCircle,
-    ArrowRight,
-    UserCheck,
-    ShieldAlert,
-    HelpCircle,
-    Video,
-    X,
-    ChevronDown
+    CheckCircle2, Leaf, ChevronRight, ChevronLeft, User, Phone, MapPin,
+    Star, Award, Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight,
+    UserCheck, ShieldAlert, HelpCircle, Video, X, ChevronDown
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useGoogleLogin } from '@react-oauth/google';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+// FIX 1: Sanitize the API URL to prevent double-slash routing errors
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '');
+// FIX 2: Create a default timeout so the spinner never hangs infinitely
+const axiosConfig = { timeout: 15000 };
 
 export default function Auth() {
-    const [mode, setMode] = useState('login'); // 'login' | 'register-role' | 'register-farmer' | 'register-expert' | 'forgot-email' | 'forgot-code' | 'forgot-password'
+    const [mode, setMode] = useState('login');
     const [role, setRole] = useState('farmer');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -53,7 +38,8 @@ export default function Auth() {
                 const res = await axios.post(`${API_URL}/api/auth/google/`, {
                     credential: tokenResponse.access_token,
                     token_type: 'access_token'
-                });
+                }, axiosConfig);
+
                 localStorage.setItem('access_token', res.data.access);
                 localStorage.setItem('refresh_token', res.data.refresh);
                 localStorage.setItem('user_role', res.data.role || 'farmer');
@@ -87,7 +73,7 @@ export default function Auth() {
                 const res = await axios.post(`${API_URL}/api/auth/login/`, {
                     username: email,
                     password: password
-                });
+                }, axiosConfig);
 
                 localStorage.setItem('access_token', res.data.access);
                 localStorage.setItem('refresh_token', res.data.refresh);
@@ -118,35 +104,41 @@ export default function Auth() {
                     name: name,
                     phone: phone,
                     expertise_category: expertiseCategory
-                });
-                
-                // Auto-login after successful registration
-                const loginRes = await axios.post(`${API_URL}/api/auth/login/`, {
-                    username: email,
-                    password: password
-                });
+                }, axiosConfig);
 
-                localStorage.setItem('access_token', loginRes.data.access);
-                localStorage.setItem('refresh_token', loginRes.data.refresh);
-                const userRole = loginRes.data.role || role;
-                localStorage.setItem('user_role', userRole);
-                localStorage.setItem('user_name', loginRes.data.name || loginRes.data.username || name);
-                localStorage.setItem('user_id', loginRes.data.user_id || loginRes.data.id);
-                if (loginRes.data.email) localStorage.setItem('user_email', loginRes.data.email);
-                if (loginRes.data.phone_number) localStorage.setItem('user_phone', loginRes.data.phone_number);
-                
-                localStorage.setItem('user', JSON.stringify({
-                    token: loginRes.data.access,
-                    role: userRole,
-                    username: loginRes.data.username || email,
-                    name: loginRes.data.name || loginRes.data.username || name,
-                    id: loginRes.data.user_id || loginRes.data.id,
-                    email: loginRes.data.email || email
-                }));
-                navigate(userRole === 'agronomist' ? '/expert-dashboard' : '/dashboard');
+                // FIX 3: Isolate Auto-login so a login failure doesn't break successful registration
+                try {
+                    const loginRes = await axios.post(`${API_URL}/api/auth/login/`, {
+                        username: email,
+                        password: password
+                    }, axiosConfig);
+
+                    localStorage.setItem('access_token', loginRes.data.access);
+                    localStorage.setItem('refresh_token', loginRes.data.refresh);
+                    const userRole = loginRes.data.role || role;
+                    localStorage.setItem('user_role', userRole);
+                    localStorage.setItem('user_name', loginRes.data.name || loginRes.data.username || name);
+                    localStorage.setItem('user_id', loginRes.data.user_id || loginRes.data.id);
+                    if (loginRes.data.email) localStorage.setItem('user_email', loginRes.data.email);
+                    if (loginRes.data.phone_number) localStorage.setItem('user_phone', loginRes.data.phone_number);
+
+                    localStorage.setItem('user', JSON.stringify({
+                        token: loginRes.data.access,
+                        role: userRole,
+                        username: loginRes.data.username || email,
+                        name: loginRes.data.name || loginRes.data.username || name,
+                        id: loginRes.data.user_id || loginRes.data.id,
+                        email: loginRes.data.email || email
+                    }));
+                    navigate(userRole === 'agronomist' ? '/expert-dashboard' : '/dashboard');
+                } catch (loginErr) {
+                    // Registration worked, but auto-login failed (e.g. account needs approval)
+                    setMode('login');
+                    setError('Account created successfully! Please sign in to continue.');
+                }
+
             } else if (mode === 'forgot-email') {
                 setLoading(true);
-                // In a real app, this calls the backend reset request
                 setTimeout(() => {
                     setMode('forgot-code');
                     setLoading(false);
@@ -163,12 +155,14 @@ export default function Auth() {
             }
         } catch (err) {
             console.error('Auth error:', err);
-            if (err.response?.data) {
+            // Handle Timeout Errors distinctly
+            if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+                setError('The server is taking too long to respond. Please try again.');
+            } else if (err.response?.data) {
                 const data = err.response.data;
                 if (data.error) setError(data.error);
                 else if (data.detail) setError(data.detail);
                 else if (typeof data === 'object') {
-                    // Handle DRF field errors
                     const fields = Object.keys(data);
                     if (fields.length > 0) {
                         const firstField = fields[0];
@@ -190,13 +184,11 @@ export default function Auth() {
 
     return (
         <div className="min-h-screen bg-white dark:bg-[#09090b] flex flex-col items-center justify-center relative overflow-hidden font-sans">
-            {/* Nature Accents */}
             <div className="absolute -top-24 -left-24 w-96 h-96 bg-forest-50 dark:bg-forest-900 rounded-full blur-3xl opacity-50 dark:opacity-20" />
             <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-harvest-50 dark:bg-harvest-900 rounded-full blur-3xl opacity-50 dark:opacity-20" />
 
             <div className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 z-10 py-6 sm:py-12">
                 <AnimatePresence mode="wait">
-                    {/* Module 1: Role Selection Interface */}
                     {mode === 'register-role' && (
                         <motion.div
                             key="role-selection"
@@ -205,8 +197,9 @@ export default function Auth() {
                             exit={{ opacity: 0, y: -30 }}
                             className="text-center space-y-6 sm:space-y-12"
                         >
-                        <div className="space-y-4">
-                                <button onClick={() => setMode('login')} className="text-forest-500 font-bold flex items-center gap-2 hover:translate-x-[-4px] transition-transform">
+                            <div className="space-y-4">
+                                {/* FIX 4: Explicit type="button" to prevent default submission bubbling */}
+                                <button type="button" onClick={() => setMode('login')} className="text-forest-500 font-bold flex items-center gap-2 hover:translate-x-[-4px] transition-transform mx-auto md:mx-0">
                                     <ChevronLeft className="w-5 h-5" /> Back to Sign In
                                 </button>
                                 <h1 className="text-4xl sm:text-5xl font-black text-forest-500 tracking-tight">Choose Your Path</h1>
@@ -215,6 +208,7 @@ export default function Auth() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                                 <motion.button
+                                    type="button"
                                     whileHover={{ scale: 1.02, translateY: -8 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => { setRole('farmer'); setMode('register-farmer'); }}
@@ -233,6 +227,7 @@ export default function Auth() {
                                 </motion.button>
 
                                 <motion.button
+                                    type="button"
                                     whileHover={{ scale: 1.02, translateY: -8 }}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => { setRole('agronomist'); setMode('register-expert'); }}
@@ -251,13 +246,12 @@ export default function Auth() {
                                 </motion.button>
                             </div>
 
-                            <button onClick={() => setMode('login')} className="text-gray-400 font-bold hover:text-forest-500 transition-colors uppercase tracking-widest text-xs">
+                            <button type="button" onClick={() => setMode('login')} className="text-gray-400 font-bold hover:text-forest-500 transition-colors uppercase tracking-widest text-xs">
                                 Already have an account? Sign In
                             </button>
                         </motion.div>
                     )}
 
-                    {/* Registration Portal */}
                     {(mode === 'register-farmer' || mode === 'register-expert') && (
                         <motion.div
                             key="registration"
@@ -268,7 +262,7 @@ export default function Auth() {
                         >
                             <div className="flex-1 p-6 sm:p-12 md:p-16 space-y-6 sm:space-y-10">
                                 <div>
-                                    <button onClick={() => setMode('register-role')} className="text-forest-500 font-bold flex items-center gap-2 mb-8 hover:translate-x-[-4px] transition-transform">
+                                    <button type="button" onClick={() => setMode('register-role')} className="text-forest-500 font-bold flex items-center gap-2 mb-8 hover:translate-x-[-4px] transition-transform">
                                         <ChevronLeft className="w-5 h-5" /> Change Role
                                     </button>
                                     <h2 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight">Create your {role === 'farmer' ? 'Farmer' : 'Expert'} Account</h2>
@@ -312,8 +306,8 @@ export default function Auth() {
                                             <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Specialty Category</label>
                                             <div className="relative">
                                                 <Award className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-forest-500" />
-                                                <select 
-                                                    value={expertiseCategory} 
+                                                <select
+                                                    value={expertiseCategory}
                                                     onChange={e => setExpertiseCategory(e.target.value)}
                                                     className="w-full pl-16 pr-6 py-5 bg-forest-50 border-2 border-forest-100 focus:border-forest-500 rounded-2xl outline-none appearance-none font-bold text-forest-700 cursor-pointer"
                                                 >
@@ -358,7 +352,6 @@ export default function Auth() {
                                 </form>
                             </div>
 
-                            {/* Visual Right Side */}
                             <div className="hidden md:flex flex-1 bg-forest-500 relative overflow-hidden items-center justify-center px-12">
                                 <div className="absolute inset-0 bg-gradient-to-br from-forest-400 to-forest-600 opacity-50" />
                                 <motion.div
@@ -377,7 +370,6 @@ export default function Auth() {
                         </motion.div>
                     )}
 
-                    {/* Login Screen */}
                     {mode === 'login' && (
                         <motion.div
                             key="login"
@@ -386,7 +378,6 @@ export default function Auth() {
                             exit={{ opacity: 0 }}
                             className="bg-white dark:bg-[#121214] rounded-[2rem] sm:rounded-[3rem] shadow-2xl border border-gray-100 dark:border-[#27272a] overflow-hidden flex flex-col md:flex-row max-w-5xl mx-auto w-full"
                         >
-                            {/* Left Side Visual */}
                             <div className="hidden md:flex w-2/5 bg-forest-500 items-center justify-center relative overflow-hidden">
                                 <div className="z-10 text-center space-y-6 px-12">
                                     <Leaf className="w-20 h-20 text-white mx-auto" />
@@ -440,22 +431,21 @@ export default function Auth() {
                                 </form>
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <button onClick={() => googleLogin()} className="flex items-center justify-center gap-3 py-4 border-2 border-gray-50 rounded-2xl hover:bg-gray-50 transition-colors font-bold text-gray-600">
+                                    <button type="button" onClick={() => googleLogin()} className="flex items-center justify-center gap-3 py-4 border-2 border-gray-50 rounded-2xl hover:bg-gray-50 transition-colors font-bold text-gray-600">
                                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" /> Google
                                     </button>
-                                    <button onClick={() => alert('Social Auth Coming Soon')} className="flex items-center justify-center gap-3 py-4 border-2 border-gray-50 rounded-2xl hover:bg-gray-50 transition-colors font-bold text-gray-600">
+                                    <button type="button" onClick={() => alert('Social Auth Coming Soon')} className="flex items-center justify-center gap-3 py-4 border-2 border-gray-50 rounded-2xl hover:bg-gray-50 transition-colors font-bold text-gray-600">
                                         <UserCheck className="w-5 h-5 text-blue-600" /> Social
                                     </button>
                                 </div>
 
                                 <p className="text-center text-gray-400 font-medium">
-                                    New to the farm? <button onClick={() => setMode('register-role')} className="text-forest-500 font-black border-b-2 border-forest-500/20 hover:border-forest-500 transition-all">Sign Up</button>
+                                    New to the farm? <button type="button" onClick={() => setMode('register-role')} className="text-forest-500 font-black border-b-2 border-forest-500/20 hover:border-forest-500 transition-all">Sign Up</button>
                                 </p>
                             </div>
                         </motion.div>
                     )}
 
-                    {/* Secure Recovery Flow */}
                     {mode.startsWith('forgot-') && (
                         <motion.div
                             key="recovery"
@@ -501,7 +491,7 @@ export default function Auth() {
                                     </div>
                                 )}
 
-                                <button onClick={() => setMode('login')} className="flex items-center justify-center gap-2 text-gray-400 font-bold text-sm w-full">
+                                <button type="button" onClick={() => setMode('login')} className="flex items-center justify-center gap-2 text-gray-400 font-bold text-sm w-full">
                                     <ChevronLeft className="w-4 h-4" /> Back to Login
                                 </button>
                             </div>
@@ -509,9 +499,8 @@ export default function Auth() {
                     )}
                 </AnimatePresence>
 
-                {/* Direct Support & Powered by Interswitch */}
                 <div className="mt-12 flex flex-col items-center gap-6">
-                    <button onClick={() => setShowSupportModal(true)} className="flex items-center gap-2 text-gray-400 group">
+                    <button type="button" onClick={() => setShowSupportModal(true)} className="flex items-center gap-2 text-gray-400 group">
                         <HelpCircle className="w-5 h-5 group-hover:text-harvest-500 transition-colors" />
                         <span className="text-sm font-black uppercase tracking-widest">Need Assistance? Contact Us</span>
                     </button>
@@ -521,7 +510,6 @@ export default function Auth() {
                 </div>
             </div>
 
-            {/* Support Modal */}
             <AnimatePresence>
                 {showSupportModal && (
                     <>
@@ -532,7 +520,7 @@ export default function Auth() {
                         >
                             <h2 className="text-4xl font-black text-forest-500">Direct Support</h2>
                             <p className="text-gray-500 font-medium text-center max-w-md">Our team is available 24/7. Contact us at 1-800-CERES-VERA or support@ceresvera.com</p>
-                            <button onClick={() => setShowSupportModal(false)} className="px-12 py-5 bg-forest-500 text-white font-black rounded-2xl">Close</button>
+                            <button type="button" onClick={() => setShowSupportModal(false)} className="px-12 py-5 bg-forest-500 text-white font-black rounded-2xl">Close</button>
                         </motion.div>
                     </>
                 )}
