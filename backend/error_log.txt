@@ -384,3 +384,27 @@ Data: {
   "expertise_category": "General",
   "consultation_rate": 15000
 }
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "phone_number": "0812345678",
+  "dob": "",
+  "state": "",
+  "nationality": "Nigerian",
+  "bio": "Expert in tropical plant pathology with 10+ years of experience in West Africa.",
+  "certificates": [],
+  "experience_years": 12
+}
+
+--- Request to /api/auth/profile/ ---
+User: johndoe@gmail.com
+Data: {
+  "phone_number": "0812345678",
+  "dob": "",
+  "state": "",
+  "nationality": "Nigerian",
+  "bio": "Expert in tropical plant pathology with 10+ years of experience in West Africa.",
+  "certificates": [],
+  "experience_years": 12
+}

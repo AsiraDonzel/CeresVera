@@ -37,7 +37,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Add custom claims to the payload
         user = self.user
         data['id'] = user.id
-        data['name'] = user.first_name or user.username
+        data['name'] = f"{user.first_name} {user.last_name}".strip() or user.username
         data['email'] = user.email
         
         # Safely get profile info

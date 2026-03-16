@@ -49,7 +49,7 @@ export default function Settings() {
     }, [isProfileModalOpen, isScanHistoryModalOpen, isPaymentModalOpen, isSecurityModalOpen, isConsultationModalOpen, isNotificationsModalOpen, isAvatarModalOpen, isFarmProfileModalOpen, isContactModalOpen]);
 
     // Profile State (Synced from Auth)
-    const [userName, setUserName] = useState(localStorage.getItem('user_name') || (userRole === 'agronomist' ? 'Dr. Okafor' : 'Kemi Adebayo'));
+    const [userName, setUserName] = useState(localStorage.getItem('user_name') || 'User');
     const [userEmail, setUserEmail] = useState(localStorage.getItem('user_email') || 'test.user@gmail.com');
     const [userPhone, setUserPhone] = useState(localStorage.getItem('user_phone') || '+234 803 123 4567');
     const [userDob, setUserDob] = useState(localStorage.getItem('user_dob') || '');
@@ -185,7 +185,7 @@ export default function Settings() {
                                 {localStorage.getItem('profile_picture') ? (
                                     <img src={localStorage.getItem('profile_picture')} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
-                                    userRole === 'agronomist' ? 'O' : 'K'
+                                    userName.charAt(0)
                                 )}
                             </div>
                             <button 
@@ -282,7 +282,7 @@ export default function Settings() {
                                             {localStorage.getItem('profile_picture') ? (
                                                 <img src={localStorage.getItem('profile_picture')} alt="Profile" className="w-full h-full object-cover" />
                                             ) : (
-                                                userRole === 'agronomist' ? 'O' : 'K'
+                                                userName.charAt(0)
                                             )}
                                         </div>
                                         <div className="absolute inset-0 bg-black/40 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
