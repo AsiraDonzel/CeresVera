@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Video, FileText, CheckCircle, X, Loader2, ArrowRight } from 'lucide-react';
-import axios from 'axios';
 import { triggerPayment } from '../services/PaymentService';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import api from '../services/api';
 
 export default function ConsultantPaymentOverlay({ isOpen, onClose, expert }) {
     const [selectedOption, setSelectedOption] = useState(null);
