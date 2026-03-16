@@ -40,17 +40,17 @@ export default function FAQ() {
     const [activeIndex, setActiveIndex] = useState(null);
 
     return (
-        <div className="min-h-screen bg-white py-20 px-4 sm:px-6 lg:px-8 font-sans">
+        <div className="min-h-screen bg-white dark:bg-[#09090b] py-20 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-3xl mx-auto space-y-12">
                 {/* Header */}
                 <div className="text-center space-y-4">
                     <div className="w-16 h-16 bg-forest-50 text-forest-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
                         <HelpCircle className="w-10 h-10" />
                     </div>
-                    <h1 className="text-5xl font-black text-gray-900 tracking-tight italic">
+                    <h1 className="text-5xl font-black text-gray-900 dark:text-gray-50 tracking-tight italic">
                         The Truth <span className="text-forest-500">of the Harvest</span>
                     </h1>
-                    <p className="text-gray-500 font-medium text-lg">Common questions about the CeresVera ecosystem.</p>
+                    <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">Common questions about the CeresVera ecosystem.</p>
                 </div>
 
                 {/* FAQ List */}
@@ -58,17 +58,17 @@ export default function FAQ() {
                     {faqs.map((faq, index) => (
                         <div
                             key={index}
-                            className={`rounded-3xl border-2 transition-all p-2 ${activeIndex === index ? 'bg-gray-50 border-forest-100' : 'bg-white border-gray-50'}`}
+                            className={`rounded-3xl border-2 transition-all p-2 ${activeIndex === index ? 'bg-gray-50 dark:bg-[#121214] border-forest-100 dark:border-forest-900/50' : 'bg-white dark:bg-[#18181b] border-gray-50 dark:border-[#27272a]'}`}
                         >
                             <button
                                 onClick={() => setActiveIndex(activeIndex === index ? null : index)}
                                 className="w-full text-left p-6 flex items-center justify-between group"
                             >
                                 <div className="flex items-center gap-6">
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-white shadow-sm border border-gray-100 group-hover:scale-110 transition-transform`}>
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-white dark:bg-[#27272a] shadow-sm border border-gray-100 dark:border-[#27272a] group-hover:scale-110 transition-transform`}>
                                         <faq.icon className={`w-6 h-6 text-${faq.color}-500`} />
                                     </div>
-                                    <span className="text-lg font-black text-gray-800">{faq.q}</span>
+                                    <span className="text-lg font-black text-gray-800 dark:text-gray-50">{faq.q}</span>
                                 </div>
                                 <ChevronDown className={`w-6 h-6 text-gray-400 transition-transform ${activeIndex === index ? 'rotate-180' : ''}`} />
                             </button>
@@ -80,7 +80,7 @@ export default function FAQ() {
                                         exit={{ height: 0, opacity: 0 }}
                                         className="overflow-hidden"
                                     >
-                                        <p className="px-24 pb-8 text-gray-600 font-medium leading-relaxed">
+                                        <p className="px-24 pb-8 text-gray-600 dark:text-gray-400 font-medium leading-relaxed">
                                             {faq.a}
                                         </p>
                                     </motion.div>

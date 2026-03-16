@@ -23,7 +23,7 @@ import {
     X,
     ChevronDown
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useGoogleLogin } from '@react-oauth/google';
 
@@ -397,8 +397,11 @@ export default function Auth() {
                                 </div>
                             </div>
 
-                            <div className="flex-1 p-12 md:p-16 space-y-10">
-                                <div className="text-center md:text-left">
+                            <div className="flex-1 p-12 md:p-16 space-y-10 relative">
+                                <Link to="/" className="absolute top-8 left-8 sm:top-12 sm:left-12 flex items-center gap-2 text-forest-500 hover:text-forest-700 font-bold hover:translate-x-[-4px] transition-transform">
+                                    <ChevronLeft className="w-5 h-5" /> Back to Home
+                                </Link>
+                                <div className="text-center md:text-left pt-6 sm:pt-4">
                                     <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight">Welcome Back</h1>
                                     <p className="text-gray-500 mt-2 font-medium">Continue your farming journey.</p>
                                 </div>

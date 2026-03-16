@@ -96,7 +96,7 @@ export default function Contact() {
     };
 
     return (
-        <div className="relative min-h-[90vh] bg-[#FAF9F6] overflow-hidden flex items-center font-sans">
+        <div className="relative min-h-[90vh] bg-[#FAF9F6] dark:bg-[#09090b] overflow-hidden flex items-center font-sans">
 
             {/* Absolute 3D Canvas Background (Right Aligned on Desktop) */}
             <div className="absolute inset-0 lg:left-1/3 z-0 min-h-[500px]">
@@ -132,16 +132,16 @@ export default function Contact() {
                         className="lg:col-span-5 space-y-10"
                     >
                         <div>
-                            <h1 className="text-4xl sm:text-6xl font-black text-[#0F172A] tracking-tight mb-4">
+                            <h1 className="text-4xl sm:text-6xl font-black text-[#0F172A] dark:text-gray-50 tracking-tight mb-4">
                                 Get in touch
                             </h1>
-                            <p className="text-lg text-gray-600 font-medium">
+                            <p className="text-lg text-gray-600 dark:text-gray-400 font-medium">
                                 Have questions about our models or want to join the Expert Marketplace? We'd love to hear from you.
                             </p>
                         </div>
 
                         {/* Glassmorphic Form Card */}
-                        <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/50 relative overflow-hidden">
+                        <div className="bg-white/80 dark:bg-[#121214]/80 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-2xl border border-white/50 dark:border-[#27272a] relative overflow-hidden">
 
                             {/* Success State Overlay */}
                             <motion.div
@@ -164,7 +164,7 @@ export default function Contact() {
                                             required
                                             disabled={formState !== 'idle'}
                                             placeholder="Your Name"
-                                            className="w-full bg-gray-50/50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all font-medium"
+                                            className="w-full bg-gray-50/50 dark:bg-[#18181b]/50 border border-gray-200 dark:border-[#27272a] text-gray-900 dark:text-gray-50 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white dark:focus:bg-[#121214] transition-all font-medium"
                                         />
                                     </div>
                                     <div>
@@ -175,7 +175,7 @@ export default function Contact() {
                                             required
                                             disabled={formState !== 'idle'}
                                             placeholder="Email Address"
-                                            className="w-full bg-gray-50/50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all font-medium"
+                                            className="w-full bg-gray-50/50 dark:bg-[#18181b]/50 border border-gray-200 dark:border-[#27272a] text-gray-900 dark:text-gray-50 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white dark:focus:bg-[#121214] transition-all font-medium"
                                         />
                                     </div>
                                     <div>
@@ -186,7 +186,7 @@ export default function Contact() {
                                             required
                                             disabled={formState !== 'idle'}
                                             placeholder="How can we help you?"
-                                            className="w-full bg-gray-50/50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all font-medium resize-none"
+                                            className="w-full bg-gray-50/50 dark:bg-[#18181b]/50 border border-gray-200 dark:border-[#27272a] text-gray-900 dark:text-gray-50 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white dark:focus:bg-[#121214] transition-all font-medium resize-none"
                                         ></textarea>
                                     </div>
                                 </div>
@@ -194,10 +194,10 @@ export default function Contact() {
                                 <button
                                     type="submit"
                                     disabled={formState !== 'idle'}
-                                    className="w-full bg-[#0F172A] hover:bg-gray-800 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-gray-900/20 active:scale-95 flex justify-center items-center gap-2 group disabled:opacity-70 disabled:active:scale-100"
+                                    className="w-full bg-[#0F172A] dark:bg-white dark:text-[#0F172A] hover:bg-gray-800 dark:hover:bg-gray-200 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-gray-900/20 active:scale-95 flex justify-center items-center gap-2 group disabled:opacity-70 disabled:active:scale-100"
                                 >
                                     {formState === 'submitting' ? (
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white dark:border-[#0F172A]/30 dark:border-t-[#0F172A] rounded-full animate-spin" />
                                     ) : (
                                         <>Send Message <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></>
                                     )}
@@ -214,13 +214,13 @@ export default function Contact() {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white flex items-center gap-5 pointer-events-auto w-max ml-auto lg:mr-0 mr-auto"
+                            className="bg-white/90 dark:bg-[#121214]/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white dark:border-[#27272a] flex items-center gap-5 pointer-events-auto w-max ml-auto lg:mr-0 mr-auto"
                         >
                             <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shrink-0">
                                 <MapPin className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-gray-900">Headquarters</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-gray-50">Headquarters</h4>
                                 <p className="text-sm font-medium text-gray-500">Innovation Hub, Nigeria</p>
                             </div>
                         </motion.div>
@@ -229,13 +229,13 @@ export default function Contact() {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.4 }}
-                            className="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white flex items-center gap-5 pointer-events-auto w-max ml-auto lg:mr-8 mr-auto"
+                            className="bg-white/90 dark:bg-[#121214]/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white dark:border-[#27272a] flex items-center gap-5 pointer-events-auto w-max ml-auto lg:mr-8 mr-auto"
                         >
                             <div className="w-12 h-12 bg-sage-100 text-sage-600 rounded-full flex items-center justify-center shrink-0">
                                 <Mail className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-gray-900">Email Us</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-gray-50">Email Us</h4>
                                 <p className="text-sm font-medium text-gray-500">hello@ceresvera.com</p>
                             </div>
                         </motion.div>
@@ -244,13 +244,13 @@ export default function Contact() {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.6 }}
-                            className="bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white flex items-center gap-5 pointer-events-auto w-max ml-auto lg:mr-16 mr-auto"
+                            className="bg-white/90 dark:bg-[#121214]/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white dark:border-[#27272a] flex items-center gap-5 pointer-events-auto w-max ml-auto lg:mr-16 mr-auto"
                         >
                             <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
                                 <Phone className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-gray-900">Call Us</h4>
+                                <h4 className="font-bold text-gray-900 dark:text-gray-50">Call Us</h4>
                                 <p className="text-sm font-medium text-gray-500">+254 700 000 000</p>
                             </div>
                         </motion.div>
