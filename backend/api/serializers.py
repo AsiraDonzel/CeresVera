@@ -120,7 +120,7 @@ class RegisterSerializer(serializers.ModelSerializer):
                 expertise_category=expertise_category,
                 is_active=True,
                 is_verified=True,  # Auto-verified for the hackathon
-                rate=0,            # Required field (non-null in DB)
+                rate=15000,         # Minimum rate for Interswitch compatibility
                 specialty="General Agronomy",
                 bio=""
             )
@@ -137,6 +137,10 @@ class ConsultantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Consultant
         fields = '__all__'
+
+    def get_rate(self, obj):
+        # Ensure Interswitch never sees a 0 amount
+        return obj.rate if obj.rate and obj.rate > 0 else 15000
 
     def get_bio(self, obj):
         if obj.user and hasattr(obj.user, 'profile'):

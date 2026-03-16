@@ -14,6 +14,7 @@ export default function ConsultantPaymentOverlay({ isOpen, onClose, expert }) {
     if (!isOpen || !expert) return null;
 
     // Rates based on the expert's rate
+    // Note: fallback to 15000 is also handled in backend, but keep frontend synced
     const expertRate = parseFloat(expert.rate) || 15000;
     const options = [
         {
@@ -40,22 +41,20 @@ export default function ConsultantPaymentOverlay({ isOpen, onClose, expert }) {
         const selected = options.find(o => o.id === selectedOption);
 
         try {
-            const token = localStorage.getItem('access_token');
-            // Initiate payment with backend
-            const res = await axios.post(`${API_URL}/api/payment/initiate/`, {
+            // Initiate payment with backend using authorized api service
+            const res = await api.post(`/api/payment/initiate/`, {
                 consultant_id: expert.id,
                 amount: selected.price
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
 
             // Use the standardized triggerPayment service
             await triggerPayment(res.data, async (response) => {
-                if (response.resp === '00') {
+                if (response.resp === '00' || response.desc === 'Approved by Financial Institution') {
                     // Payment Successful Verification
-                    await axios.post(`${API_URL}/api/payment/callback/`, {
+                    await api.post(`/api/payment/callback/`, {
                         txn_ref: response.txnref,
-                        response_code: response.resp
+                        response_code: response.resp,
+                        status: 'SUCCESS'
                     });
                     
                     // Save paid consultant ID so they appear in chat/dashboard
