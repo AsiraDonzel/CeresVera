@@ -5,9 +5,9 @@ import { ArrowLeft } from 'lucide-react';
 
 const teamMembers = [
     { name: "Asira Donzel", role: "Team Leader/Backend Engineer", img: "/public/Asira.jpg" },
-    { name: "Okoye McPaul", role: "Frontend Engineer", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop" },
-    { name: "Odunayo Aluko", role: "Project Designer", img: "/public/Odun.jpg" },
+    { name: "Okoye McPaul", role: "Frontend Engineer", img: "MC.jpg" },
     { name: "Frances Ugwu", role: "AI/ML Specialist", img: "/public/Frances.jpg" },
+    { name: "Odunayo Aluko", role: "Project Designer", img: "/public/Odun.jpg" },
     { name: "Nisan Awa", role: "Business Lead", img: "/public/Nisan.jpg" },
     { name: "Nduoma Iraounsi", role: "Honorary Member", img: "/public/Nduoma.jpg" }
 ];

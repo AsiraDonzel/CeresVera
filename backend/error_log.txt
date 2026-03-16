@@ -408,3 +408,15 @@ Data: {
   "certificates": [],
   "experience_years": 12
 }
+
+--- Request to /api/auth/profile/ ---
+User: expert@gmail.com
+Data: {
+  "phone_number": "0912345678",
+  "dob": "",
+  "state": "",
+  "nationality": "Nigerian",
+  "bio": "Expert in tropical plant pathology with 10+ years of experience in Asia",
+  "certificates": [],
+  "experience_years": 12
+}

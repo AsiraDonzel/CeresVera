@@ -129,9 +129,34 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 class ConsultantSerializer(serializers.ModelSerializer):
+    bio = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    specialty = serializers.SerializerMethodField()
+    expertise_category = serializers.SerializerMethodField()
+
     class Meta:
         model = Consultant
         fields = '__all__'
+
+    def get_bio(self, obj):
+        if obj.user and hasattr(obj.user, 'profile'):
+            return obj.user.profile.bio or obj.bio
+        return obj.bio
+
+    def get_name(self, obj):
+        if obj.user:
+            return f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.name
+        return obj.name
+
+    def get_specialty(self, obj):
+        # Prefer the manual specialty in Consultant if set, otherwise maybe UserProfile? 
+        # UserProfile doesn't have a 'specialty' string per se, but has expertise_category.
+        return obj.specialty
+
+    def get_expertise_category(self, obj):
+        if obj.user and hasattr(obj.user, 'profile'):
+            return obj.user.profile.expertise_category or obj.expertise_category
+        return obj.expertise_category
 
 class ScanSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Star, GraduationCap, ArrowRight, Search, Filter, CheckCircle, ShieldCheck, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -189,14 +190,16 @@ export default function Consultants() {
                 </div>
             )}
             
-            <ConsultantPaymentOverlay 
-                isOpen={isPaymentOverlayOpen}
-                onClose={() => {
-                    setIsPaymentOverlayOpen(false);
-                    setSelectedExpertForPayment(null);
-                }}
-                expert={selectedExpertForPayment}
-            />
+            <AnimatePresence>
+                <ConsultantPaymentOverlay 
+                    isOpen={isPaymentOverlayOpen}
+                    onClose={() => {
+                        setIsPaymentOverlayOpen(false);
+                        setSelectedExpertForPayment(null);
+                    }}
+                    expert={selectedExpertForPayment}
+                />
+            </AnimatePresence>
         </div>
     );
 }

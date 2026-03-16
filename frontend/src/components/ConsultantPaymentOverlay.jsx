@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Video, FileText, CheckCircle, X, Loader2, ArrowRight } from 'lucide-react';
 import axios from 'axios';
+import { triggerPayment } from '../services/PaymentService';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -48,50 +49,40 @@ export default function ConsultantPaymentOverlay({ isOpen, onClose, expert }) {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            // Initialize Interswitch Payment
-            const checkout = new window.InterswitchCheckout({
-                merchant_code: res.data.merchant_code,
-                pay_item_id: res.data.pay_item_id,
-                txn_ref: res.data.txn_ref,
-                amount: res.data.amount,
-                currency: 566, // NGN
-                site_redirect_url: window.location.origin,
-                onComplete: async (response) => {
-                    if (response.resp === '00') {
-                        // Payment Successful Verification
-                        await axios.post(`${API_URL}/api/payment/callback/`, {
-                            txn_ref: response.txnref,
-                            response_code: response.resp
-                        });
-                        
-                        // Save paid consultant ID so they appear in chat/dashboard
-                        const paidExperts = JSON.parse(localStorage.getItem('paid_experts') || '[]');
-                        if (!paidExperts.includes(expert.id)) {
-                            paidExperts.push(expert.id);
-                            localStorage.setItem('paid_experts', JSON.stringify(paidExperts));
-                        }
-                        
-                        setIsProcessing(false);
-                        setIsSuccess(true);
-                        
-                        // Emit event for auto-refresh in chat if needed
-                        window.dispatchEvent(new Event('consultantPaid'));
-
-                        setTimeout(() => {
-                            setIsSuccess(false);
-                            onClose();
-                            // Optional: navigate to chat
-                            window.location.href = '/messaging';
-                        }, 3000);
-                    } else {
-                        setIsProcessing(false);
-                        alert(`Payment failed: ${response.desc}`);
+            // Use the standardized triggerPayment service
+            await triggerPayment(res.data, async (response) => {
+                if (response.resp === '00') {
+                    // Payment Successful Verification
+                    await axios.post(`${API_URL}/api/payment/callback/`, {
+                        txn_ref: response.txnref,
+                        response_code: response.resp
+                    });
+                    
+                    // Save paid consultant ID so they appear in chat/dashboard
+                    const paidExperts = JSON.parse(localStorage.getItem('paid_experts') || '[]');
+                    if (!paidExperts.includes(expert.id)) {
+                        paidExperts.push(expert.id);
+                        localStorage.setItem('paid_experts', JSON.stringify(paidExperts));
                     }
-                },
-                mode: 'TEST'
+                    
+                    setIsProcessing(false);
+                    setIsSuccess(true);
+                    
+                    // Emit event for auto-refresh in chat if needed
+                    window.dispatchEvent(new Event('consultantPaid'));
+
+                    setTimeout(() => {
+                        setIsSuccess(false);
+                        onClose();
+                        // Navigate to chat
+                        window.location.href = '/messaging';
+                    }, 3000);
+                } else {
+                    setIsProcessing(false);
+                    // Standard service handles the alert
+                }
             });
 
-            checkout.openCheckout();
         } catch (err) {
             console.error('Payment initiation error', err);
             setIsProcessing(false);
@@ -123,7 +114,11 @@ export default function ConsultantPaymentOverlay({ isOpen, onClose, expert }) {
                         <>
                             {/* Header */}
                             <div className="bg-gradient-to-br from-gray-900 to-sage-900 p-8 text-white relative overflow-hidden">
-                                <button onClick={onClose} className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors bg-white/10 rounded-full p-2">
+                                <button 
+                                    onClick={onClose} 
+                                    className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors bg-white/10 rounded-full p-2 z-50 pointer-events-auto"
+                                    type="button"
+                                >
                                     <X className="w-5 h-5" />
                                 </button>
                                 <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4"></div>
