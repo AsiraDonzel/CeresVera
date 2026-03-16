@@ -155,7 +155,7 @@ export default function About() {
                             >
                                 <h2 className="text-3xl font-black text-[#0F172A] dark:text-gray-50 mb-4">Team Members</h2>
                                 <p className="text-lg text-gray-700 dark:text-gray-300 mb-10 leading-relaxed">
-                                    Our village is made up of people who come from different countries and have different skills—all sharing the same philosophy that the knowledge required to grow food should be available to every farmer in the world.
+                                    Our Team is made up of people who come from different departments and have different skills—all sharing the same philosophy that the knowledge required to grow food should be available to every farmer in the world.
                                 </p>
                                 <motion.div
                                     variants={container}

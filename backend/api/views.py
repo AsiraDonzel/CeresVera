@@ -168,13 +168,33 @@ class PaymentCallbackView(APIView):
                 transaction.status = 'HELD_IN_ESCROW'
                 transaction.save()
                 
-                # If this was a premium payment overlay (amount matches 4500 or 2500 etc)
-                # Or based on some custom metadata/type
-                # For now, let's auto-upgrade if it's a certain amount or handle it generically
+                # Auto-upgrade to premium if applicable
                 user_profile = transaction.user.profile
                 if float(transaction.amount) in [2500, 25000, 4500, 45000]:
                     user_profile.is_premium = True
                     user_profile.save()
+
+                # If consultation payment, create conversation and notify expert
+                if transaction.consultant and transaction.consultant.user:
+                    farmer = transaction.user
+                    expert = transaction.consultant.user
+                    
+                    # Check if conversation exists (Farmer + Expert)
+                    conversations = Conversation.objects.annotate(pcnt=Count('participants')).filter(pcnt=2)
+                    conversations = conversations.filter(participants=farmer).filter(participants=expert)
+                    
+                    if not conversations.exists():
+                        conversation = Conversation.objects.create()
+                        conversation.participants.set([farmer, expert])
+                        print(f"[DEBUG] Created new conversation {conversation.id} for payment {txn_ref}")
+                    
+                    # Notify the Consultant
+                    Notification.objects.create(
+                        user=expert,
+                        title="New Booking Request",
+                        message=f"Farmer {farmer.first_name or farmer.username} has paid for a consultation. A new chat has been opened for you."
+                    )
+                    print(f"[DEBUG] Notified Expert {expert.username} for payment {txn_ref}")
 
                 return Response({'status': 'Payment successful, funds held in escrow'}, status=status.HTTP_200_OK)
             else:
