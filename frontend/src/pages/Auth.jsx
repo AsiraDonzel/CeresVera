@@ -89,6 +89,9 @@ export default function Auth() {
                     password: password
                 });
 
+                // Clear stale data before setting new session
+                localStorage.clear();
+
                 localStorage.setItem('access_token', res.data.access);
                 localStorage.setItem('refresh_token', res.data.refresh);
                 const userRole = res.data.role || 'farmer';
@@ -125,6 +128,9 @@ export default function Auth() {
                     username: email,
                     password: password
                 });
+
+                // Clear stale data before setting new session
+                localStorage.clear();
 
                 localStorage.setItem('access_token', loginRes.data.access);
                 localStorage.setItem('refresh_token', loginRes.data.refresh);

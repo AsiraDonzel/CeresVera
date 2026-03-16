@@ -26,7 +26,7 @@ function FlowerPot() {
                     <cylinderGeometry args={[1.2, 0.9, 1.5, 32]} />
                     <meshStandardMaterial color="#c0734a" roughness={0.7} />
                 </mesh>
-                
+
                 {/* Pot Rim */}
                 <mesh position={[0, 0.8, 0]}>
                     <torusGeometry args={[1.25, 0.15, 16, 64]} />
@@ -34,7 +34,7 @@ function FlowerPot() {
                 </mesh>
 
                 {/* Soil */}
-                <mesh position={[0, 0.7, 0]} rotation={[-Math.PI/2, 0, 0]}>
+                <mesh position={[0, 0.7, 0]} rotation={[-Math.PI / 2, 0, 0]}>
                     <circleGeometry args={[1.15, 32]} />
                     <meshStandardMaterial color="#3d2817" roughness={0.9} />
                 </mesh>
@@ -65,11 +65,11 @@ function FlowerPot() {
 
                 {/* Petals */}
                 {[0, 1, 2, 3, 4, 5].map((i) => (
-                    <mesh 
-                        key={i} 
+                    <mesh
+                        key={i}
                         position={[
-                            Math.cos((i * Math.PI) / 3) * 0.4, 
-                            2.3, 
+                            Math.cos((i * Math.PI) / 3) * 0.4,
+                            2.3,
                             Math.sin((i * Math.PI) / 3) * 0.4
                         ]}
                     >
@@ -78,7 +78,7 @@ function FlowerPot() {
                     </mesh>
                 ))}
             </group>
-            
+
             {/* Sparkles around the plant */}
             <Sparkles count={40} scale={4} size={2} speed={0.2} opacity={0.6} color="#fbbf24" position={[0, 1, 0]} />
         </Float>
@@ -136,7 +136,7 @@ export default function Contact() {
                                 Get in touch
                             </h1>
                             <p className="text-lg text-gray-600 dark:text-gray-400 font-medium">
-                                Have questions about our models or want to join the Expert Marketplace? We'd love to hear from you.
+                                Have questions about our models or want to join the Vision? We'd love to hear from you.
                             </p>
                         </div>
 

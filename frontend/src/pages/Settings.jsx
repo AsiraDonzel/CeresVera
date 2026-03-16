@@ -119,9 +119,7 @@ export default function Settings() {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_role');
+        localStorage.clear();
         navigate('/auth');
     };
 
