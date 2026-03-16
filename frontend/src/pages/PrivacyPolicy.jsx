@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
                 {/* Header Section */}
                 <div className="bg-forest-500 p-12 text-center text-white relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-forest-400 to-forest-600 opacity-50" />
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="relative z-10 space-y-4"
@@ -64,7 +64,7 @@ export default function PrivacyPolicy() {
                             <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-400 font-medium">
                                 <li className="flex items-start gap-2">
                                     <div className="w-1.5 h-1.5 rounded-full bg-forest-500 mt-1.5 shrink-0" />
-                                    <span><strong>AI Diagnostics:</strong> To identify crop diseases using third-party models (Hugging Face, Gemini).</span>
+                                    <span><strong>AI Diagnostics:</strong> To identify crop diseases using third-party models (Llama-3.3).</span>
                                 </li>
                                 <li className="flex items-start gap-2">
                                     <div className="w-1.5 h-1.5 rounded-full bg-forest-500 mt-1.5 shrink-0" />

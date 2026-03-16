@@ -151,7 +151,7 @@ export default function Contact() {
                             >
                                 <CheckCircle2 className="w-20 h-20 text-white mb-6" />
                                 <h3 className="text-2xl font-bold mb-2 text-center">Message Sent!</h3>
-                                <p className="text-sage-100 text-center font-medium">We'll be in touch with you shortly regarding the Truth of the Harvest.</p>
+                                <p className="text-sage-100 text-center font-medium">We'll be in touch with you shortly regarding your question.</p>
                             </motion.div>
 
                             <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
@@ -221,7 +221,7 @@ export default function Contact() {
                             </div>
                             <div>
                                 <h4 className="font-bold text-gray-900 dark:text-gray-50">Headquarters</h4>
-                                <p className="text-sm font-medium text-gray-500">Innovation Hub, Nigeria</p>
+                                <p className="text-sm font-medium text-gray-500">Abuja, Nigeria</p>
                             </div>
                         </motion.div>
 
@@ -251,7 +251,7 @@ export default function Contact() {
                             </div>
                             <div>
                                 <h4 className="font-bold text-gray-900 dark:text-gray-50">Call Us</h4>
-                                <p className="text-sm font-medium text-gray-500">+254 700 000 000</p>
+                                <p className="text-sm font-medium text-gray-500">+234 913 27 692 79</p>
                             </div>
                         </motion.div>
 

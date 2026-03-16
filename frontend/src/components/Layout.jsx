@@ -14,8 +14,8 @@ import ThemeToggle from "./ThemeToggle";
 
 export default function Layout({ children }) {
     const location = useLocation();
-    const userRole = localStorage.getItem('user_role') || 'farmer';
-    const userName = localStorage.getItem('user_name') || 'User';
+    const [userRole, setUserRole] = useState(localStorage.getItem('user_role') || 'farmer');
+    const [userName, setUserName] = useState(localStorage.getItem('user_name') || 'User');
     const [profilePic, setProfilePic] = useState(localStorage.getItem('profile_picture'));
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -35,6 +35,8 @@ export default function Layout({ children }) {
     useEffect(() => {
         const handleProfileUpdate = () => {
             setProfilePic(localStorage.getItem('profile_picture'));
+            setUserName(localStorage.getItem('user_name') || 'User');
+            setUserRole(localStorage.getItem('user_role') || 'farmer');
         };
         window.addEventListener('profilePictureUpdated', handleProfileUpdate);
         return () => window.removeEventListener('profilePictureUpdated', handleProfileUpdate);

@@ -25,7 +25,7 @@ const faqs = [
     {
         icon: Zap,
         q: "How accurate are the AI crop scans?",
-        a: "We utilize state-of-the-art models (Llama-3.3, and Groq) to analyze your crops. For the best results, ensure your photos are clear and taken in good lighting.",
+        a: "We utilize state-of-the-art models (Llama-3.3 and Groq) to analyze your crops. For the best results, ensure your photos are clear and taken in good lighting.",
         color: "sage"
     },
     {

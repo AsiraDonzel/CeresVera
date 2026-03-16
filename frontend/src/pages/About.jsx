@@ -4,12 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
 const teamMembers = [
-    { name: "Annalyse Kehs", role: "Executive Director", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" },
-    { name: "Bipana Paudel Timilsena", role: "Assistant Research Professor", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop" },
-    { name: "David Hughes", role: "Founder", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop" },
-    { name: "Paul May", role: "Lead Engineer", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=600&auto=format&fit=crop" },
-    { name: "Fred Parker", role: "Senior Developer", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=600&auto=format&fit=crop" },
-    { name: "Hongbo Wang", role: "Data Scientist", img: "https://images.unsplash.com/photo-1589156229687-496a31ad1d1f?q=80&w=600&auto=format&fit=crop" }
+    { name: "Asira Donzel", role: "Team Leader/Backend Engineer", img: "/public/Asira.jpg" },
+    { name: "Okoye McPaul", role: "Frontend Engineer", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop" },
+    { name: "Odunayo Aluko", role: "Project Designer", img: "/public/Odun.jpg" },
+    { name: "Frances Ugwu", role: "AI/ML Specialist", img: "/public/Frances.jpg" },
+    { name: "Nisan Awa", role: "Business Lead", img: "/public/Nisan.jpg" },
+    { name: "Nduoma Iraounsi", role: "Honorary Member", img: "/public/Nduoma.jpg" }
 ];
 
 export default function About() {
@@ -96,7 +96,7 @@ export default function About() {
                                         In a modern world characterized by rapid acceleration and superficial solutions, the essential connection between the earth and those who tend it has become clouded. We live in an era of information overload, yet farmers often struggle to find the simple, biological truth about the health of their crops.
                                     </p>
                                     <p className="text-lg text-gray-800 dark:text-gray-300 font-medium leading-relaxed mb-6">
-                                        CeresVera was born from a vision to restore clarity to agriculture. Our name combines **Ceres**, the ancient symbol of the harvest's abundance, with **Vera**—the Latin word for Truth.
+                                        CeresVera was born from a vision to restore clarity to agriculture. Our name combines "Ceres", the ancient symbol of the harvest's abundance, with "Vera" —the Latin word for Truth.
                                     </p>
                                     <p className="text-lg text-gray-800 dark:text-gray-300 font-medium leading-relaxed">
                                         We believe that true stewardship requires both cutting-edge intelligence and human wisdom. While the modern world often looks down on those who follow a principled, traditional path, we believe that integrating the timeless values of the Bible with the most advanced technology is the only way to secure our future.

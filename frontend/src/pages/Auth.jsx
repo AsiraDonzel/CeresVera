@@ -100,6 +100,8 @@ export default function Auth() {
                 localStorage.setItem('user_id', res.data.user_id || res.data.id);
                 if (res.data.email) localStorage.setItem('user_email', res.data.email);
                 if (res.data.phone_number) localStorage.setItem('user_phone', res.data.phone_number);
+                if (res.data.profile_pic) localStorage.setItem('profile_picture', res.data.profile_pic);
+
                 localStorage.setItem('user', JSON.stringify({
                     token: res.data.access,
                     role: userRole,
@@ -108,6 +110,10 @@ export default function Auth() {
                     id: res.data.user_id || res.data.id,
                     email: res.data.email || ''
                 }));
+
+                // Trigger navbar refresh
+                window.dispatchEvent(new Event('profilePictureUpdated'));
+
                 navigate(userRole === 'agronomist' ? '/expert-dashboard' : '/dashboard');
 
             } else if (mode === 'register-farmer' || mode === 'register-expert') {
@@ -140,6 +146,7 @@ export default function Auth() {
                 localStorage.setItem('user_id', loginRes.data.user_id || loginRes.data.id);
                 if (loginRes.data.email) localStorage.setItem('user_email', loginRes.data.email);
                 if (loginRes.data.phone_number) localStorage.setItem('user_phone', loginRes.data.phone_number);
+                if (loginRes.data.profile_pic) localStorage.setItem('profile_picture', loginRes.data.profile_pic);
 
                 localStorage.setItem('user', JSON.stringify({
                     token: loginRes.data.access,
@@ -149,6 +156,10 @@ export default function Auth() {
                     id: loginRes.data.user_id || loginRes.data.id,
                     email: loginRes.data.email || email
                 }));
+
+                // Trigger navbar refresh
+                window.dispatchEvent(new Event('profilePictureUpdated'));
+
                 navigate(userRole === 'agronomist' ? '/expert-dashboard' : '/dashboard');
             } else if (mode === 'forgot-email') {
                 setLoading(true);
