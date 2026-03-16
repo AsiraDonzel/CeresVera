@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
-    ConsultantViewSet, ScanUploadView, PaymentInitiateView,
+    ConsultantViewSet, ScanUploadView, ScanListView, PaymentInitiateView,
     PaymentCallbackView, PaymentReleaseEscrowView, HotspotListView,
     RegisterView, AvatarUploadView, UserProfileUpdateView, AgricultureAdviserView,
     DeepseekAdviserView, GoogleAuthView, CustomTokenObtainPairView,
@@ -19,6 +19,7 @@ urlpatterns = [
     path('chat/conversations/', ConversationViewSet.as_view({'get': 'list', 'post': 'create'}), name='conversations'),
     path('chat/messages/', MessageCreateView.as_view(), name='messages'),
     path('upload-scan/', ScanUploadView.as_view(), name='upload_scan'),
+    path('scans/', ScanListView.as_view(), name='scan_list'),
     path('payment/initiate/', PaymentInitiateView.as_view(), name='payment_initiate'),
     path('payment/callback/', PaymentCallbackView.as_view(), name='payment_callback'),
     path('payment/release-escrow/', PaymentReleaseEscrowView.as_view(), name='payment_release_escrow'),

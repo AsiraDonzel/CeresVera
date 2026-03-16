@@ -108,6 +108,13 @@ class ScanUploadView(APIView):
             return Response(ScanSerializer(scan).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ScanListView(generics.ListAPIView):
+    serializer_class = ScanSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        return Scan.objects.filter(user=self.request.user).order_by('-created_at')
+
 class PaymentInitiateView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 

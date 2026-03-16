@@ -33,26 +33,6 @@ export default function ScanUpload() {
         setResult(null);
     };
 
-    const saveScanToLocalStorage = (scanData) => {
-        const existingScans = JSON.parse(localStorage.getItem('recent_scans') || '[]');
-        const weatherInfo = JSON.parse(localStorage.getItem('current_weather') || '{"temp": 28, "condition": "Sunny"}');
-        
-        const newScan = {
-            id: Date.now(),
-            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-            crop: 'Tomato', // Default or detected
-            status: scanData.disease_name,
-            confidence: scanData.confidence,
-            description: scanData.description,
-            recommended_action: scanData.recommended_action,
-            weather: weatherInfo,
-            isHealthy: scanData.isHealthy
-        };
-
-        const updatedScans = [newScan, ...existingScans].slice(0, 10); // Keep last 10
-        localStorage.setItem('recent_scans', JSON.stringify(updatedScans));
-    };
 
     const performScan = async () => {
         if (!file) return;
@@ -96,7 +76,6 @@ export default function ScanUpload() {
             };
 
             setResult(scanResult);
-            saveScanToLocalStorage(scanResult);
         } catch (error) {
             console.error("AI Scan Error:", error);
             setResult({

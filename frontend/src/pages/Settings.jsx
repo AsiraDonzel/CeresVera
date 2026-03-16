@@ -1149,14 +1149,14 @@ export default function Settings() {
                             <div className="flex-1 p-4 sm:p-8 pt-8 sm:pt-12 max-w-3xl mx-auto w-full">
                                 <div className="space-y-8">
                                     <div className="space-y-4">
-                                        <div className="bg-gray-50 rounded-3xl p-8 border border-gray-100 flex items-center justify-between">
+                                        <div className="bg-sage-50 rounded-3xl p-8 border border-sage-100 flex items-center justify-between">
                                             <div>
-                                                <h3 className="font-black text-gray-900 text-xl">Local Scan Cache</h3>
-                                                <p className="text-xs text-gray-400 font-bold mt-1 uppercase tracking-widest">Found {JSON.parse(localStorage.getItem('recent_scans') || '[]').length} unsynced items</p>
+                                                <h3 className="font-black text-sage-900 text-xl">Database Backup</h3>
+                                                <p className="text-xs text-sage-400 font-bold mt-1 uppercase tracking-widest">Your analyses are safe in the cloud</p>
                                             </div>
-                                            <button onClick={() => showToast('Scans synced to cloud!')} className="px-8 py-4 bg-forest-500 text-white text-[10px] font-black rounded-2xl hover:bg-black transition-all shadow-xl shadow-forest-900/20 uppercase tracking-widest">
-                                                Sync to Cloud
-                                            </button>
+                                            <div className="px-6 py-3 bg-white text-sage-600 text-[10px] font-black rounded-xl border border-sage-100">
+                                                SYNCED
+                                            </div>
                                         </div>
 
                                         <div className="bg-white border border-gray-200 rounded-3xl p-8 flex items-center justify-between shadow-sm">
@@ -1174,19 +1174,10 @@ export default function Settings() {
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div className="pt-8 border-t border-gray-100 mt-12">
-                                        <button onClick={() => {
-                                            localStorage.removeItem('recent_scans');
-                                            showToast('Local history cleared.');
-                                        }} className="w-full py-4 text-[10px] font-black text-red-400 hover:text-red-600 transition-colors uppercase tracking-[0.2em]">
-                                            Purge Local Diagnostic Archive
-                                        </button>
-                                        
-                                        <div className="mt-8 flex justify-end">
-                                            <button onClick={() => setIsScanHistoryModalOpen(false)} className="px-10 py-4 rounded-2xl font-black text-gray-400 hover:bg-gray-50 transition-colors uppercase tracking-widest text-xs">Done</button>
-                                        </div>
+                                    <div className="mt-12 flex justify-end border-t border-gray-100 pt-8">
+                                        <button onClick={() => setIsScanHistoryModalOpen(false)} className="px-10 py-4 rounded-2xl font-black text-gray-400 hover:bg-gray-50 transition-colors uppercase tracking-widest text-xs">Done</button>
                                     </div>
+
                                 </div>
                             </div>
                         </motion.div>

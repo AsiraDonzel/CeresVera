@@ -5,9 +5,12 @@ import {
     CloudRain, MessageCircle, Activity, ArrowUpRight, CheckCircle2,
     LayoutDashboard, Database, Users, Cloud, Sparkles, Settings,
     Search, Bell, HelpCircle, LogOut, Filter, ChevronDown, Monitor,
-    X, Copy
+    X, Copy, Search
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function Dashboard() {
     const [recentScans, setRecentScans] = useState([]);
@@ -55,18 +58,36 @@ export default function Dashboard() {
                 setWeatherData({ temp: 31, condition: 'Sunny', humidity: 60, locationName: 'Local' });
             }
         }
-        fetchWeather();
 
-        const savedScans = JSON.parse(localStorage.getItem('recent_scans') || '[]');
-        if (savedScans.length > 0) {
-            setRecentScans(savedScans.sort((a, b) => b.id - a.id));
-        } else {
-            setRecentScans([
-                { id: 1, date: '25.01.24', time: '10:30 AM', crop: 'Tomato Plantation', status: 'Healthy', isHealthy: true },
-                { id: 2, date: '25.01.24', time: '02:15 PM', crop: 'Maize Field B', status: 'Delayed', isHealthy: false },
-                { id: 3, date: '24.01.24', time: '09:00 AM', crop: 'Cassava West', status: 'At risk', isHealthy: false },
-            ]);
+        async function fetchScans() {
+            try {
+                const token = localStorage.getItem('access_token');
+                const res = await axios.get(`${API_URL}/api/scans/`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                // Format scans for the UI
+                const formatted = res.data.map(scan => ({
+                    id: scan.id,
+                    crop: scan.disease_name === 'Not a Plant Leaf' ? 'Invalid Sample' : (scan.disease_name || 'Unknown Crop'),
+                    date: new Date(scan.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\//g, '.'),
+                    time: new Date(scan.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    status: scan.confidence > 70 ? 'Healthy' : scan.confidence > 40 ? 'Delayed' : 'At risk',
+                    isHealthy: scan.confidence > 70,
+                    confidence: scan.confidence,
+                    description: scan.description,
+                    recommended_action: scan.recommended_action
+                }));
+                
+                setRecentScans(formatted);
+            } catch (error) {
+                console.error("Error fetching scans:", error);
+                setRecentScans([]);
+            }
         }
+
+        fetchWeather();
+        fetchScans();
     }, []);
 
     const handleCopyReport = (scan) => {
@@ -92,21 +113,34 @@ ${scan.recommended_action || (scan.status === 'Healthy' ? 'Continue your current
         });
     };
 
+    const healthyScans = recentScans.filter(s => s.status === 'Healthy').length;
+    const healthPercentage = recentScans.length > 0 ? Math.round((healthyScans / recentScans.length) * 100) : 0;
+
     const stats = [
-        { label: 'Total Analyses', value: '24', change: '+12%', icon: <Monitor className="w-5 h-5" />, up: true },
-        { label: 'Healthy Crops', value: '82%', change: '-10%', icon: <CheckCircle className="w-5 h-5" />, up: false, color: 'rose' },
-        { label: 'Time Saved', value: '1022 /1300 Hrs', change: '+8%', icon: <Clock className="w-5 h-5" />, up: true },
+        { label: 'Total Analyses', value: recentScans.length.toString(), change: '+0%', icon: <Monitor className="w-5 h-5" />, up: true },
+        { 
+            label: 'Healthy Crops', 
+            value: `${healthPercentage}%`, 
+            change: healthPercentage >= 70 ? '+5%' : '-2%', 
+            icon: <CheckCircle className="w-5 h-5" />, 
+            up: healthPercentage >= 70, 
+            color: healthPercentage >= 70 ? 'sage' : 'rose' 
+        },
+        { label: 'Daily Activity', value: recentScans.length > 0 ? 'Active' : 'Idle', change: '+0%', icon: <Clock className="w-5 h-5" />, up: true },
         { label: 'Weather Index', value: `${weatherData?.temp || 31}°C`, change: '+2%', icon: <CloudRain className="w-5 h-5" />, up: true },
     ];
 
-    const chartData = [
-        { label: 'Mon', val: 65, status: 'Completed' },
-        { label: 'Tue', val: 87, status: 'On going' },
+    const chartData = recentScans.length > 0 ? [
+        { label: 'Mon', val: 35, status: 'Completed' },
+        { label: 'Tue', val: 47, status: 'On going' },
         { label: 'Wed', val: 20, status: 'At risk' },
         { label: 'Thu', val: 35, status: 'Delayed' },
         { label: 'Fri', val: 55, status: 'On going' },
         { label: 'Sat', val: 75, status: 'Completed' },
-        { label: 'Sun', val: 90, status: 'Completed' },
+        { label: 'Sun', val: healthPercentage, status: 'Completed' },
+    ] : [
+        { label: 'Mon', val: 0 }, { label: 'Tue', val: 0 }, { label: 'Wed', val: 0 },
+        { label: 'Thu', val: 0 }, { label: 'Fri', val: 0 }, { label: 'Sat', val: 0 }, { label: 'Sun', val: 0 }
     ];
 
     return (
@@ -205,25 +239,37 @@ ${scan.recommended_action || (scan.status === 'Healthy' ? 'Continue your current
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-sage-50">
-                                {recentScans.map((scan, i) => (
-                                    <tr key={i} onClick={() => setSelectedScan(scan)} className="group hover:bg-app-accent-subtle transition-colors cursor-pointer">
-                                        <td className="px-8 py-5">
-                                            <div className="font-bold text-app-text group-hover:text-sage-700 transition-colors">{scan.crop}</div>
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <div className="text-sm font-bold text-gray-500">{scan.date}</div>
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${
-                                                scan.status === 'Healthy' ? 'bg-sage-100 dark:bg-sage-900/20 text-sage-700' : 
-                                                scan.status === 'Delayed' ? 'bg-earth-100 dark:bg-earth-900/20 text-earth-600' : 
-                                                'bg-rose-100 dark:bg-rose-900/20 text-rose-600'
-                                            }`}>
-                                                {scan.status}
-                                            </span>
+                                {recentScans.length > 0 ? (
+                                    recentScans.map((scan, i) => (
+                                        <tr key={i} onClick={() => setSelectedScan(scan)} className="group hover:bg-app-accent-subtle transition-colors cursor-pointer">
+                                            <td className="px-8 py-5">
+                                                <div className="font-bold text-app-text group-hover:text-sage-700 transition-colors">{scan.crop}</div>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <div className="text-sm font-bold text-gray-500">{scan.date}</div>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${
+                                                    scan.status === 'Healthy' ? 'bg-sage-100 dark:bg-sage-900/20 text-sage-700' : 
+                                                    scan.status === 'Delayed' ? 'bg-earth-100 dark:bg-earth-900/20 text-earth-600' : 
+                                                    'bg-rose-100 dark:bg-rose-900/20 text-rose-600'
+                                                }`}>
+                                                    {scan.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="3" className="px-8 py-12 text-center">
+                                            <div className="flex flex-col items-center gap-2 opacity-50">
+                                                <Sparkles className="w-8 h-8 text-sage-400" />
+                                                <p className="text-sm font-bold text-app-text-muted">No Analysis Yet</p>
+                                                <Link to="/scan" className="text-xs font-black text-sage-600 uppercase tracking-widest hover:underline">Scan your first crop ↑</Link>
+                                            </div>
                                         </td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                     </div>
