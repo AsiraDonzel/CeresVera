@@ -682,8 +682,10 @@ class MessageCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         message = serializer.save(sender=self.request.user)
-        message.conversation.last_message_at = timezone.now()
-        message.conversation.save()
+        # Force update of conversation timestamp
+        conversation = message.conversation
+        conversation.last_message_at = timezone.now()
+        conversation.save(update_fields=['last_message_at'])
         
         try:
             pusher_client = pusher.Pusher(
@@ -694,12 +696,13 @@ class MessageCreateView(generics.CreateAPIView):
                 ssl=True
             )
             pusher_client.trigger(
-                f'conversation_{message.conversation.id}', 
+                f'conversation_{conversation.id}', 
                 'new-message', 
                 MessageSerializer(message).data
             )
         except Exception as e:
-            print(f"Pusher Error: {e}")
+            import logging
+            logging.error(f"Pusher Error: {e}")
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def expert_registration_view(request):

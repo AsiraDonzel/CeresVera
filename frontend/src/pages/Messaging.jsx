@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User, Search, MessageSquare, ChevronLeft, Image as ImageIcon, Phone, Video, Info, MoreVertical } from 'lucide-react';
-import axios from 'axios';
+import { triggerPayment } from '../services/PaymentService';
+import api from '../services/api';
 import Pusher from 'pusher-js';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function Messaging() {
     const [conversations, setConversations] = useState([]);
@@ -22,9 +21,8 @@ export default function Messaging() {
         if (userStr) {
             const user = JSON.parse(userStr);
             setCurrentUser(user);
-            fetchConversations(user.token || token);
+            fetchConversations();
         } else if (token) {
-            // Fallback for cases where individual keys are set but not the 'user' object
             const user = {
                 token: token,
                 role: localStorage.getItem('user_role'),
@@ -32,27 +30,31 @@ export default function Messaging() {
                 id: parseInt(localStorage.getItem('user_id')) || 0
             };
             setCurrentUser(user);
-            fetchConversations(token);
+            fetchConversations();
         } else {
             setLoading(false);
-            // Optionally redirect to login
-            // navigate('/auth');
         }
 
-        const handlePaymentSuccess = () => {
-            if (currentUser?.token || token) {
-                fetchConversations(currentUser?.token || token);
-            }
-        };
-
+        const handlePaymentSuccess = () => fetchConversations();
         window.addEventListener('consultantPaid', handlePaymentSuccess);
-        return () => window.removeEventListener('consultantPaid', handlePaymentSuccess);
-    }, []);
+        
+        // Polling Fallback
+        const interval = setInterval(() => {
+            if (activeConversation) {
+                fetchMessagesSilently(activeConversation.id);
+            }
+        }, 5000);
+
+        return () => {
+            window.removeEventListener('consultantPaid', handlePaymentSuccess);
+            clearInterval(interval);
+        };
+    }, [activeConversation?.id]);
 
     useEffect(() => {
         if (activeConversation) {
             setMessages(activeConversation.messages || []);
-            scrollToBottom();
+            setTimeout(scrollToBottom, 100);
             
             // Setup Pusher
             const pusher = new Pusher(import.meta.env.VITE_PUSHER_KEY || 'local_key', {
@@ -64,6 +66,8 @@ export default function Messaging() {
             channel.bind('new-message', (data) => {
                 if (data.sender !== currentUser?.id) {
                     setMessages(prev => [...prev, data]);
+                    updateConversationList(data);
+                    scrollToBottom();
                 }
             });
 
@@ -71,17 +75,15 @@ export default function Messaging() {
                 pusher.unsubscribe(`conversation_${activeConversation.id}`);
             };
         }
-    }, [activeConversation]);
+    }, [activeConversation?.id]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const fetchConversations = async (token) => {
+    const fetchConversations = async () => {
         try {
-            const res = await axios.get(`${API_URL}/api/chat/conversations/`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await api.get(`/api/chat/conversations/`);
             setConversations(res.data);
             if (res.data.length > 0 && !activeConversation) {
                 setActiveConversation(res.data[0]);
@@ -93,38 +95,67 @@ export default function Messaging() {
         }
     };
 
+    const fetchMessagesSilently = async (convId) => {
+        try {
+            const res = await api.get(`/api/chat/conversations/${convId}/`);
+            if (res.data.messages.length > messages.length) {
+                setMessages(res.data.messages);
+                updateConversationList(res.data.messages[res.data.messages.length - 1]);
+                scrollToBottom();
+            }
+        } catch (err) {
+            // Silently fail for polling
+        }
+    };
+
+    const updateConversationList = (lastMsg) => {
+        setConversations(prev => {
+            const updated = prev.map(c => {
+                if (c.id === lastMsg.conversation) {
+                    return { ...c, messages: [...c.messages, lastMsg], last_message_at: lastMsg.created_at };
+                }
+                return c;
+            });
+            // Re-order to top
+            return updated.sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at));
+        });
+    };
+
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!newMessage.trim() || !activeConversation || !currentUser) return;
 
-        const messageData = {
-            conversation: activeConversation.id,
-            content: newMessage,
-        };
+        const content = newMessage;
+        setNewMessage('');
 
-        // Optimistic update
-        const tempId = Date.now();
         const optimisticMsg = {
-            id: tempId,
+            id: Date.now(),
             sender: currentUser.id,
             sender_name: currentUser.name || currentUser.username,
-            content: newMessage,
+            content: content,
+            conversation: activeConversation.id,
             created_at: new Date().toISOString()
         };
+
         setMessages(prev => [...prev, optimisticMsg]);
-        setNewMessage('');
-        scrollToBottom();
+        updateConversationList(optimisticMsg);
+        setTimeout(scrollToBottom, 50);
 
         try {
-            const res = await axios.post(`${API_URL}/api/chat/messages/`, messageData, {
-                headers: { Authorization: `Bearer ${currentUser.token}` }
+            const res = await api.post(`/api/chat/messages/`, {
+                conversation: activeConversation.id,
+                content: content,
             });
-            // Update the optimistic message with real data if needed
-            setMessages(prev => prev.map(m => m.id === tempId ? res.data : m));
+            // Update the optimistic message with real data
+            setMessages(prev => prev.map(m => m.id === optimisticMsg.id ? res.data : m));
         } catch (err) {
             console.error('Failed to send message:', err);
-            // Optionally remove optimistic message or show error
+            alert("Failed to send message. Please check your connection.");
         }
+    };
+
+    const showComingSoon = (feature) => {
+        alert(`${feature} feature coming soon!`);
     };
 
     if (loading) {
@@ -225,9 +256,9 @@ export default function Messaging() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button className="p-3 text-app-text-muted hover:text-sage-600 hover:bg-sage-50 rounded-2xl transition-all"><Phone className="w-5 h-5" /></button>
-                                <button className="p-3 text-app-text-muted hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"><Video className="w-5 h-5" /></button>
-                                <button className="p-3 text-app-text-muted hover:bg-app-subtle rounded-2xl transition-all"><MoreVertical className="w-5 h-5" /></button>
+                                <button onClick={() => showComingSoon('Voice Call')} className="p-3 text-app-text-muted hover:text-sage-600 hover:bg-sage-50 rounded-2xl transition-all"><Phone className="w-5 h-5" /></button>
+                                <button onClick={() => showComingSoon('Video Call')} className="p-3 text-app-text-muted hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"><Video className="w-5 h-5" /></button>
+                                <button onClick={() => showComingSoon('Chat Options')} className="p-3 text-app-text-muted hover:bg-app-subtle rounded-2xl transition-all"><MoreVertical className="w-5 h-5" /></button>
                             </div>
                         </div>
 

@@ -17,6 +17,7 @@ router.register(r'consultants', ConsultantViewSet, basename='consultant')
 urlpatterns = [
     path('', include(router.urls)),
     path('chat/conversations/', ConversationViewSet.as_view({'get': 'list', 'post': 'create'}), name='conversations'),
+    path('chat/conversations/<int:pk>/', ConversationViewSet.as_view({'get': 'retrieve'}), name='conversation-detail'),
     path('chat/messages/', MessageCreateView.as_view(), name='messages'),
     path('upload-scan/', ScanUploadView.as_view(), name='upload_scan'),
     path('scans/', ScanListView.as_view(), name='scan_list'),
