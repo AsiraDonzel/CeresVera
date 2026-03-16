@@ -27,7 +27,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useGoogleLogin } from '@react-oauth/google';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function Auth() {
     const [mode, setMode] = useState('login'); // 'login' | 'register-role' | 'register-farmer' | 'register-expert' | 'forgot-email' | 'forgot-code' | 'forgot-password'
