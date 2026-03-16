@@ -139,11 +139,9 @@ class PaymentInitiateView(APIView):
         else:
             return Response({'error': 'Missing consultant_id or amount'}, status=status.HTTP_400_BAD_REQUEST)
             
-        # Generate reference first to save in DB
-        import random
-        # Create a unique txn_ref that Interswitch likes
-        temp_id = random.randint(100000, 999999)
-        txn_ref = f"MX-TRN-{temp_id}"
+        # Generate a globally unique reference using timestamp + random
+        import time, random
+        txn_ref = f"MX-TRN-{int(time.time())}{random.randint(10, 99)}"
 
         transaction = Transaction.objects.create(
             user=request.user,
@@ -508,6 +506,7 @@ class UserProfileUpdateView(APIView):
                         is_verified=True,
                         expertise_category=user_profile.expertise_category or 'General',
                         name=f"{request.user.first_name} {request.user.last_name}".strip(),
+                        bio=user_profile.bio or '',
                         rate=max(user_profile.consultation_rate or 0, 15000),
                         profile_image_url=user_profile.profile_picture.url if user_profile.profile_picture else '',
                         is_active=True

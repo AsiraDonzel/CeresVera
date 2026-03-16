@@ -69,10 +69,10 @@ export const triggerPayment = async (params, onComplete) => {
             merchant_code: params.merchant_code,
             pay_item_id: params.pay_item_id,
             txn_ref: params.txn_ref,
-            amount: params.amount,        // String from backend
-            currency: 566,                // NUMBER — matches sample exactly
-            site_redirect_url: location.href,
-            onComplete: function paymentCallback(response) {
+            amount: params.amount,
+            currency: 566,
+            site_redirect_url: window.location.href,
+            onComplete: function(response) {
                 console.log("[ISW] Payment Response:", response);
                 if (onComplete) onComplete(response);
             },
