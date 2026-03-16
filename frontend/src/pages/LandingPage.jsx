@@ -20,9 +20,9 @@ export default function LandingPage() {
     };
 
     return (
-        <div className="w-full relative overflow-hidden bg-app-bg dark:bg-[#09090b] text-app-text dark:text-gray-50">
+        <div className="w-full relative overflow-x-hidden bg-app-bg dark:bg-[#09090b] text-app-text dark:text-gray-50">
             {/* Hero Section */}
-            <section className="relative px-4 py-24 sm:py-32 lg:px-8 bg-gradient-to-b from-app-bg dark:from-[#09090b] to-app-subtle dark:to-[#121214] flex flex-col items-center text-center">
+            <section className="relative px-4 py-16 sm:py-32 lg:px-8 bg-gradient-to-b from-app-bg dark:from-[#09090b] to-app-subtle dark:to-[#121214] flex flex-col items-center text-center">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -32,15 +32,15 @@ export default function LandingPage() {
                     <span className="inline-block py-1 px-4 rounded-full bg-app-accent-subtle text-sage-800 border border-app-border text-sm font-semibold tracking-wide">
                         The Truth of the Harvest
                     </span>
-                    <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-app-text dark:text-gray-50">
+                    <h1 className="text-4xl sm:text-7xl font-bold tracking-tight text-app-text dark:text-gray-50 leading-[1.1]">
                         Intelligent Care for <span className="text-sage-700 dark:text-sage-400 block mt-2">Sustainable Farming.</span>
                     </h1>
-                    <p className="max-w-2xl mx-auto text-xl text-app-text-muted dark:text-gray-400 leading-relaxed">
+                    <p className="max-w-2xl mx-auto text-lg sm:text-xl text-app-text-muted dark:text-gray-400 leading-relaxed px-2 sm:px-0">
                         CeresVera provides absolute clarity on crop health. Detect diseases instantly using AI and connect with certified agronomy experts for real truth you can trust.
                     </p>
 
                     {isLoggedIn && userRole !== 'farmer' ? (
-                        <div className="flex justify-center mt-8">
+                        <div className="flex justify-center mt-8 w-full max-w-full">
                             <Link
                                 to="/expert-dashboard"
                                 className="inline-flex items-center justify-center gap-2 px-12 py-4 text-base font-black text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"
@@ -51,14 +51,14 @@ export default function LandingPage() {
                         </div>
                     ) : !isLoggedIn ? (
                         /* Testimonial Carousel - Only for visitors */
-                        <div className="pt-12 pb-8 overflow-hidden relative group">
+                        <div className="pt-12 pb-8 overflow-hidden relative group w-full max-w-[100vw] sm:max-w-5xl mx-auto">
                             <motion.div 
-                                className="flex gap-8 items-center"
-                                animate={{ x: [0, -100 * 5] }}
+                                className="flex gap-4 sm:gap-8 items-center w-max pl-4 sm:pl-0"
+                                animate={{ x: ["0%", "-50%"] }}
                                 transition={{ 
                                     repeat: Infinity, 
                                     duration: 30, 
-                                    ease: "linear" 
+                                    ease: "linear",
                                 }}
                             >
                                 {[
@@ -89,7 +89,7 @@ export default function LandingPage() {
                         </div>
                     ) : (
                         /* Logged in Farmers see their specialized dashboard link too */
-                        <div className="flex justify-center mt-8">
+                        <div className="flex justify-center mt-8 w-full">
                             <Link
                                 to="/dashboard"
                                 className="inline-flex items-center justify-center gap-2 px-12 py-4 text-base font-black text-white bg-sage-700 bg-gradient-to-tr from-sage-900 to-sage-700 rounded-full shadow-lg shadow-sage-700/30 hover:scale-105 transition-transform"

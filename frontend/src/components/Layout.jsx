@@ -267,9 +267,9 @@ export default function Layout({ children }) {
             <header className={`bg-app-bg/80 dark:bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-app-border dark:border-[#27272a]`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
-                        <Link to="/" className="flex items-center space-x-2 text-sage-900 group">
-                            <Leaf className="w-8 h-8 text-sage-700 group-hover:-rotate-12 transition-transform" />
-                            <span className="font-bold text-2xl tracking-tight">Ceres<span className="text-sage-500 font-medium">Vera</span></span>
+                        <Link to="/" className="flex items-center space-x-2 text-sage-900 group shrink-0">
+                            <Leaf className="w-6 h-6 sm:w-8 sm:h-8 text-sage-700 group-hover:-rotate-12 transition-transform" />
+                            <span className="font-bold text-lg sm:text-2xl tracking-tight">Ceres<span className="text-sage-500 font-medium">Vera</span></span>
                         </Link>
 
                         <nav className="hidden md:flex space-x-6 items-center">
@@ -286,7 +286,7 @@ export default function Layout({ children }) {
                             )}
                         </nav>
 
-                        <div className="flex items-center space-x-6">
+                        <div className="flex items-center space-x-2 sm:space-x-6">
                             <ThemeToggle />
                             {localStorage.getItem('access_token') ? (
                                 <div className="flex items-center gap-3">
@@ -302,7 +302,7 @@ export default function Layout({ children }) {
                                     </button>
                                 </div>
                             ) : (
-                                <Link to="/auth" className="bg-sage-700 hover:bg-sage-900 text-white px-6 py-2 rounded-full font-bold transition-all shadow-md">Sign In</Link>
+                                 <Link to="/auth" className="bg-sage-700 hover:bg-sage-900 text-white px-4 sm:px-6 py-2 rounded-full font-bold transition-all shadow-md text-sm sm:text-base">Sign In</Link>
                             )}
                         </div>
                     </div>
