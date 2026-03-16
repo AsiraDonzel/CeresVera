@@ -41,7 +41,7 @@ export default function ConsultantPaymentOverlay({ isOpen, onClose, expert }) {
         try {
             const token = localStorage.getItem('access_token');
             // Initiate payment with backend
-            const res = await axios.post(`${API_URL}/api/payments/initiate/`, {
+            const res = await axios.post(`${API_URL}/api/payment/initiate/`, {
                 consultant_id: expert.id,
                 amount: selected.price
             }, {
@@ -59,8 +59,9 @@ export default function ConsultantPaymentOverlay({ isOpen, onClose, expert }) {
                 onComplete: async (response) => {
                     if (response.resp === '00') {
                         // Payment Successful Verification
-                        await axios.post(`${API_URL}/api/payments/callback/`, {
-                            txn_ref: response.txnref
+                        await axios.post(`${API_URL}/api/payment/callback/`, {
+                            txn_ref: response.txnref,
+                            response_code: response.resp
                         });
                         
                         // Save paid consultant ID so they appear in chat/dashboard

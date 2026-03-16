@@ -122,7 +122,7 @@ class RegisterSerializer(serializers.ModelSerializer):
                 is_verified=True,  # Auto-verified for the hackathon
                 rate=0,            # Required field (non-null in DB)
                 specialty="General Agronomy",
-                bio="Agricultural Expert ready to assist."
+                bio=""
             )
             print(f"DEBUG: Consultant created successfully.")
         

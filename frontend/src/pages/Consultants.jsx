@@ -115,7 +115,13 @@ export default function Consultants() {
                                 </div>
                             )}
 
-                            <img src={expert.profile_image_url || `https://i.pravatar.cc/150?u=${expert.id}`} alt={expert.name} className={`w-24 h-24 rounded-full mb-4 border-4 shadow-sm object-cover ${expert.is_premium ? 'border-amber-100' : 'border-sage-50'}`} />
+                            {expert.profile_image_url ? (
+                                <img src={expert.profile_image_url} alt={expert.name} className={`w-24 h-24 rounded-full mb-4 border-4 shadow-sm object-cover ${expert.is_premium ? 'border-amber-100' : 'border-sage-50'}`} />
+                            ) : (
+                                <div className={`w-24 h-24 rounded-full mb-4 border-4 shadow-sm flex items-center justify-center text-2xl font-black ${expert.is_premium ? 'border-amber-100 bg-amber-50 text-amber-700' : 'border-sage-50 bg-sage-50 text-sage-700'}`}>
+                                    {expert.name ? expert.name.charAt(0).toUpperCase() : 'E'}
+                                </div>
+                            )}
 
                             <div className="flex items-center gap-1 justify-center mb-1">
                                 <h2 className="text-xl font-bold text-app-text">{expert.name}</h2>
@@ -126,18 +132,12 @@ export default function Consultants() {
                                 <GraduationCap className="w-4 h-4" /> {expert.expertise_category || expert.specialty}
                             </div>
 
-                            <p className="text-app-text-muted text-sm mb-6 line-clamp-3">{expert.bio}</p>
-
-                            <div className="flex items-center gap-1 text-amber-500 mb-6">
-                                <Star className="w-5 h-5 fill-current" />
-                                <span className="text-app-text font-bold">{expert.rating || 4.8}</span>
-                                <span className="text-app-text-muted text-xs ml-1">(120+ consults)</span>
-                            </div>
+                            <p className="text-app-text-muted text-sm mb-6 line-clamp-3">{expert.bio || 'Expert ready to assist with your agricultural needs.'}</p>
 
                             <div className="w-full mt-auto pt-4 border-t border-app-border flex items-center justify-between">
                                 <div className="text-left">
-                                    <div className="text-[10px] text-app-text-muted uppercase font-black tracking-widest">Fee</div>
-                                    <div className="text-lg font-black text-app-text tracking-tight">₦{parseFloat(expert.rate).toLocaleString()}</div>
+                                    <div className="text-[10px] text-app-text-muted uppercase font-black tracking-widest">Consultant</div>
+                                    <div className="text-sm font-bold text-app-text tracking-tight">Available Now</div>
                                 </div>
 
                                 <div className="flex gap-2">
