@@ -381,6 +381,9 @@ ${scan.recommended_action || (scan.status === 'Healthy' ? 'Continue your current
                                 <Link to="/consultants" className="w-full sm:w-auto px-6 py-3 bg-white border border-sage-200 text-sage-700 hover:bg-sage-50 rounded-xl font-bold transition-all text-center">
                                     Find an Expert
                                 </Link>
+                                <Link to="/chat" className="w-full sm:w-auto px-6 py-3 bg-white border border-sage-200 text-sage-700 hover:bg-sage-50 rounded-xl font-bold transition-all text-center flex items-center justify-center gap-2">
+                                    <MessageCircle className="w-4 h-4" /> Ask Cera AI
+                                </Link>
                                 <button 
                                     onClick={() => handleCopyReport(selectedScan)}
                                     className="w-full sm:w-auto sm:ml-auto px-6 py-3 bg-sage-700 hover:bg-sage-800 text-white rounded-xl font-bold shadow-lg shadow-sage-700/20 transition-all flex items-center justify-center gap-2"

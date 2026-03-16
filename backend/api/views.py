@@ -60,7 +60,9 @@ class ScanUploadView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = ScanSerializer(data=request.data)
         if serializer.is_valid():
-            scan = serializer.save()
+            # Associate the scan with the logged-in user if available
+            user = request.user if request.user.is_authenticated else None
+            scan = serializer.save(user=user)
             
             # Run local Hugging Face model inference
             try:

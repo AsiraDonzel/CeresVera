@@ -4,6 +4,8 @@ import { UploadCloud, CheckCircle, AlertTriangle, ArrowRight, Loader, Camera, Me
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export default function ScanUpload() {
     const [file, setFile] = useState(null);
     const [preview, setPreview] = useState(null);
@@ -52,13 +54,13 @@ export default function ScanUpload() {
 
             let response;
             try {
-                response = await axios.post('http://localhost:8080/api/upload-scan/', formData, { headers });
+                response = await axios.post(`${API_URL}/api/upload-scan/`, formData, { headers });
             } catch (authErr) {
                 // If DRF throws a 401 Unauthorized due to an expired token, we retry anonymously
                 if (authErr.response && authErr.response.status === 401) {
                     console.log("Token expired, retrying anonymously.");
                     delete headers['Authorization'];
-                    response = await axios.post('http://localhost:8080/api/upload-scan/', formData, { headers });
+                    response = await axios.post(`${API_URL}/api/upload-scan/`, formData, { headers });
                 } else {
                     throw authErr;
                 }
