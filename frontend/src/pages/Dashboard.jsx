@@ -5,7 +5,7 @@ import {
     CloudRain, MessageCircle, Activity, ArrowUpRight, CheckCircle2,
     LayoutDashboard, Database, Users, Cloud, Sparkles, Settings,
     Search, Bell, HelpCircle, LogOut, Filter, ChevronDown, Monitor,
-    X, Copy, Search
+    X, Copy
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
