@@ -36,6 +36,13 @@ const mockRequests = [
 export default function FarmerRequests() {
     const navigate = useNavigate();
     const [selectedRequest, setSelectedRequest] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredRequests = mockRequests.filter(req => 
+        req.farmerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        req.crop.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        req.problem.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="flex flex-col space-y-8 pb-12">
@@ -50,6 +57,8 @@ export default function FarmerRequests() {
                         <input
                             type="text"
                             placeholder="Search requests..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-11 pr-4 py-2.5 bg-app-card border border-app-border rounded-xl focus:ring-2 focus:ring-harvest-500 outline-none w-64 shadow-sm font-medium text-app-text placeholder:text-app-text-muted"
                         />
                     </div>
@@ -57,7 +66,13 @@ export default function FarmerRequests() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-grow">
-                {mockRequests.map((req) => (
+                {filteredRequests.length === 0 ? (
+                    <div className="col-span-full py-16 text-center bg-app-card rounded-[2rem] border border-app-border">
+                        <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-500 font-medium">No requests match your search.</p>
+                    </div>
+                ) : (
+                    filteredRequests.map((req) => (
                     <motion.div
                         key={req.id}
                         whileHover={{ y: -4 }}
@@ -98,7 +113,8 @@ export default function FarmerRequests() {
                             <button onClick={() => navigate('/schedule')} className="flex items-center gap-2 px-6 py-2.5 bg-harvest-500 text-white font-black rounded-xl text-xs hover:bg-harvest-600 transition-all">Set Schedule <ArrowRight className="w-4 h-4" /></button>
                         </div>
                     </motion.div>
-                ))}
+                ))
+                )}
             </div>
 
             <AnimatePresence>

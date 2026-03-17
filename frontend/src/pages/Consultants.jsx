@@ -135,10 +135,12 @@ export default function Consultants() {
 
                             <p className="text-app-text-muted text-sm mb-6 line-clamp-3">{expert.bio || 'Expert ready to assist with your agricultural needs.'}</p>
 
-                            <div className="w-full mt-auto pt-4 border-t border-app-border flex items-center justify-between">
+                            <div className={`w-full mt-auto pt-4 border-t border-app-border flex items-center justify-between ${!expert.is_active ? 'opacity-60 grayscale' : ''}`}>
                                 <div className="text-left">
                                     <div className="text-[10px] text-app-text-muted uppercase font-black tracking-widest">Consultant</div>
-                                    <div className="text-sm font-bold text-app-text tracking-tight">Available Now</div>
+                                    <div className={`text-sm font-bold tracking-tight ${expert.is_active ? 'text-sage-600' : 'text-gray-400'}`}>
+                                        {expert.is_active ? 'Available Now' : 'Not Available'}
+                                    </div>
                                 </div>
 
                                 <div className="flex gap-2">

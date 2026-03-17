@@ -38,6 +38,14 @@ class ConsultantViewSet(viewsets.ModelViewSet):
         ).order_by('-is_premium', 'id')
     serializer_class = ConsultantSerializer
 
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def me(self, request):
+        try:
+            consultant = Consultant.objects.get(user=request.user)
+            return Response(ConsultantSerializer(consultant).data)
+        except Consultant.DoesNotExist:
+            return Response({'error': 'Consultant profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
     @action(detail=False, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def toggle_visibility(self, request):
         try:

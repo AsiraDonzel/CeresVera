@@ -18,12 +18,30 @@ export default function ExpertDashboard() {
     const [isActive, setIsActive] = useState(true);
 
     useEffect(() => {
+        const fetchStatus = async () => {
+            try {
+                const token = localStorage.getItem('access_token');
+                if (token) {
+                    const res = await axios.get(`${API_URL}/api/consultants/me/`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    setIsActive(res.data.is_active);
+                }
+            } catch (err) {
+                console.error('Failed to fetch expert status:', err);
+            }
+        };
+
+        fetchStatus();
+
         const handlePremiumUpdate = () => {
             setIsPremium(localStorage.getItem('is_premium') === 'true');
         };
         window.addEventListener('premiumStatusChanged', handlePremiumUpdate);
         return () => window.removeEventListener('premiumStatusChanged', handlePremiumUpdate);
-    }, []);    const handleToggleVisibility = async () => {
+    }, []);
+
+    const handleToggleVisibility = async () => {
         try {
             const token = localStorage.getItem('access_token');
             const res = await axios.post(`${API_URL}/api/consultants/toggle_visibility/`, {}, {
