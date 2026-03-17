@@ -118,14 +118,19 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# ──────────────────────────────────────────────────────────────────────────────
+# ALLOWED HOSTS
+# ──────────────────────────────────────────────────────────────────────────────
+ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com'] + [h.strip() for h in ALLOWED_HOSTS_ENV.split(',') if h.strip()]
 
 # ──────────────────────────────────────────────────────────────────────────────
-# CORS  — allow all in dev, restrict to frontend URL in production
+# CORS  — allow all in dev & Render for presentation robustness
 # ──────────────────────────────────────────────────────────────────────────────
+IS_RENDER = os.environ.get('RENDER', 'False') == 'true'
 FRONTEND_URL = os.environ.get('FRONTEND_URL', '')
 
-if DEBUG or not FRONTEND_URL:
+if DEBUG or IS_RENDER or not FRONTEND_URL:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
     CORS_ALLOWED_ORIGINS = [
