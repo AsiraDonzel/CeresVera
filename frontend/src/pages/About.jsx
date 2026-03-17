@@ -4,12 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
 const teamMembers = [
-    { name: "Asira Donzel", role: "Team Leader/Backend Engineer", img: "/public/Asira.jpg" },
-    { name: "Okoye McPaul", role: "Frontend Engineer", img: "MC.jpg" },
-    { name: "Frances Ugwu", role: "AI/ML Specialist", img: "/public/Frances.jpg" },
-    { name: "Odunayo Aluko", role: "Project Designer", img: "/public/Odun.jpg" },
-    { name: "Nisan Awa", role: "Business Lead", img: "/public/Nisan.jpg" },
-    { name: "Nduoma Iraounsi", role: "Honorary Member", img: "/public/Nduoma.jpg" }
+    { name: "Asira Donzel", role: "Team Leader/Backend Engineer", img: "/Asira.jpg" },
+    { name: "Okoye McPaul", role: "Frontend Engineer", img: "/MC.jpg" },
+    { name: "Frances Ugwu", role: "AI/ML Specialist", img: "/Frances.jpg" },
+    { name: "Odunayo Aluko", role: "Project Designer", img: "/Odun.jpg" },
+    { name: "Nisan Awa", role: "Business Lead", img: "/Nisan.jpg" },
+    { name: "Nduoma Iraounsi", role: "Honorary Member", img: "/Nduoma.jpg" }
 ];
 
 export default function About() {
