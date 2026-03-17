@@ -5,6 +5,8 @@ import { triggerPayment } from '../services/PaymentService';
 import api from '../services/api';
 import Pusher from 'pusher-js';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export default function Messaging() {
     const [conversations, setConversations] = useState([]);
     const [activeConversation, setActiveConversation] = useState(null);
@@ -201,7 +203,7 @@ export default function Messaging() {
                                 >
                                     <div className="relative">
                                         <img 
-                                            src={otherParticipant.profile?.profile_picture || `https://i.pravatar.cc/150?u=${otherParticipant.id}`} 
+                                            src={otherParticipant.profile?.profile_picture ? `${API_URL}${otherParticipant.profile.profile_picture}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(otherParticipant.full_name || otherParticipant.username)}&background=random`} 
                                             className="w-12 h-12 rounded-full object-cover border-2 border-app-border"
                                             alt=""
                                         />
@@ -209,7 +211,7 @@ export default function Messaging() {
                                     </div>
                                     <div className="flex-1 text-left min-w-0">
                                         <div className="flex justify-between items-center mb-1">
-                                            <h3 className="font-bold text-app-text truncate">{otherParticipant.first_name || otherParticipant.username}</h3>
+                                            <h3 className="font-bold text-app-text truncate">{otherParticipant.full_name || otherParticipant.username}</h3>
                                             <span className="text-[10px] text-app-text-muted font-bold uppercase tracking-tighter">
                                                 {lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                             </span>
@@ -240,13 +242,15 @@ export default function Messaging() {
                                 </button>
                                 <div className="flex items-center gap-3">
                                     <img 
-                                        src={activeConversation.participants.find(p => p.id !== currentUser?.id)?.profile?.profile_picture || `https://i.pravatar.cc/150?u=${activeConversation.id}`} 
+                                        src={activeConversation.participants.find(p => p.id !== currentUser?.id)?.profile?.profile_picture 
+                                            ? `${API_URL}${activeConversation.participants.find(p => p.id !== currentUser?.id).profile.profile_picture}` 
+                                            : `https://ui-avatars.com/api/?name=${encodeURIComponent(activeConversation.participants.find(p => p.id !== currentUser?.id)?.full_name || 'Chat')}&background=random`} 
                                         className="w-10 h-10 rounded-full object-cover shadow-sm border border-app-border"
                                         alt=""
                                     />
                                     <div>
                                         <h2 className="font-black text-app-text tracking-tight">
-                                            {activeConversation.participants.find(p => p.id !== currentUser?.id)?.username || 'Chat'}
+                                            {activeConversation.participants.find(p => p.id !== currentUser?.id)?.full_name || 'Chat'}
                                         </h2>
                                         <div className="flex items-center gap-1.5">
                                             <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
