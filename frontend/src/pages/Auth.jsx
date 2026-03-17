@@ -27,7 +27,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useGoogleLogin } from '@react-oauth/google';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '');
 
 export default function Auth() {
     const [mode, setMode] = useState('login'); // 'login' | 'register-role' | 'register-farmer' | 'register-expert' | 'forgot-email' | 'forgot-code' | 'forgot-password'
@@ -198,7 +198,14 @@ export default function Auth() {
                     setError('Execution failed. Please verify your data.');
                 }
             } else {
-                setError(err.message || 'Execution failed. Please verify your data.');
+                console.error('Network or unknown error details:', {
+                    message: err.message,
+                    code: err.code,
+                    config: err.config
+                });
+                setError(err.message === 'Network Error' 
+                    ? 'Network Error: Please ensure your backend is running at http://localhost:8080'
+                    : (err.message || 'Execution failed. Please verify your data.'));
             }
         } finally {
             setLoading(false);
