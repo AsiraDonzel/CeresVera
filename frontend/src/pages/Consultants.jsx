@@ -12,6 +12,7 @@ export default function Consultants() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [paidConsultants, setPaidConsultants] = useState([]);
     
     // Payment Overlay State
     const [selectedExpertForPayment, setSelectedExpertForPayment] = useState(null);
@@ -19,6 +20,8 @@ export default function Consultants() {
 
     useEffect(() => {
         fetchExperts();
+        const paid = JSON.parse(localStorage.getItem('paid_consultants') || '[]');
+        setPaidConsultants(paid);
     }, []);
 
     const fetchExperts = async () => {
@@ -138,8 +141,8 @@ export default function Consultants() {
                             <div className={`w-full mt-auto pt-4 border-t border-app-border flex items-center justify-between ${!expert.is_active ? 'opacity-60 grayscale' : ''}`}>
                                 <div className="text-left">
                                     <div className="text-[10px] text-app-text-muted uppercase font-black tracking-widest">Consultant</div>
-                                    <div className={`text-sm font-bold tracking-tight ${expert.is_active ? 'text-sage-600' : 'text-gray-400'}`}>
-                                        {expert.is_active ? 'Available Now' : 'Not Available'}
+                                    <div className={`text-sm font-bold tracking-tight ${expert.is_active ? (paidConsultants.includes(expert.id) ? 'text-amber-600' : 'text-sage-600') : 'text-gray-400'}`}>
+                                        {paidConsultants.includes(expert.id) ? 'Booked & Active' : (expert.is_active ? 'Available Now' : 'Not Available')}
                                     </div>
                                 </div>
 
@@ -176,15 +179,37 @@ export default function Consultants() {
                                     >
                                         <MessageSquare className="w-5 h-5" />
                                     </button>
-                                    <button 
-                                        onClick={() => {
-                                            setSelectedExpertForPayment(expert);
-                                            setIsPaymentOverlayOpen(true);
-                                        }} 
-                                        className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-1.5 shadow-md active:scale-95 ${expert.is_premium ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-sage-600 hover:bg-sage-700 text-white'}`}
-                                    >
-                                        Consult <ArrowRight className="w-4 h-4" />
-                                    </button>
+                                    {paidConsultants.includes(expert.id) ? (
+                                        <button 
+                                            onClick={async () => {
+                                                const token = localStorage.getItem('access_token');
+                                                if (!token) { window.location.href = '/auth'; return; }
+                                                try {
+                                                    await axios.post(`${API_URL}/api/chat/conversations/`, {
+                                                        participants: [expert.user_id || expert.id]
+                                                    }, {
+                                                        headers: { Authorization: `Bearer ${token}` }
+                                                    });
+                                                    window.location.href = '/messaging';
+                                                } catch (err) {
+                                                    console.error('Failed to open chat:', err);
+                                                }
+                                            }}
+                                            className="px-5 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-1.5 shadow-md active:scale-95 bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-200"
+                                        >
+                                            Open Chat <MessageSquare className="w-4 h-4 ml-1" />
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            onClick={() => {
+                                                setSelectedExpertForPayment(expert);
+                                                setIsPaymentOverlayOpen(true);
+                                            }} 
+                                            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all flex items-center gap-1.5 shadow-md active:scale-95 ${expert.is_premium ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-sage-600 hover:bg-sage-700 text-white'}`}
+                                        >
+                                            Consult <ArrowRight className="w-4 h-4" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

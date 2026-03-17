@@ -105,7 +105,18 @@ export default function ConsultantPaymentOverlay({ isOpen, onClose, expert }) {
                                 <CheckCircle className="w-12 h-12" />
                             </motion.div>
                             <h2 className="text-3xl font-black text-gray-900 mb-2">Payment Successful!</h2>
-                            <p className="text-gray-500 font-medium">Your session has been booked. Redirecting to chat...</p>
+                            <div className="bg-sage-50 border border-sage-100 p-6 rounded-2xl max-w-sm">
+                                {selectedOption === 'video' ? (
+                                    <p className="text-sage-800 font-bold leading-relaxed">
+                                        Your **Live Video Session** is confirmed! Go to the chat now and wait for Dr. {expert.name.split(' ').pop()} to initiate the call.
+                                    </p>
+                                ) : (
+                                    <p className="text-sage-800 font-bold leading-relaxed">
+                                        Your **Diagnostic Report** is confirmed. Please share any photos or details in the chat; the expert will send your analysis within 24 hours.
+                                    </p>
+                                )}
+                            </div>
+                            <p className="mt-6 text-gray-500 font-medium animate-pulse">Redirecting to chat...</p>
                         </div>
                     ) : (
                         <>
